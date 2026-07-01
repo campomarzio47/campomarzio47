@@ -37,6 +37,7 @@ export default function Gallery() {
               src={photo.src}
               alt={photo.alt}
               fill
+              quality={90}
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(min-width: 640px) 25vw, 50vw"
             />

@@ -64,6 +64,7 @@ export default function Lightbox({
             src={photo.src}
             alt={photo.alt}
             fill
+            quality={90}
             className="object-contain"
             sizes="100vw"
           />

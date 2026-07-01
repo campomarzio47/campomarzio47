@@ -22,6 +22,8 @@ export default function Hero() {
           alt={dict.hero.tagline}
           fill
           priority
+          quality={90}
+          sizes="100vw"
           className="object-cover"
         />
       </div>
