@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+:root {
+  --color-off-white: #f7f5f2;
+  --color-bordeaux: #8b2635;
+  --color-bordeaux-dark: #6e1e2a;
+  --color-charcoal: #1e1e1e;
+  --color-mid: #6b6560;
+  --color-beam: #d4c5b0;
+  --color-divider: #e2ddd8;
+}
+
+@theme inline {
+  --color-off-white: var(--color-off-white);
+  --color-bordeaux: var(--color-bordeaux);
+  --color-bordeaux-dark: var(--color-bordeaux-dark);
+  --color-charcoal: var(--color-charcoal);
+  --color-mid: var(--color-mid);
+  --color-beam: var(--color-beam);
+  --color-divider: var(--color-divider);
+  --font-display: var(--font-cormorant);
+  --font-sans: var(--font-dmsans);
+}
+
+body {
+  background: var(--color-off-white);
+  color: var(--color-charcoal);
+}
+
+::selection {
+  background: var(--color-bordeaux);
+  color: var(--color-off-white);
+}
+
+.rdp-root {
+  --rdp-accent-color: var(--color-bordeaux);
+  --rdp-accent-background-color: var(--color-beam);
+  --rdp-today-color: var(--color-bordeaux);
+}
+
+.rdp-busy button {
+  text-decoration: line-through;
+  color: var(--color-mid) !important;
+}
