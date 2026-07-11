@@ -88,93 +88,142 @@ export default function GuestRow({
         </label>
 
         <label className={labelClasses}>
-          {dict.checkin.birthPlace}
-          <input
-            required
-            placeholder={dict.checkin.birthPlacePlaceholder}
-            value={guest.comuneStatoNascita}
-            onChange={(e) => set("comuneStatoNascita", e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-        <label className={labelClasses}>
-          {dict.checkin.birthProvince}
-          <input
-            required
-            placeholder={dict.checkin.birthProvincePlaceholder}
-            maxLength={2}
-            value={guest.provinciaNascita}
-            onChange={(e) => set("provinciaNascita", e.target.value.toUpperCase())}
-            className={inputClasses}
-          />
-        </label>
-
-        <label className={labelClasses}>
           {dict.checkin.citizenship}
-          <input
-            required
-            placeholder={dict.checkin.citizenshipPlaceholder}
+          <select
             value={guest.cittadinanza}
-            onChange={(e) => set("cittadinanza", e.target.value)}
+            onChange={(e) => set("cittadinanza", e.target.value as Guest["cittadinanza"])}
+            className={inputClasses}
+          >
+            <option value="IT">{dict.checkin.citizenshipItaly}</option>
+            <option value="ALTRO">{dict.checkin.citizenshipOther}</option>
+          </select>
+        </label>
+        {guest.cittadinanza === "ALTRO" && (
+          <label className={labelClasses}>
+            &nbsp;
+            <input
+              required
+              placeholder={dict.checkin.citizenshipOtherPlaceholder}
+              value={guest.cittadinanzaAltro}
+              onChange={(e) => set("cittadinanzaAltro", e.target.value)}
+              className={inputClasses}
+            />
+          </label>
+        )}
+
+        <label className={labelClasses}>
+          {dict.checkin.residenceState}
+          <select
+            value={guest.statoResidenza}
+            onChange={(e) => set("statoResidenza", e.target.value as Guest["statoResidenza"])}
+            className={inputClasses}
+          >
+            <option value="IT">{dict.checkin.residenceStateItaly}</option>
+            <option value="ALTRO">{dict.checkin.residenceStateOther}</option>
+          </select>
+        </label>
+        <label className={labelClasses}>
+          {dict.checkin.residencePlace}
+          <input
+            required={guest.statoResidenza === "IT"}
+            placeholder={
+              guest.statoResidenza === "IT"
+                ? dict.checkin.residencePlaceItalyPlaceholder
+                : dict.checkin.residencePlaceOtherPlaceholder
+            }
+            value={guest.luogoResidenza}
+            onChange={(e) => set("luogoResidenza", e.target.value)}
             className={inputClasses}
           />
         </label>
 
         <label className={labelClasses}>
-          {dict.checkin.documentType}
+          {dict.checkin.birthState}
           <select
-            value={guest.tipoDocumento}
+            value={guest.statoNascita}
             onChange={(e) =>
-              set("tipoDocumento", e.target.value as Guest["tipoDocumento"])
+              set("statoNascita", e.target.value as Guest["statoNascita"])
             }
             className={inputClasses}
           >
-            {dict.checkin.documentTypes.map((d) => (
-              <option key={d.code} value={d.code}>
-                {d.label}
+            <option value="">{dict.checkin.birthStateNotSpecified}</option>
+            <option value="IT">{dict.checkin.birthStateItaly}</option>
+            <option value="ALTRO">{dict.checkin.birthStateOther}</option>
+          </select>
+        </label>
+        {guest.statoNascita === "IT" && (
+          <label className={labelClasses}>
+            {dict.checkin.birthPlace}
+            <input
+              placeholder={dict.checkin.birthPlacePlaceholder}
+              value={guest.comuneNascita}
+              onChange={(e) => set("comuneNascita", e.target.value)}
+              className={inputClasses}
+            />
+          </label>
+        )}
+        {guest.statoNascita === "ALTRO" && (
+          <label className={labelClasses}>
+            {dict.checkin.birthState}
+            <input
+              placeholder={dict.checkin.birthStateOtherPlaceholder}
+              value={guest.statoNascitaAltro}
+              onChange={(e) => set("statoNascitaAltro", e.target.value)}
+              className={inputClasses}
+            />
+          </label>
+        )}
+
+        <label className={labelClasses}>
+          {dict.checkin.tourismType}
+          <select
+            value={guest.tipoTurismo}
+            onChange={(e) => set("tipoTurismo", e.target.value as Guest["tipoTurismo"])}
+            className={inputClasses}
+          >
+            {dict.checkin.tourismTypeOptions.map((o) => (
+              <option key={o.code} value={o.code}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={labelClasses}>
+          {dict.checkin.transportMeans}
+          <select
+            value={guest.mezzoTrasporto}
+            onChange={(e) => set("mezzoTrasporto", e.target.value as Guest["mezzoTrasporto"])}
+            className={inputClasses}
+          >
+            {dict.checkin.transportMeansOptions.map((o) => (
+              <option key={o.code} value={o.code}>
+                {o.label}
               </option>
             ))}
           </select>
         </label>
 
         <label className={labelClasses}>
-          {dict.checkin.documentNumber}
-          <input
-            required
-            value={guest.numeroDocumento}
-            onChange={(e) => set("numeroDocumento", e.target.value)}
+          {dict.checkin.educationLevel}
+          <select
+            value={guest.titoloStudio}
+            onChange={(e) => set("titoloStudio", e.target.value as Guest["titoloStudio"])}
             className={inputClasses}
-          />
+          >
+            <option value="">{dict.checkin.educationLevelNotSpecified}</option>
+            {dict.checkin.educationLevelOptions.map((o) => (
+              <option key={o.code} value={o.code}>
+                {o.label}
+              </option>
+            ))}
+          </select>
         </label>
         <label className={labelClasses}>
-          {dict.checkin.documentPlace}
+          {dict.checkin.profession}
           <input
-            required
-            placeholder={dict.checkin.documentPlacePlaceholder}
-            value={guest.luogoRilascio}
-            onChange={(e) => set("luogoRilascio", e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-
-        <label className={labelClasses}>
-          {dict.checkin.residencePlace}
-          <input
-            required
-            placeholder={dict.checkin.residencePlacePlaceholder}
-            value={guest.comuneStatoResidenza}
-            onChange={(e) => set("comuneStatoResidenza", e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-        <label className={labelClasses}>
-          {dict.checkin.residenceProvince}
-          <input
-            required
-            placeholder={dict.checkin.residenceProvincePlaceholder}
-            maxLength={2}
-            value={guest.provinciaResidenza}
-            onChange={(e) => set("provinciaResidenza", e.target.value.toUpperCase())}
+            placeholder={dict.checkin.professionPlaceholder}
+            value={guest.professione}
+            onChange={(e) => set("professione", e.target.value)}
             className={inputClasses}
           />
         </label>

@@ -1,3 +1,5 @@
+import type { TipoTurismo, MezzoTrasporto, TitoloStudio } from "@/lib/checkin-types";
+
 export type Dictionary = {
   meta: { title: string; description: string };
   languageSwitcher: { label: string };
@@ -97,21 +99,32 @@ export type Dictionary = {
     male: string;
     female: string;
     birthDate: string;
+    citizenship: string;
+    citizenshipItaly: string;
+    citizenshipOther: string;
+    citizenshipOtherPlaceholder: string;
+    residenceState: string;
+    residenceStateItaly: string;
+    residenceStateOther: string;
+    residencePlace: string;
+    residencePlaceItalyPlaceholder: string;
+    residencePlaceOtherPlaceholder: string;
+    birthState: string;
+    birthStateNotSpecified: string;
+    birthStateItaly: string;
+    birthStateOther: string;
+    birthStateOtherPlaceholder: string;
     birthPlace: string;
     birthPlacePlaceholder: string;
-    birthProvince: string;
-    birthProvincePlaceholder: string;
-    citizenship: string;
-    citizenshipPlaceholder: string;
-    documentType: string;
-    documentTypes: { code: "IDENT" | "PASOR" | "PATEN" | "ALTRO"; label: string }[];
-    documentNumber: string;
-    documentPlace: string;
-    documentPlacePlaceholder: string;
-    residencePlace: string;
-    residencePlacePlaceholder: string;
-    residenceProvince: string;
-    residenceProvincePlaceholder: string;
+    tourismType: string;
+    tourismTypeOptions: { code: TipoTurismo; label: string }[];
+    transportMeans: string;
+    transportMeansOptions: { code: MezzoTrasporto; label: string }[];
+    educationLevel: string;
+    educationLevelNotSpecified: string;
+    educationLevelOptions: { code: TitoloStudio; label: string }[];
+    profession: string;
+    professionPlaceholder: string;
     addGuest: string;
     consent: string;
     submit: string;
@@ -305,7 +318,7 @@ export const it: Dictionary = {
   checkin: {
     title: "Check-in online",
     subtitle:
-      "Inserisci i dati di ogni ospite prima dell'arrivo: velocizza le operazioni al tuo arrivo e ci consente di adempiere agli obblighi di registrazione.",
+      "Inserisci i dati di ogni ospite prima dell'arrivo: ci consente di adempiere alla comunicazione obbligatoria dei flussi turistici regionali.",
     arrivalDate: "Data di arrivo",
     nights: "Numero di notti",
     guest: "Ospite",
@@ -316,34 +329,77 @@ export const it: Dictionary = {
     male: "Maschio",
     female: "Femmina",
     birthDate: "Data di nascita",
-    birthPlace: "Comune/stato di nascita",
-    birthPlacePlaceholder: "es. Milano, oppure Germania",
-    birthProvince: "Provincia di nascita",
-    birthProvincePlaceholder: "es. MI, oppure EE se estero",
     citizenship: "Cittadinanza",
-    citizenshipPlaceholder: "es. Italiana",
-    documentType: "Tipo documento",
-    documentTypes: [
-      { code: "IDENT", label: "Carta d'identità" },
-      { code: "PASOR", label: "Passaporto" },
-      { code: "PATEN", label: "Patente di guida" },
-      { code: "ALTRO", label: "Altro documento" },
+    citizenshipItaly: "Italiana",
+    citizenshipOther: "Altra",
+    citizenshipOtherPlaceholder: "es. Tedesca, Francese...",
+    residenceState: "Stato di residenza",
+    residenceStateItaly: "Italia",
+    residenceStateOther: "Altro stato",
+    residencePlace: "Comune di residenza",
+    residencePlaceItalyPlaceholder: "es. Roma",
+    residencePlaceOtherPlaceholder: "es. Monaco di Baviera, Germania",
+    birthState: "Stato di nascita",
+    birthStateNotSpecified: "Non specificato",
+    birthStateItaly: "Italia",
+    birthStateOther: "Altro stato",
+    birthStateOtherPlaceholder: "es. Germania",
+    birthPlace: "Comune di nascita",
+    birthPlacePlaceholder: "es. Milano",
+    tourismType: "Tipo di turismo",
+    tourismTypeOptions: [
+      { code: "Culturale", label: "Culturale" },
+      { code: "Balneare", label: "Balneare" },
+      { code: "Congressuale/Affari", label: "Congressuale/Affari" },
+      { code: "Fieristico", label: "Fieristico" },
+      { code: "Sportivo/Fitness", label: "Sportivo/Fitness" },
+      { code: "Scolastico", label: "Scolastico" },
+      { code: "Religioso", label: "Religioso" },
+      { code: "Sociale", label: "Sociale" },
+      { code: "Parchi Tematici", label: "Parchi tematici" },
+      { code: "Termale/Trattamenti salute", label: "Termale/Trattamenti salute" },
+      { code: "Enogastronomico", label: "Enogastronomico" },
+      { code: "Cicloturismo", label: "Cicloturismo" },
+      { code: "Escursionistico/Naturalistico", label: "Escursionistico/Naturalistico" },
+      { code: "Altro motivo", label: "Altro motivo" },
+      { code: "Non specificato", label: "Non specificato" },
     ],
-    documentNumber: "Numero documento",
-    documentPlace: "Luogo di rilascio documento",
-    documentPlacePlaceholder: "es. Vicenza",
-    residencePlace: "Comune/stato di residenza",
-    residencePlacePlaceholder: "es. Roma",
-    residenceProvince: "Provincia di residenza",
-    residenceProvincePlaceholder: "es. RM, oppure EE se estero",
+    transportMeans: "Mezzo di trasporto",
+    transportMeansOptions: [
+      { code: "Auto", label: "Auto" },
+      { code: "Aereo", label: "Aereo" },
+      { code: "Aereo+Pullman", label: "Aereo + Pullman" },
+      { code: "Aereo+Navetta/Taxi/Auto", label: "Aereo + Navetta/Taxi/Auto" },
+      { code: "Aereo+Treno", label: "Aereo + Treno" },
+      { code: "Treno", label: "Treno" },
+      { code: "Pullman", label: "Pullman" },
+      { code: "Caravan/Autocaravan", label: "Caravan/Autocaravan" },
+      { code: "Barca/Nave/Traghetto", label: "Barca/Nave/Traghetto" },
+      { code: "Moto", label: "Moto" },
+      { code: "Bicicletta", label: "Bicicletta" },
+      { code: "A piedi", label: "A piedi" },
+      { code: "Altro mezzo", label: "Altro mezzo" },
+      { code: "Non Specificato", label: "Non specificato" },
+    ],
+    educationLevel: "Titolo di studio",
+    educationLevelNotSpecified: "Preferisco non specificare",
+    educationLevelOptions: [
+      { code: "Licenza elementare", label: "Licenza elementare" },
+      { code: "Diploma", label: "Diploma" },
+      { code: "Laurea", label: "Laurea" },
+      { code: "Altro titolo", label: "Altro titolo" },
+      { code: "Non specificato", label: "Non specificato" },
+    ],
+    profession: "Professione",
+    professionPlaceholder: "Facoltativo",
     addGuest: "Aggiungi ospite",
     consent:
-      "Acconsento al trattamento dei miei dati personali e di documento ai fini della registrazione obbligatoria degli ospiti (art. 109 TULPS) e della comunicazione statistica ai flussi turistici regionali. I dati vengono inviati via email all'host e non sono conservati sul server del sito.",
+      "Acconsento al trattamento dei miei dati personali ai fini della comunicazione statistica obbligatoria ai flussi turistici regionali (Ross1000). I dati vengono inviati via email all'host e non sono conservati sul server del sito.",
     submit: "Invia check-in",
     sending: "Invio…",
     sentTitle: "Check-in inviato",
     sentBody:
-      "Grazie! I tuoi dati sono stati inviati all'host per la registrazione obbligatoria. A presto a Marostica.",
+      "Grazie! I tuoi dati sono stati inviati all'host per la comunicazione obbligatoria ai flussi turistici. A presto a Marostica.",
     errorGeneric: "Invio non riuscito, riprova più tardi.",
   },
 };
@@ -531,7 +587,7 @@ export const en: Dictionary = {
   checkin: {
     title: "Online check-in",
     subtitle:
-      "Enter each guest's details before arrival: it speeds up check-in and lets us fulfil the mandatory registration requirements.",
+      "Enter each guest's details before arrival: it lets us fulfil the mandatory regional tourism-flow reporting requirement.",
     arrivalDate: "Arrival date",
     nights: "Number of nights",
     guest: "Guest",
@@ -542,34 +598,77 @@ export const en: Dictionary = {
     male: "Male",
     female: "Female",
     birthDate: "Date of birth",
-    birthPlace: "Place of birth (city/country)",
-    birthPlacePlaceholder: "e.g. Milan, or Germany",
-    birthProvince: "Province of birth",
-    birthProvincePlaceholder: "e.g. MI, or EE if abroad",
     citizenship: "Citizenship",
-    citizenshipPlaceholder: "e.g. Italian",
-    documentType: "Document type",
-    documentTypes: [
-      { code: "IDENT", label: "ID card" },
-      { code: "PASOR", label: "Passport" },
-      { code: "PATEN", label: "Driving licence" },
-      { code: "ALTRO", label: "Other document" },
+    citizenshipItaly: "Italian",
+    citizenshipOther: "Other",
+    citizenshipOtherPlaceholder: "e.g. German, French...",
+    residenceState: "Country of residence",
+    residenceStateItaly: "Italy",
+    residenceStateOther: "Other country",
+    residencePlace: "City of residence",
+    residencePlaceItalyPlaceholder: "e.g. Rome",
+    residencePlaceOtherPlaceholder: "e.g. Munich, Germany",
+    birthState: "Country of birth",
+    birthStateNotSpecified: "Not specified",
+    birthStateItaly: "Italy",
+    birthStateOther: "Other country",
+    birthStateOtherPlaceholder: "e.g. Germany",
+    birthPlace: "City of birth",
+    birthPlacePlaceholder: "e.g. Milan",
+    tourismType: "Type of tourism",
+    tourismTypeOptions: [
+      { code: "Culturale", label: "Cultural" },
+      { code: "Balneare", label: "Seaside/Beach" },
+      { code: "Congressuale/Affari", label: "Business/Conference" },
+      { code: "Fieristico", label: "Trade fair" },
+      { code: "Sportivo/Fitness", label: "Sports/Fitness" },
+      { code: "Scolastico", label: "School" },
+      { code: "Religioso", label: "Religious" },
+      { code: "Sociale", label: "Social" },
+      { code: "Parchi Tematici", label: "Theme parks" },
+      { code: "Termale/Trattamenti salute", label: "Spa/Wellness" },
+      { code: "Enogastronomico", label: "Food & wine" },
+      { code: "Cicloturismo", label: "Cycling" },
+      { code: "Escursionistico/Naturalistico", label: "Hiking/Nature" },
+      { code: "Altro motivo", label: "Other" },
+      { code: "Non specificato", label: "Not specified" },
     ],
-    documentNumber: "Document number",
-    documentPlace: "Document issue place",
-    documentPlacePlaceholder: "e.g. Vicenza",
-    residencePlace: "Place of residence (city/country)",
-    residencePlacePlaceholder: "e.g. Rome",
-    residenceProvince: "Province of residence",
-    residenceProvincePlaceholder: "e.g. RM, or EE if abroad",
+    transportMeans: "Means of transport",
+    transportMeansOptions: [
+      { code: "Auto", label: "Car" },
+      { code: "Aereo", label: "Plane" },
+      { code: "Aereo+Pullman", label: "Plane + Coach" },
+      { code: "Aereo+Navetta/Taxi/Auto", label: "Plane + Shuttle/Taxi/Car" },
+      { code: "Aereo+Treno", label: "Plane + Train" },
+      { code: "Treno", label: "Train" },
+      { code: "Pullman", label: "Coach" },
+      { code: "Caravan/Autocaravan", label: "Caravan/Motorhome" },
+      { code: "Barca/Nave/Traghetto", label: "Boat/Ship/Ferry" },
+      { code: "Moto", label: "Motorbike" },
+      { code: "Bicicletta", label: "Bicycle" },
+      { code: "A piedi", label: "On foot" },
+      { code: "Altro mezzo", label: "Other" },
+      { code: "Non Specificato", label: "Not specified" },
+    ],
+    educationLevel: "Education level",
+    educationLevelNotSpecified: "Prefer not to say",
+    educationLevelOptions: [
+      { code: "Licenza elementare", label: "Elementary school" },
+      { code: "Diploma", label: "High school diploma" },
+      { code: "Laurea", label: "University degree" },
+      { code: "Altro titolo", label: "Other" },
+      { code: "Non specificato", label: "Not specified" },
+    ],
+    profession: "Profession",
+    professionPlaceholder: "Optional",
     addGuest: "Add guest",
     consent:
-      "I consent to the processing of my personal and document data for the mandatory guest registration (Italian law, art. 109 TULPS) and for regional tourism-flow statistical reporting. Data is sent by email to the host and is not stored on the site's server.",
+      "I consent to the processing of my personal data for the mandatory regional tourism-flow statistical reporting (Ross1000). Data is sent by email to the host and is not stored on the site's server.",
     submit: "Submit check-in",
     sending: "Sending…",
     sentTitle: "Check-in submitted",
     sentBody:
-      "Thank you! Your details have been sent to the host for mandatory registration. See you soon in Marostica.",
+      "Thank you! Your details have been sent to the host for the mandatory tourism-flow reporting. See you soon in Marostica.",
     errorGeneric: "Sending failed, please try again later.",
   },
 };

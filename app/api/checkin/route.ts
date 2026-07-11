@@ -1,24 +1,33 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendMail } from "@/lib/mailer";
-import { buildAlloggiatiFile } from "@/lib/alloggiati";
 import { buildRoss1000File } from "@/lib/ross1000";
-import { documentTypeCodes } from "@/lib/checkin-types";
+import { tipoTurismoCodes, mezzoTrasportoCodes, titoloStudioCodes } from "@/lib/checkin-types";
 
-const guestSchema = z.object({
-  cognome: z.string().min(1).max(50),
-  nome: z.string().min(1).max(30),
-  sesso: z.enum(["M", "F"]),
-  dataNascita: z.string().min(1),
-  comuneStatoNascita: z.string().min(1).max(80),
-  provinciaNascita: z.string().min(1).max(2),
-  cittadinanza: z.string().min(1).max(80),
-  tipoDocumento: z.enum(documentTypeCodes),
-  numeroDocumento: z.string().min(1).max(20),
-  luogoRilascio: z.string().min(1).max(80),
-  comuneStatoResidenza: z.string().min(1).max(80),
-  provinciaResidenza: z.string().min(1).max(2),
-});
+const statoSchema = z.enum(["IT", "ALTRO"]);
+
+const guestSchema = z
+  .object({
+    cognome: z.string().min(1).max(50),
+    nome: z.string().min(1).max(30),
+    sesso: z.enum(["M", "F"]),
+    dataNascita: z.string().min(1),
+    cittadinanza: statoSchema,
+    cittadinanzaAltro: z.string().max(80).optional().default(""),
+    statoResidenza: statoSchema,
+    luogoResidenza: z.string().max(80).optional().default(""),
+    statoNascita: z.union([statoSchema, z.literal("")]).optional().default(""),
+    statoNascitaAltro: z.string().max(80).optional().default(""),
+    comuneNascita: z.string().max(80).optional().default(""),
+    tipoTurismo: z.enum(tipoTurismoCodes),
+    mezzoTrasporto: z.enum(mezzoTrasportoCodes),
+    titoloStudio: z.union([z.enum(titoloStudioCodes), z.literal("")]).optional().default(""),
+    professione: z.string().max(100).optional().default(""),
+  })
+  .refine(
+    (g) => g.statoResidenza === "ALTRO" || g.luogoResidenza.length > 0,
+    { message: "Comune di residenza obbligatorio se lo stato di residenza è l'Italia." },
+  );
 
 const checkInSchema = z.object({
   dataArrivo: z.string().min(1),
@@ -39,17 +48,26 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data;
-
-  const alloggiati = buildAlloggiatiFile(data);
   const ross1000 = buildRoss1000File(data);
 
   const summary = data.guests
-    .map(
-      (g, i) =>
-        `Ospite ${i + 1}: ${g.cognome} ${g.nome} (${g.sesso}), nato/a ${g.dataNascita} a ${g.comuneStatoNascita} — ` +
-        `cittadinanza ${g.cittadinanza} — documento ${g.tipoDocumento} n. ${g.numeroDocumento}, rilasciato a ${g.luogoRilascio} — ` +
-        `residente a ${g.comuneStatoResidenza} (${g.provinciaResidenza})`,
-    )
+    .map((g, i) => {
+      const cittadinanza = g.cittadinanza === "IT" ? "Italiana" : g.cittadinanzaAltro || "estera (non specificata)";
+      const residenza =
+        g.statoResidenza === "IT" ? `${g.luogoResidenza} (Italia)` : g.luogoResidenza || "estero (non specificato)";
+      const nascita =
+        g.statoNascita === "IT"
+          ? g.comuneNascita || "Italia (comune non specificato)"
+          : g.statoNascita === "ALTRO"
+            ? g.statoNascitaAltro || "estero (non specificato)"
+            : "non specificato";
+      return (
+        `Ospite ${i + 1}: ${g.cognome} ${g.nome} (${g.sesso}), nato/a il ${g.dataNascita} — nascita: ${nascita} — ` +
+        `cittadinanza: ${cittadinanza} — residenza: ${residenza} — turismo: ${g.tipoTurismo} — trasporto: ${g.mezzoTrasporto}` +
+        (g.titoloStudio ? ` — titolo di studio: ${g.titoloStudio}` : "") +
+        (g.professione ? ` — professione: ${g.professione}` : "")
+      );
+    })
     .join("\n");
 
   try {
@@ -62,20 +80,15 @@ export async function POST(request: Request) {
         summary,
         "",
         "In allegato:",
-        `- ${alloggiati.filename} (Alloggiati Web / Questura)`,
-        `- ${ross1000.filename} (Ross1000 / Regione Veneto)`,
+        `- ${ross1000.filename} (movimentazione turistica Ross1000/GIES, da caricare sul portale regionale)`,
         "",
-        "IMPORTANTE: nel file Alloggiati Web i campi comune/stato di nascita, cittadinanza e",
-        "luogo di rilascio del documento sono segnati con \"?????????\" perché richiedono i codici",
-        "ufficiali ISTAT (scaricabili dal portale Alloggiati Web dopo il login). Usa il riepilogo",
-        "qui sopra per completarli a mano prima del caricamento — sono solo 3 campi per ospite.",
-        "Verifica anche il tracciato Ross1000 con la documentazione ufficiale del portale regionale",
+        "IMPORTANTE: nell'XML i campi che richiedono un codice ufficiale (stato estero, comune italiano)",
+        "e che non sono l'Italia sono segnati con \"DA_COMPILARE\" perché servono le tabelle Nazioni/Comuni",
+        "scaricabili dal portale. Usa il riepilogo qui sopra per completarli a mano prima del caricamento.",
+        "Verifica anche che il portale flussituristici.regione.veneto.it accetti questo stesso tracciato",
         "prima del primo invio reale.",
       ].join("\n"),
-      attachments: [
-        { filename: alloggiati.filename, content: alloggiati.buffer },
-        { filename: ross1000.filename, content: ross1000.buffer },
-      ],
+      attachments: [{ filename: ross1000.filename, content: ross1000.buffer }],
     });
 
     return NextResponse.json({ ok: true });
