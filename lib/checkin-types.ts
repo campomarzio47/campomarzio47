@@ -2,51 +2,9 @@
 // sezione checkin) così da poter essere tradotte. Qui restano solo i valori/codici
 // che sono il dato effettivo inviato/validato dal server e scritto nell'XML Ross1000.
 
-export const tipoTurismoCodes = [
-  "Culturale",
-  "Balneare",
-  "Congressuale/Affari",
-  "Fieristico",
-  "Sportivo/Fitness",
-  "Scolastico",
-  "Religioso",
-  "Sociale",
-  "Parchi Tematici",
-  "Termale/Trattamenti salute",
-  "Enogastronomico",
-  "Cicloturismo",
-  "Escursionistico/Naturalistico",
-  "Altro motivo",
-  "Non specificato",
-] as const;
-export type TipoTurismo = (typeof tipoTurismoCodes)[number];
-
-export const mezzoTrasportoCodes = [
-  "Auto",
-  "Aereo",
-  "Aereo+Pullman",
-  "Aereo+Navetta/Taxi/Auto",
-  "Aereo+Treno",
-  "Treno",
-  "Pullman",
-  "Caravan/Autocaravan",
-  "Barca/Nave/Traghetto",
-  "Moto",
-  "Bicicletta",
-  "A piedi",
-  "Altro mezzo",
-  "Non Specificato",
-] as const;
-export type MezzoTrasporto = (typeof mezzoTrasportoCodes)[number];
-
-export const titoloStudioCodes = [
-  "Licenza elementare",
-  "Diploma",
-  "Laurea",
-  "Altro titolo",
-  "Non specificato",
-] as const;
-export type TitoloStudio = (typeof titoloStudioCodes)[number];
+// Tipo documento: stesso elenco gia' usato in precedenza per Alloggiati Web.
+export const documentTypeCodes = ["IDENT", "PASOR", "PATEN", "ALTRO"] as const;
+export type DocumentTypeCode = (typeof documentTypeCodes)[number];
 
 // Cittadinanza/stato/comune sono risolti tramite le tabelle ufficiali in
 // lib/reference-data.ts (scaricate da alloggiatiweb.poliziadistato.it), quindi
@@ -58,16 +16,18 @@ export type Guest = {
   nome: string;
   sesso: "M" | "F";
   dataNascita: string; // yyyy-mm-dd
+  email: string;
   cittadinanza: PlaceRef; // stato, sempre richiesto
   statoResidenza: PlaceRef; // stato, sempre richiesto
   comuneResidenza: PlaceRef; // richiesto solo se statoResidenza = Italia
   localitaResidenzaEstera: string; // usato solo se statoResidenza non e' Italia
-  statoNascita: PlaceRef; // facoltativo
-  comuneNascita: PlaceRef; // valorizzato solo se statoNascita = Italia
-  tipoTurismo: TipoTurismo;
-  mezzoTrasporto: MezzoTrasporto;
-  titoloStudio: TitoloStudio | "";
-  professione: string;
+  indirizzoResidenza: string; // via e numero civico (serve anche per la fattura)
+  statoNascita: PlaceRef; // richiesto
+  comuneNascita: PlaceRef; // richiesto solo se statoNascita = Italia
+  tipoDocumento: DocumentTypeCode;
+  numeroDocumento: string;
+  statoRilascio: PlaceRef; // stato di rilascio del documento
+  comuneRilascio: PlaceRef; // richiesto solo se statoRilascio = Italia
 };
 
 export type CheckInData = {

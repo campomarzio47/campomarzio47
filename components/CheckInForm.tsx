@@ -16,23 +16,28 @@ function emptyGuest(): Guest {
     nome: "",
     sesso: "M",
     dataNascita: "",
+    email: "",
     cittadinanza: italiaOption,
     statoResidenza: italiaOption,
     comuneResidenza: null,
     localitaResidenzaEstera: "",
-    statoNascita: null,
+    indirizzoResidenza: "",
+    statoNascita: italiaOption,
     comuneNascita: null,
-    tipoTurismo: "Non specificato",
-    mezzoTrasporto: "Non Specificato",
-    titoloStudio: "",
-    professione: "",
+    tipoDocumento: "IDENT",
+    numeroDocumento: "",
+    statoRilascio: italiaOption,
+    comuneRilascio: null,
   };
 }
 
 function guestHasIncompletePlace(guest: Guest): boolean {
-  if (!guest.cittadinanza || !guest.statoResidenza) return true;
+  if (!guest.cittadinanza || !guest.statoResidenza || !guest.statoNascita || !guest.statoRilascio) {
+    return true;
+  }
   if (guest.statoResidenza.code === ITALIA_CODE && !guest.comuneResidenza) return true;
-  if (guest.statoNascita?.code === ITALIA_CODE && !guest.comuneNascita) return true;
+  if (guest.statoNascita.code === ITALIA_CODE && !guest.comuneNascita) return true;
+  if (guest.statoRilascio.code === ITALIA_CODE && !guest.comuneRilascio) return true;
   return false;
 }
 

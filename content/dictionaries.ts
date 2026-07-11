@@ -1,4 +1,4 @@
-import type { TipoTurismo, MezzoTrasporto, TitoloStudio } from "@/lib/checkin-types";
+import type { DocumentTypeCode } from "@/lib/checkin-types";
 
 export type Dictionary = {
   meta: { title: string; description: string };
@@ -99,6 +99,8 @@ export type Dictionary = {
     male: string;
     female: string;
     birthDate: string;
+    email: string;
+    emailPlaceholder: string;
     citizenship: string;
     citizenshipPlaceholder: string;
     residenceState: string;
@@ -107,19 +109,19 @@ export type Dictionary = {
     residencePlacePlaceholder: string;
     residenceAbroadPlace: string;
     residenceAbroadPlacePlaceholder: string;
+    residenceAddress: string;
+    residenceAddressPlaceholder: string;
     birthState: string;
     birthStatePlaceholder: string;
     birthPlace: string;
     birthPlacePlaceholder: string;
-    tourismType: string;
-    tourismTypeOptions: { code: TipoTurismo; label: string }[];
-    transportMeans: string;
-    transportMeansOptions: { code: MezzoTrasporto; label: string }[];
-    educationLevel: string;
-    educationLevelNotSpecified: string;
-    educationLevelOptions: { code: TitoloStudio; label: string }[];
-    profession: string;
-    professionPlaceholder: string;
+    documentType: string;
+    documentTypes: { code: DocumentTypeCode; label: string }[];
+    documentNumber: string;
+    issueState: string;
+    issueStatePlaceholder: string;
+    issuePlace: string;
+    issuePlacePlaceholder: string;
     addGuest: string;
     consent: string;
     submit: string;
@@ -325,6 +327,8 @@ export const it: Dictionary = {
     male: "Maschio",
     female: "Femmina",
     birthDate: "Data di nascita",
+    email: "Email",
+    emailPlaceholder: "nome@esempio.it",
     citizenship: "Cittadinanza",
     citizenshipPlaceholder: "Cerca uno stato (es. Italia, Germania...)",
     residenceState: "Stato di residenza",
@@ -333,56 +337,24 @@ export const it: Dictionary = {
     residencePlacePlaceholder: "Cerca un comune (es. Roma)...",
     residenceAbroadPlace: "Località di residenza",
     residenceAbroadPlacePlaceholder: "es. Monaco di Baviera",
-    birthState: "Stato di nascita (facoltativo)",
+    residenceAddress: "Indirizzo di residenza",
+    residenceAddressPlaceholder: "Via e numero civico",
+    birthState: "Stato di nascita",
     birthStatePlaceholder: "Cerca uno stato...",
     birthPlace: "Comune di nascita",
     birthPlacePlaceholder: "Cerca un comune (es. Milano)...",
-    tourismType: "Tipo di turismo",
-    tourismTypeOptions: [
-      { code: "Culturale", label: "Culturale" },
-      { code: "Balneare", label: "Balneare" },
-      { code: "Congressuale/Affari", label: "Congressuale/Affari" },
-      { code: "Fieristico", label: "Fieristico" },
-      { code: "Sportivo/Fitness", label: "Sportivo/Fitness" },
-      { code: "Scolastico", label: "Scolastico" },
-      { code: "Religioso", label: "Religioso" },
-      { code: "Sociale", label: "Sociale" },
-      { code: "Parchi Tematici", label: "Parchi tematici" },
-      { code: "Termale/Trattamenti salute", label: "Termale/Trattamenti salute" },
-      { code: "Enogastronomico", label: "Enogastronomico" },
-      { code: "Cicloturismo", label: "Cicloturismo" },
-      { code: "Escursionistico/Naturalistico", label: "Escursionistico/Naturalistico" },
-      { code: "Altro motivo", label: "Altro motivo" },
-      { code: "Non specificato", label: "Non specificato" },
+    documentType: "Tipo documento",
+    documentTypes: [
+      { code: "IDENT", label: "Carta d'identità" },
+      { code: "PASOR", label: "Passaporto" },
+      { code: "PATEN", label: "Patente di guida" },
+      { code: "ALTRO", label: "Altro documento" },
     ],
-    transportMeans: "Mezzo di trasporto",
-    transportMeansOptions: [
-      { code: "Auto", label: "Auto" },
-      { code: "Aereo", label: "Aereo" },
-      { code: "Aereo+Pullman", label: "Aereo + Pullman" },
-      { code: "Aereo+Navetta/Taxi/Auto", label: "Aereo + Navetta/Taxi/Auto" },
-      { code: "Aereo+Treno", label: "Aereo + Treno" },
-      { code: "Treno", label: "Treno" },
-      { code: "Pullman", label: "Pullman" },
-      { code: "Caravan/Autocaravan", label: "Caravan/Autocaravan" },
-      { code: "Barca/Nave/Traghetto", label: "Barca/Nave/Traghetto" },
-      { code: "Moto", label: "Moto" },
-      { code: "Bicicletta", label: "Bicicletta" },
-      { code: "A piedi", label: "A piedi" },
-      { code: "Altro mezzo", label: "Altro mezzo" },
-      { code: "Non Specificato", label: "Non specificato" },
-    ],
-    educationLevel: "Titolo di studio",
-    educationLevelNotSpecified: "Preferisco non specificare",
-    educationLevelOptions: [
-      { code: "Licenza elementare", label: "Licenza elementare" },
-      { code: "Diploma", label: "Diploma" },
-      { code: "Laurea", label: "Laurea" },
-      { code: "Altro titolo", label: "Altro titolo" },
-      { code: "Non specificato", label: "Non specificato" },
-    ],
-    profession: "Professione",
-    professionPlaceholder: "Facoltativo",
+    documentNumber: "Numero documento",
+    issueState: "Stato di rilascio documento",
+    issueStatePlaceholder: "Cerca uno stato...",
+    issuePlace: "Comune di rilascio documento",
+    issuePlacePlaceholder: "Cerca un comune...",
     addGuest: "Aggiungi ospite",
     consent:
       "Acconsento al trattamento dei miei dati personali ai fini della comunicazione statistica obbligatoria ai flussi turistici regionali (Ross1000). I dati vengono inviati via email all'host e non sono conservati sul server del sito.",
@@ -591,6 +563,8 @@ export const en: Dictionary = {
     male: "Male",
     female: "Female",
     birthDate: "Date of birth",
+    email: "Email",
+    emailPlaceholder: "name@example.com",
     citizenship: "Citizenship",
     citizenshipPlaceholder: "Search a country (e.g. Italy, Germany...)",
     residenceState: "Country of residence",
@@ -599,56 +573,24 @@ export const en: Dictionary = {
     residencePlacePlaceholder: "Search a comune (e.g. Rome)...",
     residenceAbroadPlace: "Place of residence",
     residenceAbroadPlacePlaceholder: "e.g. Munich",
-    birthState: "Country of birth (optional)",
+    residenceAddress: "Residential address",
+    residenceAddressPlaceholder: "Street and house number",
+    birthState: "Country of birth",
     birthStatePlaceholder: "Search a country...",
     birthPlace: "City of birth",
     birthPlacePlaceholder: "Search a comune (e.g. Milan)...",
-    tourismType: "Type of tourism",
-    tourismTypeOptions: [
-      { code: "Culturale", label: "Cultural" },
-      { code: "Balneare", label: "Seaside/Beach" },
-      { code: "Congressuale/Affari", label: "Business/Conference" },
-      { code: "Fieristico", label: "Trade fair" },
-      { code: "Sportivo/Fitness", label: "Sports/Fitness" },
-      { code: "Scolastico", label: "School" },
-      { code: "Religioso", label: "Religious" },
-      { code: "Sociale", label: "Social" },
-      { code: "Parchi Tematici", label: "Theme parks" },
-      { code: "Termale/Trattamenti salute", label: "Spa/Wellness" },
-      { code: "Enogastronomico", label: "Food & wine" },
-      { code: "Cicloturismo", label: "Cycling" },
-      { code: "Escursionistico/Naturalistico", label: "Hiking/Nature" },
-      { code: "Altro motivo", label: "Other" },
-      { code: "Non specificato", label: "Not specified" },
+    documentType: "Document type",
+    documentTypes: [
+      { code: "IDENT", label: "ID card" },
+      { code: "PASOR", label: "Passport" },
+      { code: "PATEN", label: "Driving licence" },
+      { code: "ALTRO", label: "Other document" },
     ],
-    transportMeans: "Means of transport",
-    transportMeansOptions: [
-      { code: "Auto", label: "Car" },
-      { code: "Aereo", label: "Plane" },
-      { code: "Aereo+Pullman", label: "Plane + Coach" },
-      { code: "Aereo+Navetta/Taxi/Auto", label: "Plane + Shuttle/Taxi/Car" },
-      { code: "Aereo+Treno", label: "Plane + Train" },
-      { code: "Treno", label: "Train" },
-      { code: "Pullman", label: "Coach" },
-      { code: "Caravan/Autocaravan", label: "Caravan/Motorhome" },
-      { code: "Barca/Nave/Traghetto", label: "Boat/Ship/Ferry" },
-      { code: "Moto", label: "Motorbike" },
-      { code: "Bicicletta", label: "Bicycle" },
-      { code: "A piedi", label: "On foot" },
-      { code: "Altro mezzo", label: "Other" },
-      { code: "Non Specificato", label: "Not specified" },
-    ],
-    educationLevel: "Education level",
-    educationLevelNotSpecified: "Prefer not to say",
-    educationLevelOptions: [
-      { code: "Licenza elementare", label: "Elementary school" },
-      { code: "Diploma", label: "High school diploma" },
-      { code: "Laurea", label: "University degree" },
-      { code: "Altro titolo", label: "Other" },
-      { code: "Non specificato", label: "Not specified" },
-    ],
-    profession: "Profession",
-    professionPlaceholder: "Optional",
+    documentNumber: "Document number",
+    issueState: "Document issue country",
+    issueStatePlaceholder: "Search a country...",
+    issuePlace: "Document issue comune",
+    issuePlacePlaceholder: "Search a comune...",
     addGuest: "Add guest",
     consent:
       "I consent to the processing of my personal data for the mandatory regional tourism-flow statistical reporting (Ross1000). Data is sent by email to the host and is not stored on the site's server.",
