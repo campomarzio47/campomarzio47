@@ -15,7 +15,7 @@ export default function BookingButtons({
         href={property.booking.airbnbUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center rounded-md bg-bordeaux px-6 py-3 text-sm font-medium text-off-white transition-colors hover:bg-bordeaux-dark"
+        className="inline-flex items-center justify-center rounded-md border border-charcoal px-6 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-charcoal hover:text-off-white"
       >
         {dict.buttons.airbnb}
       </a>

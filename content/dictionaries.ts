@@ -154,7 +154,7 @@ export const it: Dictionary = {
     amenities: { title: "Servizi", description: "Tutti i comfort inclusi nel soggiorno." },
     availability: {
       title: "Disponibilità",
-      description: "Controlla le date libere e le regole della casa.",
+      description: "Controlla le date libere e richiedi la prenotazione direttamente.",
     },
   },
   photos: {
@@ -380,7 +380,7 @@ export const en: Dictionary = {
     amenities: { title: "Amenities", description: "All the comforts included in your stay." },
     availability: {
       title: "Availability",
-      description: "Check open dates and the house rules.",
+      description: "Check open dates and request your booking directly.",
     },
   },
   photos: {

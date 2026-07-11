@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { CalendarCheck } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import BookingButtons from "@/components/BookingButtons";
 
@@ -40,7 +42,16 @@ export default function Hero() {
           ))}
         </div>
 
-        <BookingButtons className="mt-8" />
+        <div className="mt-8">
+          <Link
+            href="/disponibilita#richiedi-prenotazione"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-bordeaux px-8 py-4 text-base font-semibold text-off-white shadow-md transition-colors hover:bg-bordeaux-dark"
+          >
+            <CalendarCheck size={19} strokeWidth={2} />
+            {dict.bookingRequest.title}
+          </Link>
+          <BookingButtons className="mt-4" />
+        </div>
 
         <p className="mt-10 max-w-2xl text-base leading-relaxed text-charcoal/90">
           {dict.hero.description}

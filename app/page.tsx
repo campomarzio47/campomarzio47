@@ -9,9 +9,9 @@ export default function Home() {
   const { dict } = useLocale();
 
   const teasers = [
+    { href: "/disponibilita", icon: CalendarDays, ...dict.home.availability },
     { href: "/foto", icon: ImageIcon, ...dict.home.photos },
     { href: "/servizi", icon: Sparkles, ...dict.home.amenities },
-    { href: "/disponibilita", icon: CalendarDays, ...dict.home.availability },
   ];
 
   return (

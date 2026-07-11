@@ -37,7 +37,7 @@ export default async function RootLayout({
   return (
     <html
       lang={initialLocale}
-      className={`${cormorant.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${dmSans.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full bg-off-white text-charcoal font-sans">
         <LocaleProvider initialLocale={initialLocale}>
