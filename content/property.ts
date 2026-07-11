@@ -56,7 +56,6 @@ export const property = {
   ],
   gallery: [
     { src: "/photos/soggiorno-tavolo.jpg" },
-    { src: "/photos/pranzo-cucina.jpg" },
     { src: "/photos/soggiorno-divano.jpg" },
     { src: "/photos/camera-matrimoniale.jpg" },
     { src: "/photos/camera-letti-castello.jpg" },

@@ -151,10 +151,6 @@ export const it: Dictionary = {
         caption: "Soggiorno con tavolo in vetro, sedie bordeaux e giardino sullo sfondo",
       },
       {
-        alt: "Zona pranzo con tavolo in vetro, cucina a vista e libreria",
-        caption: "Zona pranzo con cucina a vista e libreria",
-      },
-      {
         alt: "Soggiorno ampio con divano, TV, scala e zona pranzo",
         caption: "Soggiorno ampio con divano e TV",
       },
@@ -358,10 +354,6 @@ export const en: Dictionary = {
       {
         alt: "Living room with glass table, burgundy chairs and garden in the background",
         caption: "Living room with glass table, burgundy chairs and garden in the background",
-      },
-      {
-        alt: "Dining area with open kitchen and bookshelf",
-        caption: "Dining area with open kitchen and bookshelf",
       },
       {
         alt: "Spacious living room with sofa, TV and staircase",

@@ -18,7 +18,7 @@ export default function Hero() {
       <div className="h-2 w-full bg-bordeaux" />
       <div className="relative h-[46vh] w-full overflow-hidden md:h-[58vh]">
         <Image
-          src="/photos/soggiorno-divano.jpg"
+          src="/photos/copertina.jpg"
           alt={dict.hero.tagline}
           fill
           priority
