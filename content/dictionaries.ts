@@ -51,6 +51,24 @@ export type Dictionary = {
     rulesTitle: string;
     rules: { label: string; value: string }[];
   };
+  bookingRequest: {
+    title: string;
+    description: string;
+    nameLabel: string;
+    emailLabel: string;
+    phoneLabel: string;
+    checkinLabel: string;
+    checkoutLabel: string;
+    guestsLabel: string;
+    messagePlaceholder: string;
+    overlapWarning: string;
+    submit: string;
+    sending: string;
+    sentTitle: string;
+    sentBody: string;
+    errorPrefix: string;
+    errorFallbackLink: string;
+  };
   contact: {
     title: string;
     subtitle: string;
@@ -247,6 +265,27 @@ export const it: Dictionary = {
       { label: "Feste/eventi", value: "Non consentiti" },
       { label: "Culle/letti supplementari", value: "Non disponibili" },
     ],
+  },
+  bookingRequest: {
+    title: "Richiedi una prenotazione",
+    description:
+      "Scegli le date che ti interessano dal calendario qui sopra e inviaci una richiesta: ti risponderemo per confermare la disponibilità e concordare insieme il pagamento. Non è un pagamento online.",
+    nameLabel: "Nome e cognome",
+    emailLabel: "Email",
+    phoneLabel: "Telefono",
+    checkinLabel: "Data di arrivo",
+    checkoutLabel: "Data di partenza",
+    guestsLabel: "Numero di ospiti",
+    messagePlaceholder: "Note aggiuntive (facoltativo)",
+    overlapWarning:
+      "Attenzione: queste date risultano già occupate nel calendario. Puoi comunque inviare la richiesta se pensi si tratti di un errore.",
+    submit: "Invia richiesta",
+    sending: "Invio…",
+    sentTitle: "Richiesta inviata",
+    sentBody:
+      "Grazie! Ti risponderemo il prima possibile per confermare la disponibilità e concordare il pagamento.",
+    errorPrefix: "Invio non riuscito.",
+    errorFallbackLink: "Scrivi direttamente via email",
   },
   contact: {
     title: "Contatti",
@@ -452,6 +491,27 @@ export const en: Dictionary = {
       { label: "Parties/events", value: "Not allowed" },
       { label: "Extra beds/cots", value: "Not available" },
     ],
+  },
+  bookingRequest: {
+    title: "Request a booking",
+    description:
+      "Pick the dates you're interested in from the calendar above and send us a request: we'll get back to you to confirm availability and arrange payment together. This is not an online payment.",
+    nameLabel: "Full name",
+    emailLabel: "Email",
+    phoneLabel: "Phone",
+    checkinLabel: "Arrival date",
+    checkoutLabel: "Departure date",
+    guestsLabel: "Number of guests",
+    messagePlaceholder: "Additional notes (optional)",
+    overlapWarning:
+      "Heads up: these dates already appear as booked on the calendar. You can still send the request if you think this is a mistake.",
+    submit: "Send request",
+    sending: "Sending…",
+    sentTitle: "Request sent",
+    sentBody:
+      "Thank you! We'll get back to you as soon as possible to confirm availability and arrange payment.",
+    errorPrefix: "Sending failed.",
+    errorFallbackLink: "Write directly via email",
   },
   contact: {
     title: "Contact",
