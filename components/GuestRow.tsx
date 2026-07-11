@@ -3,6 +3,8 @@
 import { Trash2 } from "lucide-react";
 import type { Guest } from "@/lib/checkin-types";
 import { useLocale } from "@/components/LocaleProvider";
+import { statiOptions, comuniOptions, ITALIA_CODE } from "@/lib/reference-data";
+import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 
 const inputClasses =
   "w-full rounded-md border border-divider bg-off-white px-3 py-2 text-sm outline-none focus:border-bordeaux";
@@ -26,6 +28,9 @@ export default function GuestRow({
   function set<K extends keyof Guest>(key: K, value: Guest[K]) {
     onChange({ ...guest, [key]: value });
   }
+
+  const residenzaInItalia = guest.statoResidenza?.code === ITALIA_CODE;
+  const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
 
   return (
     <div className="rounded-md border border-divider p-5">
@@ -89,87 +94,73 @@ export default function GuestRow({
 
         <label className={labelClasses}>
           {dict.checkin.citizenship}
-          <select
+          <PlaceAutocomplete
+            required
             value={guest.cittadinanza}
-            onChange={(e) => set("cittadinanza", e.target.value as Guest["cittadinanza"])}
-            className={inputClasses}
-          >
-            <option value="IT">{dict.checkin.citizenshipItaly}</option>
-            <option value="ALTRO">{dict.checkin.citizenshipOther}</option>
-          </select>
-        </label>
-        {guest.cittadinanza === "ALTRO" && (
-          <label className={labelClasses}>
-            &nbsp;
-            <input
-              required
-              placeholder={dict.checkin.citizenshipOtherPlaceholder}
-              value={guest.cittadinanzaAltro}
-              onChange={(e) => set("cittadinanzaAltro", e.target.value)}
-              className={inputClasses}
-            />
-          </label>
-        )}
-
-        <label className={labelClasses}>
-          {dict.checkin.residenceState}
-          <select
-            value={guest.statoResidenza}
-            onChange={(e) => set("statoResidenza", e.target.value as Guest["statoResidenza"])}
-            className={inputClasses}
-          >
-            <option value="IT">{dict.checkin.residenceStateItaly}</option>
-            <option value="ALTRO">{dict.checkin.residenceStateOther}</option>
-          </select>
-        </label>
-        <label className={labelClasses}>
-          {dict.checkin.residencePlace}
-          <input
-            required={guest.statoResidenza === "IT"}
-            placeholder={
-              guest.statoResidenza === "IT"
-                ? dict.checkin.residencePlaceItalyPlaceholder
-                : dict.checkin.residencePlaceOtherPlaceholder
-            }
-            value={guest.luogoResidenza}
-            onChange={(e) => set("luogoResidenza", e.target.value)}
-            className={inputClasses}
+            onChange={(v) => set("cittadinanza", v)}
+            options={statiOptions}
+            placeholder={dict.checkin.citizenshipPlaceholder}
           />
         </label>
 
         <label className={labelClasses}>
-          {dict.checkin.birthState}
-          <select
-            value={guest.statoNascita}
-            onChange={(e) =>
-              set("statoNascita", e.target.value as Guest["statoNascita"])
-            }
-            className={inputClasses}
-          >
-            <option value="">{dict.checkin.birthStateNotSpecified}</option>
-            <option value="IT">{dict.checkin.birthStateItaly}</option>
-            <option value="ALTRO">{dict.checkin.birthStateOther}</option>
-          </select>
+          {dict.checkin.residenceState}
+          <PlaceAutocomplete
+            required
+            value={guest.statoResidenza}
+            onChange={(v) => {
+              set("statoResidenza", v);
+              set("comuneResidenza", null);
+              set("localitaResidenzaEstera", "");
+            }}
+            options={statiOptions}
+            placeholder={dict.checkin.residenceStatePlaceholder}
+          />
         </label>
-        {guest.statoNascita === "IT" && (
+
+        {residenzaInItalia ? (
           <label className={labelClasses}>
-            {dict.checkin.birthPlace}
+            {dict.checkin.residencePlace}
+            <PlaceAutocomplete
+              required
+              value={guest.comuneResidenza}
+              onChange={(v) => set("comuneResidenza", v)}
+              options={comuniOptions}
+              placeholder={dict.checkin.residencePlacePlaceholder}
+            />
+          </label>
+        ) : (
+          <label className={labelClasses}>
+            {dict.checkin.residenceAbroadPlace}
             <input
-              placeholder={dict.checkin.birthPlacePlaceholder}
-              value={guest.comuneNascita}
-              onChange={(e) => set("comuneNascita", e.target.value)}
+              placeholder={dict.checkin.residenceAbroadPlacePlaceholder}
+              value={guest.localitaResidenzaEstera}
+              onChange={(e) => set("localitaResidenzaEstera", e.target.value)}
               className={inputClasses}
             />
           </label>
         )}
-        {guest.statoNascita === "ALTRO" && (
+
+        <label className={labelClasses}>
+          {dict.checkin.birthState}
+          <PlaceAutocomplete
+            value={guest.statoNascita}
+            onChange={(v) => {
+              set("statoNascita", v);
+              set("comuneNascita", null);
+            }}
+            options={statiOptions}
+            placeholder={dict.checkin.birthStatePlaceholder}
+          />
+        </label>
+        {nascitaInItalia && (
           <label className={labelClasses}>
-            {dict.checkin.birthState}
-            <input
-              placeholder={dict.checkin.birthStateOtherPlaceholder}
-              value={guest.statoNascitaAltro}
-              onChange={(e) => set("statoNascitaAltro", e.target.value)}
-              className={inputClasses}
+            {dict.checkin.birthPlace}
+            <PlaceAutocomplete
+              value={guest.comuneNascita}
+              onChange={(v) => set("comuneNascita", v)}
+              options={comuniOptions}
+              placeholder={dict.checkin.birthPlacePlaceholder}
             />
           </label>
         )}

@@ -100,20 +100,15 @@ export type Dictionary = {
     female: string;
     birthDate: string;
     citizenship: string;
-    citizenshipItaly: string;
-    citizenshipOther: string;
-    citizenshipOtherPlaceholder: string;
+    citizenshipPlaceholder: string;
     residenceState: string;
-    residenceStateItaly: string;
-    residenceStateOther: string;
+    residenceStatePlaceholder: string;
     residencePlace: string;
-    residencePlaceItalyPlaceholder: string;
-    residencePlaceOtherPlaceholder: string;
+    residencePlacePlaceholder: string;
+    residenceAbroadPlace: string;
+    residenceAbroadPlacePlaceholder: string;
     birthState: string;
-    birthStateNotSpecified: string;
-    birthStateItaly: string;
-    birthStateOther: string;
-    birthStateOtherPlaceholder: string;
+    birthStatePlaceholder: string;
     birthPlace: string;
     birthPlacePlaceholder: string;
     tourismType: string;
@@ -132,6 +127,7 @@ export type Dictionary = {
     sentTitle: string;
     sentBody: string;
     errorGeneric: string;
+    errorIncompletePlace: string;
   };
 };
 
@@ -330,22 +326,17 @@ export const it: Dictionary = {
     female: "Femmina",
     birthDate: "Data di nascita",
     citizenship: "Cittadinanza",
-    citizenshipItaly: "Italiana",
-    citizenshipOther: "Altra",
-    citizenshipOtherPlaceholder: "es. Tedesca, Francese...",
+    citizenshipPlaceholder: "Cerca uno stato (es. Italia, Germania...)",
     residenceState: "Stato di residenza",
-    residenceStateItaly: "Italia",
-    residenceStateOther: "Altro stato",
+    residenceStatePlaceholder: "Cerca uno stato...",
     residencePlace: "Comune di residenza",
-    residencePlaceItalyPlaceholder: "es. Roma",
-    residencePlaceOtherPlaceholder: "es. Monaco di Baviera, Germania",
-    birthState: "Stato di nascita",
-    birthStateNotSpecified: "Non specificato",
-    birthStateItaly: "Italia",
-    birthStateOther: "Altro stato",
-    birthStateOtherPlaceholder: "es. Germania",
+    residencePlacePlaceholder: "Cerca un comune (es. Roma)...",
+    residenceAbroadPlace: "Località di residenza",
+    residenceAbroadPlacePlaceholder: "es. Monaco di Baviera",
+    birthState: "Stato di nascita (facoltativo)",
+    birthStatePlaceholder: "Cerca uno stato...",
     birthPlace: "Comune di nascita",
-    birthPlacePlaceholder: "es. Milano",
+    birthPlacePlaceholder: "Cerca un comune (es. Milano)...",
     tourismType: "Tipo di turismo",
     tourismTypeOptions: [
       { code: "Culturale", label: "Culturale" },
@@ -401,6 +392,8 @@ export const it: Dictionary = {
     sentBody:
       "Grazie! I tuoi dati sono stati inviati all'host per la comunicazione obbligatoria ai flussi turistici. A presto a Marostica.",
     errorGeneric: "Invio non riuscito, riprova più tardi.",
+    errorIncompletePlace:
+      "Per ogni ospite seleziona un'opzione dalla lista per cittadinanza, stato e comune (non basta scrivere il testo).",
   },
 };
 
@@ -599,22 +592,17 @@ export const en: Dictionary = {
     female: "Female",
     birthDate: "Date of birth",
     citizenship: "Citizenship",
-    citizenshipItaly: "Italian",
-    citizenshipOther: "Other",
-    citizenshipOtherPlaceholder: "e.g. German, French...",
+    citizenshipPlaceholder: "Search a country (e.g. Italy, Germany...)",
     residenceState: "Country of residence",
-    residenceStateItaly: "Italy",
-    residenceStateOther: "Other country",
+    residenceStatePlaceholder: "Search a country...",
     residencePlace: "City of residence",
-    residencePlaceItalyPlaceholder: "e.g. Rome",
-    residencePlaceOtherPlaceholder: "e.g. Munich, Germany",
-    birthState: "Country of birth",
-    birthStateNotSpecified: "Not specified",
-    birthStateItaly: "Italy",
-    birthStateOther: "Other country",
-    birthStateOtherPlaceholder: "e.g. Germany",
+    residencePlacePlaceholder: "Search a comune (e.g. Rome)...",
+    residenceAbroadPlace: "Place of residence",
+    residenceAbroadPlacePlaceholder: "e.g. Munich",
+    birthState: "Country of birth (optional)",
+    birthStatePlaceholder: "Search a country...",
     birthPlace: "City of birth",
-    birthPlacePlaceholder: "e.g. Milan",
+    birthPlacePlaceholder: "Search a comune (e.g. Milan)...",
     tourismType: "Type of tourism",
     tourismTypeOptions: [
       { code: "Culturale", label: "Cultural" },
@@ -670,6 +658,8 @@ export const en: Dictionary = {
     sentBody:
       "Thank you! Your details have been sent to the host for the mandatory tourism-flow reporting. See you soon in Marostica.",
     errorGeneric: "Sending failed, please try again later.",
+    errorIncompletePlace:
+      "For each guest, pick an option from the list for citizenship, country and city (typing text alone isn't enough).",
   },
 };
 

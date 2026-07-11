@@ -6,6 +6,7 @@ import GuestRow from "@/components/GuestRow";
 import type { Guest } from "@/lib/checkin-types";
 import { property } from "@/content/property";
 import { useLocale } from "@/components/LocaleProvider";
+import { italiaOption, ITALIA_CODE } from "@/lib/reference-data";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -15,18 +16,24 @@ function emptyGuest(): Guest {
     nome: "",
     sesso: "M",
     dataNascita: "",
-    cittadinanza: "IT",
-    cittadinanzaAltro: "",
-    statoResidenza: "IT",
-    luogoResidenza: "",
-    statoNascita: "",
-    statoNascitaAltro: "",
-    comuneNascita: "",
+    cittadinanza: italiaOption,
+    statoResidenza: italiaOption,
+    comuneResidenza: null,
+    localitaResidenzaEstera: "",
+    statoNascita: null,
+    comuneNascita: null,
     tipoTurismo: "Non specificato",
     mezzoTrasporto: "Non Specificato",
     titoloStudio: "",
     professione: "",
   };
+}
+
+function guestHasIncompletePlace(guest: Guest): boolean {
+  if (!guest.cittadinanza || !guest.statoResidenza) return true;
+  if (guest.statoResidenza.code === ITALIA_CODE && !guest.comuneResidenza) return true;
+  if (guest.statoNascita?.code === ITALIA_CODE && !guest.comuneNascita) return true;
+  return false;
 }
 
 const inputClasses =
@@ -55,6 +62,13 @@ export default function CheckInForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (guests.some(guestHasIncompletePlace)) {
+      setStatus("error");
+      setError(dict.checkin.errorIncompletePlace);
+      return;
+    }
+
     setStatus("sending");
     try {
       const res = await fetch("/api/checkin", {

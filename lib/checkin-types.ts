@@ -48,23 +48,22 @@ export const titoloStudioCodes = [
 ] as const;
 export type TitoloStudio = (typeof titoloStudioCodes)[number];
 
-// "IT" ha un codice Nazioni certo (100000100, dato dalla specifica). Per ogni altro
-// stato non abbiamo la tabella ufficiale "Nazioni", quindi raccogliamo il nome in
-// chiaro e nell'XML lasciamo un codice segnaposto da completare a mano (vedi lib/ross1000.ts).
-export type StatoScelta = "IT" | "ALTRO";
+// Cittadinanza/stato/comune sono risolti tramite le tabelle ufficiali in
+// lib/reference-data.ts (scaricate da alloggiatiweb.poliziadistato.it), quindi
+// portano sempre un codice valido: nessun segnaposto da completare a mano.
+export type PlaceRef = { code: string; label: string } | null;
 
 export type Guest = {
   cognome: string;
   nome: string;
   sesso: "M" | "F";
   dataNascita: string; // yyyy-mm-dd
-  cittadinanza: StatoScelta;
-  cittadinanzaAltro: string; // nome stato, valorizzato solo se cittadinanza = ALTRO
-  statoResidenza: StatoScelta;
-  luogoResidenza: string; // comune (se IT, serve codice) oppure localita' libera (se estero)
-  statoNascita: StatoScelta | ""; // facoltativo
-  statoNascitaAltro: string;
-  comuneNascita: string; // valorizzato solo se statoNascita = IT
+  cittadinanza: PlaceRef; // stato, sempre richiesto
+  statoResidenza: PlaceRef; // stato, sempre richiesto
+  comuneResidenza: PlaceRef; // richiesto solo se statoResidenza = Italia
+  localitaResidenzaEstera: string; // usato solo se statoResidenza non e' Italia
+  statoNascita: PlaceRef; // facoltativo
+  comuneNascita: PlaceRef; // valorizzato solo se statoNascita = Italia
   tipoTurismo: TipoTurismo;
   mezzoTrasporto: MezzoTrasporto;
   titoloStudio: TitoloStudio | "";

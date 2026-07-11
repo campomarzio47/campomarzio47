@@ -1,5 +1,6 @@
 import type { CheckInData, Guest } from "@/lib/checkin-types";
 import { toCompactDate } from "@/lib/checkin-types";
+import { ITALIA_CODE } from "@/lib/reference-data";
 import { property } from "@/content/property";
 
 /**
@@ -13,17 +14,15 @@ import { property } from "@/content/property";
  * direttamente da Ross1000 — quindi qui NON generiamo più il tracciato
  * Alloggiati Web).
  *
- * Cittadinanza/stato di residenza/stato di nascita richiedono un codice
- * della tabella "Nazioni" che non abbiamo integrato (non disponibile in modo
- * affidabile). Solo il codice Italia (100000100) è certo, dato dalla
- * specifica: per qualunque altro stato lasciamo un segnaposto DA_COMPILARE.
- * Lo stesso vale per i codici comune (tabella "Comuni") richiesti quando il
- * luogo è in Italia. Il riepilogo testuale nell'email contiene i valori in
- * chiaro per completare i segnaposto in pochi secondi prima del caricamento.
+ * Cittadinanza, stato/comune di residenza e di nascita arrivano già come
+ * codici ufficiali (tabelle Stati/Comuni della Polizia di Stato, vedi
+ * lib/reference-data.ts): non servono più segnaposto da completare a mano.
+ * L'unico valore che NON possiamo conoscere è il codice struttura assegnato
+ * dall'ente regionale (ROSS1000_CODICE_STRUTTURA, da impostare come
+ * variabile d'ambiente).
  */
 
-const ITALIA_CODE = "100000100";
-const CODE_PLACEHOLDER = "DA_COMPILARE";
+const CODICE_STRUTTURA_PLACEHOLDER = "DA_CONFIGURARE";
 
 // Configurazione della struttura (unità unica, non un hotel multi-camera).
 const CAMERE_OCCUPATE = 1;
@@ -55,10 +54,6 @@ function tipoAlloggiato(index: number, total: number): "16" | "17" | "19" {
   return index === 0 ? "17" : "19";
 }
 
-function statoCode(scelta: "IT" | "ALTRO"): string {
-  return scelta === "IT" ? ITALIA_CODE : CODE_PLACEHOLDER;
-}
-
 function buildArrivo(
   guest: Guest,
   index: number,
@@ -69,8 +64,12 @@ function buildArrivo(
   const needsIdCapo = tipo === "19";
   const idswh = idswhByIndex[index];
 
-  const luogoResidenza =
-    guest.statoResidenza === "IT" ? CODE_PLACEHOLDER : guest.luogoResidenza;
+  const residenzaInItalia = guest.statoResidenza?.code === ITALIA_CODE;
+  const luogoResidenza = residenzaInItalia
+    ? guest.comuneResidenza?.code
+    : guest.localitaResidenzaEstera;
+
+  const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
 
   const lines = [
     "    <arrivo>",
@@ -80,16 +79,12 @@ function buildArrivo(
     tag("cognome", guest.cognome),
     tag("nome", guest.nome),
     tag("sesso", guest.sesso),
-    tag("cittadinanza", statoCode(guest.cittadinanza)),
-    tag("statoresidenza", statoCode(guest.statoResidenza)),
-    guest.statoResidenza === "IT" || guest.luogoResidenza
-      ? tag("luogoresidenza", luogoResidenza)
-      : "",
+    tag("cittadinanza", guest.cittadinanza?.code),
+    tag("statoresidenza", guest.statoResidenza?.code),
+    tag("luogoresidenza", luogoResidenza),
     tag("datanascita", toCompactDate(guest.dataNascita)),
-    guest.statoNascita ? tag("statonascita", statoCode(guest.statoNascita)) : "",
-    guest.statoNascita === "IT" && guest.comuneNascita
-      ? tag("comunenascita", CODE_PLACEHOLDER)
-      : "",
+    guest.statoNascita ? tag("statonascita", guest.statoNascita.code) : "",
+    nascitaInItalia ? tag("comunenascita", guest.comuneNascita?.code) : "",
     tag("tipoturismo", guest.tipoTurismo),
     tag("mezzotrasporto", guest.mezzoTrasporto),
     tag("canaleprenotazione", "Diretta web"),
@@ -105,7 +100,7 @@ export function buildRoss1000File(data: CheckInData): {
   filename: string;
   buffer: Buffer;
 } {
-  const codice = process.env.ROSS1000_CODICE_STRUTTURA || CODE_PLACEHOLDER;
+  const codice = process.env.ROSS1000_CODICE_STRUTTURA || CODICE_STRUTTURA_PLACEHOLDER;
   const prodotto = process.env.ROSS1000_PRODOTTO || "CampoMarzio47Website";
   const lettiDisponibili =
     process.env.ROSS1000_LETTI_DISPONIBILI || String(property.facts.maxGuests);

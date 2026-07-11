@@ -3,8 +3,14 @@ import { z } from "zod";
 import { sendMail } from "@/lib/mailer";
 import { buildRoss1000File } from "@/lib/ross1000";
 import { tipoTurismoCodes, mezzoTrasportoCodes, titoloStudioCodes } from "@/lib/checkin-types";
+import { ITALIA_CODE } from "@/lib/reference-data";
 
-const statoSchema = z.enum(["IT", "ALTRO"]);
+const placeSchema = z
+  .object({
+    code: z.string().min(1).max(20),
+    label: z.string().min(1).max(120),
+  })
+  .nullable();
 
 const guestSchema = z
   .object({
@@ -12,21 +18,26 @@ const guestSchema = z
     nome: z.string().min(1).max(30),
     sesso: z.enum(["M", "F"]),
     dataNascita: z.string().min(1),
-    cittadinanza: statoSchema,
-    cittadinanzaAltro: z.string().max(80).optional().default(""),
-    statoResidenza: statoSchema,
-    luogoResidenza: z.string().max(80).optional().default(""),
-    statoNascita: z.union([statoSchema, z.literal("")]).optional().default(""),
-    statoNascitaAltro: z.string().max(80).optional().default(""),
-    comuneNascita: z.string().max(80).optional().default(""),
+    cittadinanza: placeSchema,
+    statoResidenza: placeSchema,
+    comuneResidenza: placeSchema,
+    localitaResidenzaEstera: z.string().max(80).optional().default(""),
+    statoNascita: placeSchema,
+    comuneNascita: placeSchema,
     tipoTurismo: z.enum(tipoTurismoCodes),
     mezzoTrasporto: z.enum(mezzoTrasportoCodes),
     titoloStudio: z.union([z.enum(titoloStudioCodes), z.literal("")]).optional().default(""),
     professione: z.string().max(100).optional().default(""),
   })
+  .refine((g) => g.cittadinanza !== null, { message: "Cittadinanza obbligatoria." })
+  .refine((g) => g.statoResidenza !== null, { message: "Stato di residenza obbligatorio." })
   .refine(
-    (g) => g.statoResidenza === "ALTRO" || g.luogoResidenza.length > 0,
+    (g) => g.statoResidenza?.code !== ITALIA_CODE || g.comuneResidenza !== null,
     { message: "Comune di residenza obbligatorio se lo stato di residenza è l'Italia." },
+  )
+  .refine(
+    (g) => g.statoNascita?.code !== ITALIA_CODE || g.comuneNascita !== null,
+    { message: "Comune di nascita obbligatorio se lo stato di nascita è l'Italia." },
   );
 
 const checkInSchema = z.object({
@@ -52,18 +63,18 @@ export async function POST(request: Request) {
 
   const summary = data.guests
     .map((g, i) => {
-      const cittadinanza = g.cittadinanza === "IT" ? "Italiana" : g.cittadinanzaAltro || "estera (non specificata)";
       const residenza =
-        g.statoResidenza === "IT" ? `${g.luogoResidenza} (Italia)` : g.luogoResidenza || "estero (non specificato)";
-      const nascita =
-        g.statoNascita === "IT"
-          ? g.comuneNascita || "Italia (comune non specificato)"
-          : g.statoNascita === "ALTRO"
-            ? g.statoNascitaAltro || "estero (non specificato)"
-            : "non specificato";
+        g.statoResidenza?.code === ITALIA_CODE
+          ? `${g.comuneResidenza?.label} (Italia)`
+          : `${g.localitaResidenzaEstera || "non specificata"} (${g.statoResidenza?.label})`;
+      const nascita = g.statoNascita
+        ? g.statoNascita.code === ITALIA_CODE
+          ? `${g.comuneNascita?.label} (Italia)`
+          : g.statoNascita.label
+        : "non specificata";
       return (
         `Ospite ${i + 1}: ${g.cognome} ${g.nome} (${g.sesso}), nato/a il ${g.dataNascita} — nascita: ${nascita} — ` +
-        `cittadinanza: ${cittadinanza} — residenza: ${residenza} — turismo: ${g.tipoTurismo} — trasporto: ${g.mezzoTrasporto}` +
+        `cittadinanza: ${g.cittadinanza?.label} — residenza: ${residenza} — turismo: ${g.tipoTurismo} — trasporto: ${g.mezzoTrasporto}` +
         (g.titoloStudio ? ` — titolo di studio: ${g.titoloStudio}` : "") +
         (g.professione ? ` — professione: ${g.professione}` : "")
       );
@@ -82,11 +93,12 @@ export async function POST(request: Request) {
         "In allegato:",
         `- ${ross1000.filename} (movimentazione turistica Ross1000/GIES, da caricare sul portale regionale)`,
         "",
-        "IMPORTANTE: nell'XML i campi che richiedono un codice ufficiale (stato estero, comune italiano)",
-        "e che non sono l'Italia sono segnati con \"DA_COMPILARE\" perché servono le tabelle Nazioni/Comuni",
-        "scaricabili dal portale. Usa il riepilogo qui sopra per completarli a mano prima del caricamento.",
-        "Verifica anche che il portale flussituristici.regione.veneto.it accetti questo stesso tracciato",
-        "prima del primo invio reale.",
+        "Tutti i codici (cittadinanza, stato/comune di residenza e di nascita) sono già",
+        "compilati automaticamente dalle tabelle ufficiali. L'unico campo che potrebbe restare",
+        "segnato come \"DA_CONFIGURARE\" è il codice struttura, se non hai ancora impostato",
+        "la variabile d'ambiente ROSS1000_CODICE_STRUTTURA.",
+        "Verifica anche che il portale flussituristici.regione.veneto.it accetti questo stesso",
+        "tracciato prima del primo invio reale.",
       ].join("\n"),
       attachments: [{ filename: ross1000.filename, content: ross1000.buffer }],
     });
