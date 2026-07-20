@@ -1,10 +1,11 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import type { Guest } from "@/lib/checkin-types";
+import type { Guest, PrimaryGuestExtra } from "@/lib/checkin-types";
 import { useLocale } from "@/components/LocaleProvider";
 import { statiOptions, comuniOptions, ITALIA_CODE } from "@/lib/reference-data";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
+import PrimaryGuestExtraFields from "@/components/PrimaryGuestExtraFields";
 
 const inputClasses =
   "w-full rounded-md border border-divider bg-off-white px-3 py-2 text-sm outline-none focus:border-bordeaux";
@@ -16,12 +17,18 @@ export default function GuestRow({
   onChange,
   onRemove,
   removable,
+  isPrimary = false,
+  primary,
+  onPrimaryChange,
 }: {
   guest: Guest;
   index: number;
   onChange: (guest: Guest) => void;
   onRemove: () => void;
   removable: boolean;
+  isPrimary?: boolean;
+  primary?: PrimaryGuestExtra;
+  onPrimaryChange?: (primary: PrimaryGuestExtra) => void;
 }) {
   const { dict } = useLocale();
 
@@ -31,12 +38,13 @@ export default function GuestRow({
 
   const residenzaInItalia = guest.statoResidenza?.code === ITALIA_CODE;
   const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
+  const primaryGuestIsItalian = guest.cittadinanza?.code === ITALIA_CODE;
 
   return (
     <div className="rounded-md border border-divider p-5">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-display text-xl">
-          {dict.checkin.guest} {index + 1}
+          {isPrimary ? dict.checkin.primaryGuestLabel : `${dict.checkin.guest} ${index + 1}`}
         </h3>
         {removable && (
           <button
@@ -195,6 +203,14 @@ export default function GuestRow({
           </select>
         </label>
       </div>
+
+      {isPrimary && primary && onPrimaryChange && (
+        <PrimaryGuestExtraFields
+          primary={primary}
+          onChange={onPrimaryChange}
+          primaryGuestIsItalian={primaryGuestIsItalian}
+        />
+      )}
     </div>
   );
 }

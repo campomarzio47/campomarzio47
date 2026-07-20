@@ -27,8 +27,8 @@ export default function PrimaryGuestExtraFields({
   const rilascioInItalia = primary.statoRilascio?.code === ITALIA_CODE;
 
   return (
-    <div className="rounded-md border border-divider p-5">
-      <h3 className="mb-1 font-display text-xl">{dict.checkin.primaryExtraTitle}</h3>
+    <div className="mt-5 border-t border-divider pt-5">
+      <h4 className="mb-1 text-sm font-medium text-charcoal">{dict.checkin.primaryExtraTitle}</h4>
       <p className="mb-4 text-xs text-mid">{dict.checkin.primaryExtraSubtitle}</p>
 
       <div className="grid gap-4 sm:grid-cols-2">

@@ -92,6 +92,7 @@ export type Dictionary = {
     arrivalDate: string;
     nights: string;
     guest: string;
+    primaryGuestLabel: string;
     removeGuest: string;
     primaryExtraTitle: string;
     primaryExtraSubtitle: string;
@@ -329,6 +330,7 @@ export const it: Dictionary = {
     arrivalDate: "Data di arrivo",
     nights: "Numero di notti",
     guest: "Ospite",
+    primaryGuestLabel: "Ospite principale",
     removeGuest: "Rimuovi ospite",
     primaryExtraTitle: "Dati dell'ospite principale",
     primaryExtraSubtitle:
@@ -606,6 +608,7 @@ export const en: Dictionary = {
     arrivalDate: "Arrival date",
     nights: "Number of nights",
     guest: "Guest",
+    primaryGuestLabel: "Primary guest",
     removeGuest: "Remove guest",
     primaryExtraTitle: "Primary guest details",
     primaryExtraSubtitle:

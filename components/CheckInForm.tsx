@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
 import GuestRow from "@/components/GuestRow";
-import PrimaryGuestExtraFields from "@/components/PrimaryGuestExtraFields";
 import type { Guest, PrimaryGuestExtra } from "@/lib/checkin-types";
 import { property } from "@/content/property";
 import { useLocale } from "@/components/LocaleProvider";
@@ -161,15 +160,12 @@ export default function CheckInForm() {
             onChange={(g) => updateGuest(i, g)}
             onRemove={() => removeGuest(i)}
             removable={guests.length > 1}
+            isPrimary={i === 0}
+            primary={i === 0 ? primary : undefined}
+            onPrimaryChange={i === 0 ? setPrimary : undefined}
           />
         ))}
       </div>
-
-      <PrimaryGuestExtraFields
-        primary={primary}
-        onChange={setPrimary}
-        primaryGuestIsItalian={primaryGuestIsItalian}
-      />
 
       {guests.length < maxGuests && (
         <button
