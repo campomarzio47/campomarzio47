@@ -6,25 +6,29 @@ import { property } from "@/content/property";
 /**
  * Generatore XML per la movimentazione turistica formato "GIES/Ross1000".
  *
- * Struttura base fedele alla specifica originale fornita dall'utente:
- * <movimenti><codice/><prodotto/><movimento><data/><struttura/><arrivi>...
- * Campi extra (email, documento, indirizzo) restano solo nel form/PDF, non
- * nell'XML: un tentativo di aggiungerli aveva dato errore XSD.
+ * La durata del soggiorno non è un campo: è il risultato di due eventi in
+ * due giorni diversi, collegati dallo stesso <idswh>.
+ * - Un <movimento> per ogni giorno da arrivo a partenza inclusi.
+ * - <arrivi> SOLO nel giorno di arrivo (con tutti i dati anagrafici).
+ * - <partenze> SOLO nel giorno di partenza, con <partenza> minimale
+ *   (idswh, tipoalloggiato, idcapo se presente, e la data di arrivo
+ *   originale per ricollegare il record — non i dati anagrafici, già dati
+ *   in arrivo).
+ * - Nei giorni intermedi solo <struttura>, senza <arrivi>/<partenze>.
+ * - <camereoccupate> = 1 dal giorno di arrivo al giorno prima della
+ *   partenza, poi 0 dal giorno di partenza (camera liberata quel giorno).
  *
- * <partenze>/<partenza>: la specifica originale diceva solo che questa
- * sezione non serviva per l'MVP, senza descriverne i campi. Un primo
- * tentativo con solo <idswh> ha dato errore XSD "atteso tipoalloggiato",
- * il che indica che <partenza> condivide (almeno in parte) la stessa
- * struttura di <arrivo>. Qui <partenza> replica quindi esattamente gli
- * stessi campi di <arrivo> per lo stesso ospite. Se il portale segnala
- * ancora un campo mancante/in eccesso, il messaggio d'errore dice
- * esattamente quale — utile per un'ulteriore correzione mirata.
+ * Ricostruito dopo due errori XSD reali sul portale: il primo su un tag
+ * "datapartenza" inventato dentro <movimento> (rimosso), il secondo su
+ * <partenza> con solo <idswh> ("atteso tipoalloggiato"). Questa versione
+ * segue un'analisi più approfondita della struttura standard di questi
+ * tracciati "presenze giornaliere"; se il portale segnala ancora un errore
+ * XSD, il messaggio indica sempre con precisione il campo da correggere.
  */
 
 const CODICE_STRUTTURA_PLACEHOLDER = "DA_CONFIGURARE";
 
 // Configurazione della struttura (unità unica, non un hotel multi-camera).
-const CAMERE_OCCUPATE = 1;
 const CAMERE_DISPONIBILI = 1;
 
 function xmlEscape(value: string): string {
@@ -45,13 +49,24 @@ function shortId(): string {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
-function addDaysCompact(isoDate: string, days: number): string {
+function addDaysIso(isoDate: string, days: number): string {
   const d = new Date(`${isoDate}T00:00:00`);
   d.setDate(d.getDate() + days);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return `${y}${m}${day}`;
+  return `${y}-${m}-${day}`;
+}
+
+// Elenco delle date (yyyy-mm-dd) da arrivo a partenza inclusi.
+function dateRangeIso(startIso: string, endIso: string): string[] {
+  const dates: string[] = [];
+  let current = startIso;
+  while (current <= endIso) {
+    dates.push(current);
+    current = addDaysIso(current, 1);
+  }
+  return dates;
 }
 
 function tipoAlloggiato(index: number, total: number): "16" | "17" | "19" {
@@ -62,24 +77,18 @@ function tipoAlloggiato(index: number, total: number): "16" | "17" | "19" {
   return index === 0 ? "17" : "19";
 }
 
-function buildStruttura(lettiDisponibili: string): string {
+function buildStruttura(camereOccupate: 0 | 1, lettiDisponibili: string): string {
   return [
     "    <struttura>",
     "      <apertura>SI</apertura>",
-    `      <camereoccupate>${CAMERE_OCCUPATE}</camereoccupate>`,
+    `      <camereoccupate>${camereOccupate}</camereoccupate>`,
     `      <cameredisponibili>${CAMERE_DISPONIBILI}</cameredisponibili>`,
     `      <lettidisponibili>${xmlEscape(lettiDisponibili)}</lettidisponibili>`,
     "    </struttura>",
   ].join("\n");
 }
 
-// Campi condivisi da <arrivo> e <partenza> per lo stesso ospite.
-function buildPersonaFields(
-  guest: Guest,
-  index: number,
-  total: number,
-  idswhByIndex: string[],
-): string[] {
+function buildArrivo(guest: Guest, index: number, total: number, idswhByIndex: string[]): string {
   const tipo = tipoAlloggiato(index, total);
   const needsIdCapo = tipo === "19";
   const idswh = idswhByIndex[index];
@@ -91,7 +100,8 @@ function buildPersonaFields(
 
   const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
 
-  return [
+  const lines = [
+    "    <arrivo>",
     tag("idswh", idswh),
     tag("tipoalloggiato", tipo),
     needsIdCapo ? tag("idcapo", idswhByIndex[0]) : "",
@@ -107,28 +117,34 @@ function buildPersonaFields(
     tag("tipoturismo", guest.tipoTurismo),
     tag("mezzotrasporto", guest.mezzoTrasporto),
     tag("canaleprenotazione", "Diretta web"),
-  ].filter(Boolean);
-}
-
-function buildArrivo(guest: Guest, index: number, total: number, idswhByIndex: string[]): string {
-  return [
-    "    <arrivo>",
-    ...buildPersonaFields(guest, index, total, idswhByIndex),
     "    </arrivo>",
-  ].join("\n");
+  ];
+
+  return lines.filter(Boolean).join("\n");
 }
 
+// <partenza> non ripete i dati anagrafici (già dati in <arrivo>): si limita a
+// referenziare lo stesso ospite/gruppo e a riportare la data di arrivo
+// originale, per permettere al sistema di ricollegare i due eventi.
 function buildPartenza(
-  guest: Guest,
   index: number,
   total: number,
   idswhByIndex: string[],
+  dataArrivoCompact: string,
 ): string {
-  return [
+  const tipo = tipoAlloggiato(index, total);
+  const needsIdCapo = tipo === "19";
+
+  const lines = [
     "    <partenza>",
-    ...buildPersonaFields(guest, index, total, idswhByIndex),
+    tag("idswh", idswhByIndex[index]),
+    tag("tipoalloggiato", tipo),
+    needsIdCapo ? tag("idcapo", idswhByIndex[0]) : "",
+    tag("arrivo", dataArrivoCompact),
     "    </partenza>",
-  ].join("\n");
+  ];
+
+  return lines.filter(Boolean).join("\n");
 }
 
 export function buildRoss1000File(data: CheckInData): {
@@ -145,41 +161,48 @@ export function buildRoss1000File(data: CheckInData): {
     return base.slice(0, 20);
   });
 
-  const arrivi = data.guests
-    .map((guest, i) => buildArrivo(guest, i, data.guests.length, idswhByIndex))
-    .join("\n");
+  const dataPartenzaIso = addDaysIso(data.dataArrivo, data.notti);
+  const giorni = dateRangeIso(data.dataArrivo, dataPartenzaIso);
 
-  const partenze = data.guests
-    .map((guest, i) => buildPartenza(guest, i, data.guests.length, idswhByIndex))
-    .join("\n");
+  const movimenti = giorni.map((giornoIso) => {
+    const isArrivo = giornoIso === data.dataArrivo;
+    const isPartenza = giornoIso === dataPartenzaIso;
+    // Camera occupata dal giorno di arrivo fino al giorno prima della
+    // partenza; il giorno di partenza la camera è già libera.
+    const camereOccupate: 0 | 1 = isPartenza ? 0 : 1;
 
-  const dataArrivoMovimento = [
-    "  <movimento>",
-    `    <data>${toCompactDate(data.dataArrivo)}</data>`,
-    buildStruttura(lettiDisponibili),
-    "    <arrivi>",
-    arrivi,
-    "    </arrivi>",
-    "  </movimento>",
-  ].join("\n");
+    const sections: string[] = [buildStruttura(camereOccupate, lettiDisponibili)];
 
-  const dataPartenzaMovimento = [
-    "  <movimento>",
-    `    <data>${addDaysCompact(data.dataArrivo, data.notti)}</data>`,
-    buildStruttura(lettiDisponibili),
-    "    <partenze>",
-    partenze,
-    "    </partenze>",
-    "  </movimento>",
-  ].join("\n");
+    if (isArrivo) {
+      const arrivi = data.guests
+        .map((guest, i) => buildArrivo(guest, i, data.guests.length, idswhByIndex))
+        .join("\n");
+      sections.push("    <arrivi>", arrivi, "    </arrivi>");
+    }
+
+    if (isPartenza) {
+      const partenze = data.guests
+        .map((_, i) =>
+          buildPartenza(i, data.guests.length, idswhByIndex, toCompactDate(data.dataArrivo)),
+        )
+        .join("\n");
+      sections.push("    <partenze>", partenze, "    </partenze>");
+    }
+
+    return [
+      "  <movimento>",
+      `    <data>${toCompactDate(giornoIso)}</data>`,
+      ...sections,
+      "  </movimento>",
+    ].join("\n");
+  });
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<movimenti>",
     `  <codice>${xmlEscape(codice)}</codice>`,
     `  <prodotto>${xmlEscape(prodotto)}</prodotto>`,
-    dataArrivoMovimento,
-    dataPartenzaMovimento,
+    ...movimenti,
     "</movimenti>",
     "",
   ].join("\n");
