@@ -140,6 +140,7 @@ export type Dictionary = {
     sentBody: string;
     errorGeneric: string;
     errorIncompletePlace: string;
+    selectFromListHint: string;
   };
 };
 
@@ -417,7 +418,8 @@ export const it: Dictionary = {
       "Grazie! I tuoi dati sono stati inviati all'host per la comunicazione obbligatoria ai flussi turistici. A presto a Marostica.",
     errorGeneric: "Invio non riuscito, riprova più tardi.",
     errorIncompletePlace:
-      "Per ogni ospite seleziona un'opzione dalla lista per cittadinanza, stato e comune (non basta scrivere il testo).",
+      "Alcuni campi non sono stati selezionati dalla lista: controlla i campi evidenziati in rosso.",
+    selectFromListHint: "Seleziona un'opzione dalla lista.",
   },
 };
 
@@ -695,7 +697,8 @@ export const en: Dictionary = {
       "Thank you! Your details have been sent to the host for the mandatory tourism-flow reporting. See you soon in Marostica.",
     errorGeneric: "Sending failed, please try again later.",
     errorIncompletePlace:
-      "For each guest, pick an option from the list for citizenship, country and city (typing text alone isn't enough).",
+      "Some fields weren't selected from the list: check the fields highlighted in red.",
+    selectFromListHint: "Pick an option from the list.",
   },
 };
 
