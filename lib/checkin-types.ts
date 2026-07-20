@@ -53,13 +53,13 @@ export type MezzoTrasporto = (typeof mezzoTrasportoCodes)[number];
 // portano sempre un codice valido: nessun segnaposto da completare a mano.
 export type PlaceRef = { code: string; label: string } | null;
 
+// Campi previsti dall'XML Ross1000 (specifica originale) — richiesti per
+// ogni ospite del gruppo, invariati.
 export type Guest = {
   cognome: string;
   nome: string;
   sesso: "M" | "F";
   dataNascita: string; // yyyy-mm-dd
-
-  // Campi previsti dall'XML Ross1000 (specifica originale).
   cittadinanza: PlaceRef;
   statoResidenza: PlaceRef;
   comuneResidenza: PlaceRef; // richiesto solo se statoResidenza = Italia
@@ -68,11 +68,15 @@ export type Guest = {
   comuneNascita: PlaceRef; // valorizzato solo se statoNascita = Italia
   tipoTurismo: TipoTurismo;
   mezzoTrasporto: MezzoTrasporto;
+};
 
-  // Campi extra richiesti dall'host: solo per email/PDF, non per l'XML.
+// Campi extra richiesti dall'host (email/PDF, non nell'XML): chiesti una
+// sola volta, solo all'ospite principale (il primo del gruppo), per non
+// appesantire il form per tutti gli altri ospiti.
+export type PrimaryGuestExtra = {
   email: string;
   indirizzoResidenza: string;
-  codiceFiscale: string; // solo per cittadini italiani
+  codiceFiscale: string; // solo se il primo ospite ha cittadinanza italiana
   tipoDocumento: DocumentTypeCode;
   numeroDocumento: string;
   statoRilascio: PlaceRef;
@@ -83,6 +87,7 @@ export type CheckInData = {
   dataArrivo: string; // yyyy-mm-dd
   notti: number;
   guests: Guest[];
+  primary: PrimaryGuestExtra;
 };
 
 export function toCompactDate(isoDate: string): string {

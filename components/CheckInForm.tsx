@@ -3,7 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
 import GuestRow from "@/components/GuestRow";
-import type { Guest } from "@/lib/checkin-types";
+import PrimaryGuestExtraFields from "@/components/PrimaryGuestExtraFields";
+import type { Guest, PrimaryGuestExtra } from "@/lib/checkin-types";
 import { property } from "@/content/property";
 import { useLocale } from "@/components/LocaleProvider";
 import { ITALIA_CODE } from "@/lib/reference-data";
@@ -18,17 +19,22 @@ function emptyGuest(): Guest {
     nome: "",
     sesso: "M",
     dataNascita: "",
-    email: "",
     cittadinanza: null,
     statoResidenza: null,
     comuneResidenza: null,
     localitaResidenzaEstera: "",
-    indirizzoResidenza: "",
-    codiceFiscale: "",
     statoNascita: null,
     comuneNascita: null,
     tipoTurismo: "Non specificato",
     mezzoTrasporto: "Non Specificato",
+  };
+}
+
+function emptyPrimary(): PrimaryGuestExtra {
+  return {
+    email: "",
+    indirizzoResidenza: "",
+    codiceFiscale: "",
     tipoDocumento: "IDENT",
     numeroDocumento: "",
     statoRilascio: null,
@@ -39,16 +45,16 @@ function emptyGuest(): Guest {
 const FISCAL_CODE_PATTERN = /^[A-Z]{6}\d{2}[A-EHLMPR-T]\d{2}[A-Z]\d{3}[A-Z]$/;
 
 function guestHasIncompletePlace(guest: Guest): boolean {
-  if (!guest.cittadinanza || !guest.statoResidenza || !guest.statoRilascio) return true;
+  if (!guest.cittadinanza || !guest.statoResidenza) return true;
   if (guest.statoResidenza.code === ITALIA_CODE && !guest.comuneResidenza) return true;
   if (guest.statoNascita?.code === ITALIA_CODE && !guest.comuneNascita) return true;
-  if (guest.statoRilascio.code === ITALIA_CODE && !guest.comuneRilascio) return true;
   return false;
 }
 
-function guestHasInvalidFiscalCode(guest: Guest): boolean {
-  if (guest.cittadinanza?.code !== ITALIA_CODE) return false;
-  return !FISCAL_CODE_PATTERN.test(guest.codiceFiscale);
+function primaryHasIncompletePlace(primary: PrimaryGuestExtra): boolean {
+  if (!primary.statoRilascio) return true;
+  if (primary.statoRilascio.code === ITALIA_CODE && !primary.comuneRilascio) return true;
+  return false;
 }
 
 const inputClasses =
@@ -60,11 +66,13 @@ export default function CheckInForm() {
   const [dataArrivo, setDataArrivo] = useState("");
   const [notti, setNotti] = useState(1);
   const [guests, setGuests] = useState<Guest[]>([emptyGuest()]);
+  const [primary, setPrimary] = useState<PrimaryGuestExtra>(emptyPrimary());
   const [consenso, setConsenso] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const maxGuests = property.facts.maxGuests;
+  const primaryGuestIsItalian = guests[0]?.cittadinanza?.code === ITALIA_CODE;
 
   function updateGuest(index: number, guest: Guest) {
     setGuests((prev) => prev.map((g, i) => (i === index ? guest : g)));
@@ -78,13 +86,13 @@ export default function CheckInForm() {
     e.preventDefault();
     setError(null);
 
-    if (guests.some(guestHasIncompletePlace)) {
+    if (guests.some(guestHasIncompletePlace) || primaryHasIncompletePlace(primary)) {
       setStatus("error");
       setError(dict.checkin.errorIncompletePlace);
       return;
     }
 
-    if (guests.some(guestHasInvalidFiscalCode)) {
+    if (primaryGuestIsItalian && !FISCAL_CODE_PATTERN.test(primary.codiceFiscale)) {
       setStatus("error");
       setError(dict.checkin.fiscalCodeInvalid);
       return;
@@ -95,7 +103,7 @@ export default function CheckInForm() {
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dataArrivo, notti, guests, consenso }),
+        body: JSON.stringify({ dataArrivo, notti, guests, primary, consenso }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
@@ -156,6 +164,12 @@ export default function CheckInForm() {
           />
         ))}
       </div>
+
+      <PrimaryGuestExtraFields
+        primary={primary}
+        onChange={setPrimary}
+        primaryGuestIsItalian={primaryGuestIsItalian}
+      />
 
       {guests.length < maxGuests && (
         <button

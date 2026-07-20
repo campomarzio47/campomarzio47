@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import type { CheckInData, Guest } from "@/lib/checkin-types";
+import type { CheckInData, Guest, PrimaryGuestExtra } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
 
 const MARGIN = 50;
@@ -15,21 +15,28 @@ function guestLines(guest: Guest, index: number): string[] {
       ? `${guest.comuneNascita?.label ?? ""} (Italia)`
       : guest.statoNascita.label
     : "non specificata";
-  const rilascio =
-    guest.statoRilascio?.code === ITALIA_CODE
-      ? `${guest.comuneRilascio?.label ?? ""} (Italia)`
-      : (guest.statoRilascio?.label ?? "-");
 
   return [
     `Ospite ${index + 1}: ${guest.cognome} ${guest.nome}`,
     `Sesso: ${guest.sesso}    Data di nascita: ${guest.dataNascita}    Luogo di nascita: ${nascita}`,
-    `Email: ${guest.email}`,
     `Cittadinanza: ${guest.cittadinanza?.label ?? "-"}`,
     `Residenza: ${residenza}`,
-    `Indirizzo di residenza: ${guest.indirizzoResidenza}`,
-    guest.codiceFiscale ? `Codice fiscale: ${guest.codiceFiscale}` : "",
-    `Documento: ${guest.tipoDocumento} n. ${guest.numeroDocumento} — rilasciato in ${rilascio}`,
     `Tipo turismo: ${guest.tipoTurismo}    Mezzo di trasporto: ${guest.mezzoTrasporto}`,
+  ];
+}
+
+function primaryLines(primary: PrimaryGuestExtra): string[] {
+  const rilascio =
+    primary.statoRilascio?.code === ITALIA_CODE
+      ? `${primary.comuneRilascio?.label ?? ""} (Italia)`
+      : (primary.statoRilascio?.label ?? "-");
+
+  return [
+    "Dati dell'ospite principale",
+    `Email: ${primary.email}`,
+    `Indirizzo di residenza: ${primary.indirizzoResidenza}`,
+    primary.codiceFiscale ? `Codice fiscale: ${primary.codiceFiscale}` : "",
+    `Documento: ${primary.tipoDocumento} n. ${primary.numeroDocumento} — rilasciato in ${rilascio}`,
   ].filter(Boolean);
 }
 
@@ -77,6 +84,12 @@ export async function buildCheckInPdf(data: CheckInData): Promise<{
       writeLine(line, { useBold: line.startsWith("Ospite") });
     }
   });
+
+  ensureSpace(20);
+  y -= 6;
+  for (const line of primaryLines(data.primary)) {
+    writeLine(line, { useBold: line === "Dati dell'ospite principale" });
+  }
 
   const bytes = await doc.save();
 

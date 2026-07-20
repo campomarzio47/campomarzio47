@@ -93,6 +93,8 @@ export type Dictionary = {
     nights: string;
     guest: string;
     removeGuest: string;
+    primaryExtraTitle: string;
+    primaryExtraSubtitle: string;
     lastName: string;
     firstName: string;
     sex: string;
@@ -328,6 +330,9 @@ export const it: Dictionary = {
     nights: "Numero di notti",
     guest: "Ospite",
     removeGuest: "Rimuovi ospite",
+    primaryExtraTitle: "Dati dell'ospite principale",
+    primaryExtraSubtitle:
+      "Servono una sola volta, non per ogni ospite: email, documento e indirizzo per la fatturazione.",
     lastName: "Cognome",
     firstName: "Nome",
     sex: "Sesso",
@@ -602,6 +607,9 @@ export const en: Dictionary = {
     nights: "Number of nights",
     guest: "Guest",
     removeGuest: "Remove guest",
+    primaryExtraTitle: "Primary guest details",
+    primaryExtraSubtitle:
+      "Only needed once, not for every guest: email, document and address for invoicing.",
     lastName: "Last name",
     firstName: "First name",
     sex: "Sex",

@@ -29,10 +29,8 @@ export default function GuestRow({
     onChange({ ...guest, [key]: value });
   }
 
-  const isItalianCitizen = guest.cittadinanza?.code === ITALIA_CODE;
   const residenzaInItalia = guest.statoResidenza?.code === ITALIA_CODE;
   const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
-  const rilascioInItalia = guest.statoRilascio?.code === ITALIA_CODE;
 
   return (
     <div className="rounded-md border border-divider p-5">
@@ -94,45 +92,16 @@ export default function GuestRow({
           />
         </label>
 
-        <label className={`${labelClasses} sm:col-span-2`}>
-          {dict.checkin.email}
-          <input
-            required
-            type="email"
-            placeholder={dict.checkin.emailPlaceholder}
-            value={guest.email}
-            onChange={(e) => set("email", e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-
         <label className={labelClasses}>
           {dict.checkin.citizenship}
           <PlaceAutocomplete
             required
             value={guest.cittadinanza}
-            onChange={(v) => {
-              set("cittadinanza", v);
-              if (v?.code !== ITALIA_CODE) set("codiceFiscale", "");
-            }}
+            onChange={(v) => set("cittadinanza", v)}
             options={statiOptions}
             placeholder={dict.checkin.citizenshipPlaceholder}
           />
         </label>
-
-        {isItalianCitizen && (
-          <label className={labelClasses}>
-            {dict.checkin.fiscalCode}
-            <input
-              required
-              maxLength={16}
-              placeholder={dict.checkin.fiscalCodePlaceholder}
-              value={guest.codiceFiscale}
-              onChange={(e) => set("codiceFiscale", e.target.value.toUpperCase())}
-              className={inputClasses}
-            />
-          </label>
-        )}
 
         <label className={labelClasses}>
           {dict.checkin.residenceState}
@@ -171,17 +140,6 @@ export default function GuestRow({
             />
           </label>
         )}
-
-        <label className={`${labelClasses} sm:col-span-2`}>
-          {dict.checkin.residenceAddress}
-          <input
-            required
-            placeholder={dict.checkin.residenceAddressPlaceholder}
-            value={guest.indirizzoResidenza}
-            onChange={(e) => set("indirizzoResidenza", e.target.value)}
-            className={inputClasses}
-          />
-        </label>
 
         <label className={labelClasses}>
           {dict.checkin.birthState}
@@ -236,56 +194,6 @@ export default function GuestRow({
             ))}
           </select>
         </label>
-
-        <label className={labelClasses}>
-          {dict.checkin.documentType}
-          <select
-            value={guest.tipoDocumento}
-            onChange={(e) => set("tipoDocumento", e.target.value as Guest["tipoDocumento"])}
-            className={inputClasses}
-          >
-            {dict.checkin.documentTypes.map((d) => (
-              <option key={d.code} value={d.code}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className={labelClasses}>
-          {dict.checkin.documentNumber}
-          <input
-            required
-            value={guest.numeroDocumento}
-            onChange={(e) => set("numeroDocumento", e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-
-        <label className={labelClasses}>
-          {dict.checkin.issueState}
-          <PlaceAutocomplete
-            required
-            value={guest.statoRilascio}
-            onChange={(v) => {
-              set("statoRilascio", v);
-              set("comuneRilascio", null);
-            }}
-            options={statiOptions}
-            placeholder={dict.checkin.issueStatePlaceholder}
-          />
-        </label>
-        {rilascioInItalia && (
-          <label className={labelClasses}>
-            {dict.checkin.issuePlace}
-            <PlaceAutocomplete
-              required
-              value={guest.comuneRilascio}
-              onChange={(v) => set("comuneRilascio", v)}
-              options={comuniOptions}
-              placeholder={dict.checkin.issuePlacePlaceholder}
-            />
-          </label>
-        )}
       </div>
     </div>
   );
