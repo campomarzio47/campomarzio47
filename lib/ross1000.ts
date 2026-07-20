@@ -6,23 +6,27 @@ import { property } from "@/content/property";
 /**
  * Generatore XML per la movimentazione turistica formato "GIES/Ross1000".
  *
- * Segue ESATTAMENTE la struttura della specifica originale fornita
- * dall'utente: <movimenti><codice/><prodotto/><movimento><data/><struttura/>
- * <arrivi>. Un tentativo precedente aggiungeva campi extra (email,
- * documento, indirizzo, data di partenza) dedotti da un'osservazione del
- * portale web — il caricamento di prova ha dato errore XSD proprio su uno di
- * questi campi (`datapartenza` non è un figlio valido di `movimento`), quindi
- * qui NON li includiamo più: quei dati restano comunque nel form e vengono
- * mandati via email/PDF, semplicemente non nell'XML.
+ * Struttura base fedele alla specifica originale fornita dall'utente:
+ * <movimenti><codice/><prodotto/><movimento><data/><struttura/><arrivi>...
+ * Un tentativo precedente aggiungeva campi extra (email, documento,
+ * indirizzo, un tag "datapartenza" inventato) — il caricamento di prova ha
+ * dato errore XSD proprio su quel tag, quindi quei dati extra restano solo
+ * nel form/PDF, non nell'XML.
  *
- * Cittadinanza, stato/comune di residenza e di nascita arrivano già come
- * codici ufficiali (tabelle Stati/Comuni della Polizia di Stato, vedi
- * lib/reference-data.ts): non servono più segnaposto da completare a mano.
- *
- * L'unico valore che NON possiamo verificare con certezza è il codice
- * struttura assegnato dall'ente regionale (ROSS1000_CODICE_STRUTTURA):
- * l'utente pensa sia il proprio CIR, ma va confermato sul portale prima
- * del primo invio reale.
+ * IMPORTANTE (dopo un secondo test reale dell'utente): con un solo
+ * <movimento> (il giorno di arrivo) il portale mostrava gli ospiti presenti
+ * per un solo giorno invece che per tutto il soggiorno. La specifica
+ * originale elenca <partenze> come sezione valida a fianco di <arrivi>
+ * (confermato anche dall'errore XSD ricevuto in precedenza, che elencava
+ * "struttura, arrivi, partenze, prenotazioni, rettifiche" come figli validi
+ * di <movimento>) ma NON ne descrive i campi interni (la specifica diceva
+ * solo che non serviva per l'MVP). Qui aggiungiamo quindi un secondo
+ * <movimento> alla data di partenza con una sezione <partenze> che referenzia
+ * lo stesso <idswh> generato in fase di arrivo per ciascun ospite — è
+ * un'ipotesi ragionevole (stesso identificativo usato per "chiudere" la
+ * presenza) ma NON confermata dalla documentazione originale: verificare con
+ * un caricamento di prova che il soggiorno risulti now esteso correttamente,
+ * e segnalarci l'eventuale errore XSD esatto se il portale lo rifiuta.
  */
 
 const CODICE_STRUTTURA_PLACEHOLDER = "DA_CONFIGURARE";
@@ -49,12 +53,32 @@ function shortId(): string {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
+function addDaysCompact(isoDate: string, days: number): string {
+  const d = new Date(`${isoDate}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
+}
+
 function tipoAlloggiato(index: number, total: number): "16" | "17" | "19" {
   // Semplificazione: 1 solo ospite = singolo; con piu' ospiti il primo e'
   // trattato come capofamiglia, gli altri come familiari (stesso criterio
   // gia' usato in precedenza per Alloggiati Web).
   if (total === 1) return "16";
   return index === 0 ? "17" : "19";
+}
+
+function buildStruttura(lettiDisponibili: string): string {
+  return [
+    "    <struttura>",
+    "      <apertura>SI</apertura>",
+    `      <camereoccupate>${CAMERE_OCCUPATE}</camereoccupate>`,
+    `      <cameredisponibili>${CAMERE_DISPONIBILI}</cameredisponibili>`,
+    `      <lettidisponibili>${xmlEscape(lettiDisponibili)}</lettidisponibili>`,
+    "    </struttura>",
+  ].join("\n");
 }
 
 function buildArrivo(
@@ -97,6 +121,10 @@ function buildArrivo(
   return lines.filter(Boolean).join("\n");
 }
 
+function buildPartenza(idswh: string): string {
+  return ["    <partenza>", tag("idswh", idswh), "    </partenza>"].filter(Boolean).join("\n");
+}
+
 export function buildRoss1000File(data: CheckInData): {
   filename: string;
   buffer: Buffer;
@@ -115,23 +143,35 @@ export function buildRoss1000File(data: CheckInData): {
     .map((guest, i) => buildArrivo(guest, i, data.guests.length, idswhByIndex))
     .join("\n");
 
+  const partenze = idswhByIndex.map((idswh) => buildPartenza(idswh)).join("\n");
+
+  const dataArrivoMovimento = [
+    "  <movimento>",
+    `    <data>${toCompactDate(data.dataArrivo)}</data>`,
+    buildStruttura(lettiDisponibili),
+    "    <arrivi>",
+    arrivi,
+    "    </arrivi>",
+    "  </movimento>",
+  ].join("\n");
+
+  const dataPartenzaMovimento = [
+    "  <movimento>",
+    `    <data>${addDaysCompact(data.dataArrivo, data.notti)}</data>`,
+    buildStruttura(lettiDisponibili),
+    "    <partenze>",
+    partenze,
+    "    </partenze>",
+    "  </movimento>",
+  ].join("\n");
+
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     "<movimenti>",
     `  <codice>${xmlEscape(codice)}</codice>`,
     `  <prodotto>${xmlEscape(prodotto)}</prodotto>`,
-    "  <movimento>",
-    `    <data>${toCompactDate(data.dataArrivo)}</data>`,
-    "    <struttura>",
-    "      <apertura>SI</apertura>",
-    `      <camereoccupate>${CAMERE_OCCUPATE}</camereoccupate>`,
-    `      <cameredisponibili>${CAMERE_DISPONIBILI}</cameredisponibili>`,
-    `      <lettidisponibili>${xmlEscape(lettiDisponibili)}</lettidisponibili>`,
-    "    </struttura>",
-    "    <arrivi>",
-    arrivi,
-    "    </arrivi>",
-    "  </movimento>",
+    dataArrivoMovimento,
+    dataPartenzaMovimento,
     "</movimenti>",
     "",
   ].join("\n");
