@@ -116,11 +116,14 @@ export default function GuestRow({
           <PlaceAutocomplete
             required
             value={guest.statoResidenza}
-            onChange={(v) => {
-              set("statoResidenza", v);
-              set("comuneResidenza", null);
-              set("localitaResidenzaEstera", "");
-            }}
+            onChange={(v) =>
+              onChange({
+                ...guest,
+                statoResidenza: v,
+                comuneResidenza: null,
+                localitaResidenzaEstera: "",
+              })
+            }
             options={statiOptions}
             placeholder={dict.checkin.residenceStatePlaceholder}
           />
@@ -153,10 +156,7 @@ export default function GuestRow({
           {dict.checkin.birthState}
           <PlaceAutocomplete
             value={guest.statoNascita}
-            onChange={(v) => {
-              set("statoNascita", v);
-              set("comuneNascita", null);
-            }}
+            onChange={(v) => onChange({ ...guest, statoNascita: v, comuneNascita: null })}
             options={statiOptions}
             placeholder={dict.checkin.birthStatePlaceholder}
           />

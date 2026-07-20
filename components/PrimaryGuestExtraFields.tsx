@@ -100,10 +100,9 @@ export default function PrimaryGuestExtraFields({
           <PlaceAutocomplete
             required
             value={primary.statoRilascio}
-            onChange={(v: PlaceRef) => {
-              set("statoRilascio", v);
-              set("comuneRilascio", null);
-            }}
+            onChange={(v: PlaceRef) =>
+              onChange({ ...primary, statoRilascio: v, comuneRilascio: null })
+            }
             options={statiOptions}
             placeholder={dict.checkin.issueStatePlaceholder}
           />
