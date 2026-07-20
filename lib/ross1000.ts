@@ -133,13 +133,14 @@ function buildPartenza(
   dataArrivoCompact: string,
 ): string {
   const tipo = tipoAlloggiato(index, total);
-  const needsIdCapo = tipo === "19";
 
+  // A differenza di <arrivo>, <partenza> non prevede <idcapo>: l'errore XSD
+  // "atteso arrivo" ricevuto dopo <tipoalloggiato> lo conferma — la sequenza
+  // corretta e' idswh, tipoalloggiato, arrivo (data), senza idcapo.
   const lines = [
     "    <partenza>",
     tag("idswh", idswhByIndex[index]),
     tag("tipoalloggiato", tipo),
-    needsIdCapo ? tag("idcapo", idswhByIndex[0]) : "",
     tag("arrivo", dataArrivoCompact),
     "    </partenza>",
   ];
