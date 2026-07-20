@@ -29,6 +29,7 @@ export default function GuestRow({
     onChange({ ...guest, [key]: value });
   }
 
+  const isItalianCitizen = guest.cittadinanza?.code === ITALIA_CODE;
   const residenzaInItalia = guest.statoResidenza?.code === ITALIA_CODE;
   const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
   const rilascioInItalia = guest.statoRilascio?.code === ITALIA_CODE;
@@ -110,11 +111,28 @@ export default function GuestRow({
           <PlaceAutocomplete
             required
             value={guest.cittadinanza}
-            onChange={(v) => set("cittadinanza", v)}
+            onChange={(v) => {
+              set("cittadinanza", v);
+              if (v?.code !== ITALIA_CODE) set("codiceFiscale", "");
+            }}
             options={statiOptions}
             placeholder={dict.checkin.citizenshipPlaceholder}
           />
         </label>
+
+        {isItalianCitizen && (
+          <label className={labelClasses}>
+            {dict.checkin.fiscalCode}
+            <input
+              required
+              maxLength={16}
+              placeholder={dict.checkin.fiscalCodePlaceholder}
+              value={guest.codiceFiscale}
+              onChange={(e) => set("codiceFiscale", e.target.value.toUpperCase())}
+              className={inputClasses}
+            />
+          </label>
+        )}
 
         <label className={labelClasses}>
           {dict.checkin.residenceState}
@@ -168,7 +186,6 @@ export default function GuestRow({
         <label className={labelClasses}>
           {dict.checkin.birthState}
           <PlaceAutocomplete
-            required
             value={guest.statoNascita}
             onChange={(v) => {
               set("statoNascita", v);
@@ -190,6 +207,35 @@ export default function GuestRow({
             />
           </label>
         )}
+
+        <label className={labelClasses}>
+          {dict.checkin.tourismType}
+          <select
+            value={guest.tipoTurismo}
+            onChange={(e) => set("tipoTurismo", e.target.value as Guest["tipoTurismo"])}
+            className={inputClasses}
+          >
+            {dict.checkin.tourismTypeOptions.map((o) => (
+              <option key={o.code} value={o.code}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className={labelClasses}>
+          {dict.checkin.transportMeans}
+          <select
+            value={guest.mezzoTrasporto}
+            onChange={(e) => set("mezzoTrasporto", e.target.value as Guest["mezzoTrasporto"])}
+            className={inputClasses}
+          >
+            {dict.checkin.transportMeansOptions.map((o) => (
+              <option key={o.code} value={o.code}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className={labelClasses}>
           {dict.checkin.documentType}

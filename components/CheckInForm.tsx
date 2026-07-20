@@ -6,10 +6,12 @@ import GuestRow from "@/components/GuestRow";
 import type { Guest } from "@/lib/checkin-types";
 import { property } from "@/content/property";
 import { useLocale } from "@/components/LocaleProvider";
-import { italiaOption, ITALIA_CODE } from "@/lib/reference-data";
+import { ITALIA_CODE } from "@/lib/reference-data";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
+// Nessun default "Italia" precompilato: molti ospiti sono stranieri e non
+// deve sembrare la risposta gia' scelta per loro.
 function emptyGuest(): Guest {
   return {
     cognome: "",
@@ -17,28 +19,36 @@ function emptyGuest(): Guest {
     sesso: "M",
     dataNascita: "",
     email: "",
-    cittadinanza: italiaOption,
-    statoResidenza: italiaOption,
+    cittadinanza: null,
+    statoResidenza: null,
     comuneResidenza: null,
     localitaResidenzaEstera: "",
     indirizzoResidenza: "",
-    statoNascita: italiaOption,
+    codiceFiscale: "",
+    statoNascita: null,
     comuneNascita: null,
+    tipoTurismo: "Non specificato",
+    mezzoTrasporto: "Non Specificato",
     tipoDocumento: "IDENT",
     numeroDocumento: "",
-    statoRilascio: italiaOption,
+    statoRilascio: null,
     comuneRilascio: null,
   };
 }
 
+const FISCAL_CODE_PATTERN = /^[A-Z]{6}\d{2}[A-EHLMPR-T]\d{2}[A-Z]\d{3}[A-Z]$/;
+
 function guestHasIncompletePlace(guest: Guest): boolean {
-  if (!guest.cittadinanza || !guest.statoResidenza || !guest.statoNascita || !guest.statoRilascio) {
-    return true;
-  }
+  if (!guest.cittadinanza || !guest.statoResidenza || !guest.statoRilascio) return true;
   if (guest.statoResidenza.code === ITALIA_CODE && !guest.comuneResidenza) return true;
-  if (guest.statoNascita.code === ITALIA_CODE && !guest.comuneNascita) return true;
+  if (guest.statoNascita?.code === ITALIA_CODE && !guest.comuneNascita) return true;
   if (guest.statoRilascio.code === ITALIA_CODE && !guest.comuneRilascio) return true;
   return false;
+}
+
+function guestHasInvalidFiscalCode(guest: Guest): boolean {
+  if (guest.cittadinanza?.code !== ITALIA_CODE) return false;
+  return !FISCAL_CODE_PATTERN.test(guest.codiceFiscale);
 }
 
 const inputClasses =
@@ -71,6 +81,12 @@ export default function CheckInForm() {
     if (guests.some(guestHasIncompletePlace)) {
       setStatus("error");
       setError(dict.checkin.errorIncompletePlace);
+      return;
+    }
+
+    if (guests.some(guestHasInvalidFiscalCode)) {
+      setStatus("error");
+      setError(dict.checkin.fiscalCodeInvalid);
       return;
     }
 

@@ -1,4 +1,4 @@
-import type { DocumentTypeCode } from "@/lib/checkin-types";
+import type { DocumentTypeCode, TipoTurismo, MezzoTrasporto } from "@/lib/checkin-types";
 
 export type Dictionary = {
   meta: { title: string; description: string };
@@ -115,6 +115,9 @@ export type Dictionary = {
     birthStatePlaceholder: string;
     birthPlace: string;
     birthPlacePlaceholder: string;
+    fiscalCode: string;
+    fiscalCodePlaceholder: string;
+    fiscalCodeInvalid: string;
     documentType: string;
     documentTypes: { code: DocumentTypeCode; label: string }[];
     documentNumber: string;
@@ -122,6 +125,10 @@ export type Dictionary = {
     issueStatePlaceholder: string;
     issuePlace: string;
     issuePlacePlaceholder: string;
+    tourismType: string;
+    tourismTypeOptions: { code: TipoTurismo; label: string }[];
+    transportMeans: string;
+    transportMeansOptions: { code: MezzoTrasporto; label: string }[];
     addGuest: string;
     consent: string;
     submit: string;
@@ -339,10 +346,13 @@ export const it: Dictionary = {
     residenceAbroadPlacePlaceholder: "es. Monaco di Baviera",
     residenceAddress: "Indirizzo di residenza",
     residenceAddressPlaceholder: "Via e numero civico",
-    birthState: "Stato di nascita",
+    birthState: "Stato di nascita (facoltativo)",
     birthStatePlaceholder: "Cerca uno stato...",
     birthPlace: "Comune di nascita",
     birthPlacePlaceholder: "Cerca un comune (es. Milano)...",
+    fiscalCode: "Codice fiscale",
+    fiscalCodePlaceholder: "RSSMRA80A01H501U",
+    fiscalCodeInvalid: "Codice fiscale non valido (16 caratteri).",
     documentType: "Tipo documento",
     documentTypes: [
       { code: "IDENT", label: "Carta d'identità" },
@@ -355,6 +365,41 @@ export const it: Dictionary = {
     issueStatePlaceholder: "Cerca uno stato...",
     issuePlace: "Comune di rilascio documento",
     issuePlacePlaceholder: "Cerca un comune...",
+    tourismType: "Tipo di turismo",
+    tourismTypeOptions: [
+      { code: "Culturale", label: "Culturale" },
+      { code: "Balneare", label: "Balneare" },
+      { code: "Congressuale/Affari", label: "Congressuale/Affari" },
+      { code: "Fieristico", label: "Fieristico" },
+      { code: "Sportivo/Fitness", label: "Sportivo/Fitness" },
+      { code: "Scolastico", label: "Scolastico" },
+      { code: "Religioso", label: "Religioso" },
+      { code: "Sociale", label: "Sociale" },
+      { code: "Parchi Tematici", label: "Parchi tematici" },
+      { code: "Termale/Trattamenti salute", label: "Termale/Trattamenti salute" },
+      { code: "Enogastronomico", label: "Enogastronomico" },
+      { code: "Cicloturismo", label: "Cicloturismo" },
+      { code: "Escursionistico/Naturalistico", label: "Escursionistico/Naturalistico" },
+      { code: "Altro motivo", label: "Altro motivo" },
+      { code: "Non specificato", label: "Non specificato" },
+    ],
+    transportMeans: "Mezzo di trasporto",
+    transportMeansOptions: [
+      { code: "Auto", label: "Auto" },
+      { code: "Aereo", label: "Aereo" },
+      { code: "Aereo+Pullman", label: "Aereo + Pullman" },
+      { code: "Aereo+Navetta/Taxi/Auto", label: "Aereo + Navetta/Taxi/Auto" },
+      { code: "Aereo+Treno", label: "Aereo + Treno" },
+      { code: "Treno", label: "Treno" },
+      { code: "Pullman", label: "Pullman" },
+      { code: "Caravan/Autocaravan", label: "Caravan/Autocaravan" },
+      { code: "Barca/Nave/Traghetto", label: "Barca/Nave/Traghetto" },
+      { code: "Moto", label: "Moto" },
+      { code: "Bicicletta", label: "Bicicletta" },
+      { code: "A piedi", label: "A piedi" },
+      { code: "Altro mezzo", label: "Altro mezzo" },
+      { code: "Non Specificato", label: "Non specificato" },
+    ],
     addGuest: "Aggiungi ospite",
     consent:
       "Acconsento al trattamento dei miei dati personali ai fini della comunicazione statistica obbligatoria ai flussi turistici regionali (Ross1000). I dati vengono inviati via email all'host e non sono conservati sul server del sito.",
@@ -575,10 +620,13 @@ export const en: Dictionary = {
     residenceAbroadPlacePlaceholder: "e.g. Munich",
     residenceAddress: "Residential address",
     residenceAddressPlaceholder: "Street and house number",
-    birthState: "Country of birth",
+    birthState: "Country of birth (optional)",
     birthStatePlaceholder: "Search a country...",
     birthPlace: "City of birth",
     birthPlacePlaceholder: "Search a comune (e.g. Milan)...",
+    fiscalCode: "Italian tax code (codice fiscale)",
+    fiscalCodePlaceholder: "RSSMRA80A01H501U",
+    fiscalCodeInvalid: "Invalid tax code (16 characters).",
     documentType: "Document type",
     documentTypes: [
       { code: "IDENT", label: "ID card" },
@@ -591,6 +639,41 @@ export const en: Dictionary = {
     issueStatePlaceholder: "Search a country...",
     issuePlace: "Document issue comune",
     issuePlacePlaceholder: "Search a comune...",
+    tourismType: "Type of tourism",
+    tourismTypeOptions: [
+      { code: "Culturale", label: "Cultural" },
+      { code: "Balneare", label: "Seaside/Beach" },
+      { code: "Congressuale/Affari", label: "Business/Conference" },
+      { code: "Fieristico", label: "Trade fair" },
+      { code: "Sportivo/Fitness", label: "Sports/Fitness" },
+      { code: "Scolastico", label: "School" },
+      { code: "Religioso", label: "Religious" },
+      { code: "Sociale", label: "Social" },
+      { code: "Parchi Tematici", label: "Theme parks" },
+      { code: "Termale/Trattamenti salute", label: "Spa/Wellness" },
+      { code: "Enogastronomico", label: "Food & wine" },
+      { code: "Cicloturismo", label: "Cycling" },
+      { code: "Escursionistico/Naturalistico", label: "Hiking/Nature" },
+      { code: "Altro motivo", label: "Other" },
+      { code: "Non specificato", label: "Not specified" },
+    ],
+    transportMeans: "Means of transport",
+    transportMeansOptions: [
+      { code: "Auto", label: "Car" },
+      { code: "Aereo", label: "Plane" },
+      { code: "Aereo+Pullman", label: "Plane + Coach" },
+      { code: "Aereo+Navetta/Taxi/Auto", label: "Plane + Shuttle/Taxi/Car" },
+      { code: "Aereo+Treno", label: "Plane + Train" },
+      { code: "Treno", label: "Train" },
+      { code: "Pullman", label: "Coach" },
+      { code: "Caravan/Autocaravan", label: "Caravan/Motorhome" },
+      { code: "Barca/Nave/Traghetto", label: "Boat/Ship/Ferry" },
+      { code: "Moto", label: "Motorbike" },
+      { code: "Bicicletta", label: "Bicycle" },
+      { code: "A piedi", label: "On foot" },
+      { code: "Altro mezzo", label: "Other" },
+      { code: "Non Specificato", label: "Not specified" },
+    ],
     addGuest: "Add guest",
     consent:
       "I consent to the processing of my personal data for the mandatory regional tourism-flow statistical reporting (Ross1000). Data is sent by email to the host and is not stored on the site's server.",

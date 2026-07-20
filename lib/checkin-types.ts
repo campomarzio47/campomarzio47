@@ -1,10 +1,52 @@
 // Le etichette mostrate all'utente vivono nel dizionario (content/dictionaries.ts,
 // sezione checkin) così da poter essere tradotte. Qui restano solo i valori/codici
-// che sono il dato effettivo inviato/validato dal server e scritto nell'XML Ross1000.
+// che sono il dato effettivo inviato/validato dal server.
+//
+// Solo un sottoinsieme dei campi qui sotto finisce nell'XML Ross1000 (quelli
+// previsti dalla specifica originale: vedi lib/ross1000.ts). Gli altri
+// (email, indirizzo, codice fiscale, documento) servono solo per il
+// riepilogo/PDF inviato all'host — non sono richiesti dallo schema XML e non
+// vanno inseriti, come confermato dall'errore di validazione ricevuto.
 
-// Tipo documento: stesso elenco gia' usato in precedenza per Alloggiati Web.
 export const documentTypeCodes = ["IDENT", "PASOR", "PATEN", "ALTRO"] as const;
 export type DocumentTypeCode = (typeof documentTypeCodes)[number];
+
+export const tipoTurismoCodes = [
+  "Culturale",
+  "Balneare",
+  "Congressuale/Affari",
+  "Fieristico",
+  "Sportivo/Fitness",
+  "Scolastico",
+  "Religioso",
+  "Sociale",
+  "Parchi Tematici",
+  "Termale/Trattamenti salute",
+  "Enogastronomico",
+  "Cicloturismo",
+  "Escursionistico/Naturalistico",
+  "Altro motivo",
+  "Non specificato",
+] as const;
+export type TipoTurismo = (typeof tipoTurismoCodes)[number];
+
+export const mezzoTrasportoCodes = [
+  "Auto",
+  "Aereo",
+  "Aereo+Pullman",
+  "Aereo+Navetta/Taxi/Auto",
+  "Aereo+Treno",
+  "Treno",
+  "Pullman",
+  "Caravan/Autocaravan",
+  "Barca/Nave/Traghetto",
+  "Moto",
+  "Bicicletta",
+  "A piedi",
+  "Altro mezzo",
+  "Non Specificato",
+] as const;
+export type MezzoTrasporto = (typeof mezzoTrasportoCodes)[number];
 
 // Cittadinanza/stato/comune sono risolti tramite le tabelle ufficiali in
 // lib/reference-data.ts (scaricate da alloggiatiweb.poliziadistato.it), quindi
@@ -16,17 +58,24 @@ export type Guest = {
   nome: string;
   sesso: "M" | "F";
   dataNascita: string; // yyyy-mm-dd
-  email: string;
-  cittadinanza: PlaceRef; // stato, sempre richiesto
-  statoResidenza: PlaceRef; // stato, sempre richiesto
+
+  // Campi previsti dall'XML Ross1000 (specifica originale).
+  cittadinanza: PlaceRef;
+  statoResidenza: PlaceRef;
   comuneResidenza: PlaceRef; // richiesto solo se statoResidenza = Italia
   localitaResidenzaEstera: string; // usato solo se statoResidenza non e' Italia
-  indirizzoResidenza: string; // via e numero civico (serve anche per la fattura)
-  statoNascita: PlaceRef; // richiesto
-  comuneNascita: PlaceRef; // richiesto solo se statoNascita = Italia
+  statoNascita: PlaceRef; // facoltativo
+  comuneNascita: PlaceRef; // valorizzato solo se statoNascita = Italia
+  tipoTurismo: TipoTurismo;
+  mezzoTrasporto: MezzoTrasporto;
+
+  // Campi extra richiesti dall'host: solo per email/PDF, non per l'XML.
+  email: string;
+  indirizzoResidenza: string;
+  codiceFiscale: string; // solo per cittadini italiani
   tipoDocumento: DocumentTypeCode;
   numeroDocumento: string;
-  statoRilascio: PlaceRef; // stato di rilascio del documento
+  statoRilascio: PlaceRef;
   comuneRilascio: PlaceRef; // richiesto solo se statoRilascio = Italia
 };
 

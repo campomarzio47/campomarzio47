@@ -5,18 +5,19 @@ import { property } from "@/content/property";
 
 /**
  * Generatore XML per la movimentazione turistica formato "GIES/Ross1000".
- * Struttura e campi base dalla specifica fornita dall'utente; i campi
- * aggiuntivi (email, documento, indirizzo di residenza, data di partenza)
- * sono stati aggiunti dopo che l'utente ha verificato di persona i campi
- * richiesti dal portale reale — i nomi dei tag XML per questi campi extra
- * NON erano nella specifica originale e sono una nostra migliore ipotesi
- * (stessa convenzione di naming del resto del tracciato): vanno verificati
- * con un caricamento di prova prima dell'uso reale.
  *
- * Cittadinanza, stato/comune di residenza, di nascita e di rilascio del
- * documento arrivano già come codici ufficiali (tabelle Stati/Comuni della
- * Polizia di Stato, vedi lib/reference-data.ts): non servono più segnaposto
- * da completare a mano.
+ * Segue ESATTAMENTE la struttura della specifica originale fornita
+ * dall'utente: <movimenti><codice/><prodotto/><movimento><data/><struttura/>
+ * <arrivi>. Un tentativo precedente aggiungeva campi extra (email,
+ * documento, indirizzo, data di partenza) dedotti da un'osservazione del
+ * portale web — il caricamento di prova ha dato errore XSD proprio su uno di
+ * questi campi (`datapartenza` non è un figlio valido di `movimento`), quindi
+ * qui NON li includiamo più: quei dati restano comunque nel form e vengono
+ * mandati via email/PDF, semplicemente non nell'XML.
+ *
+ * Cittadinanza, stato/comune di residenza e di nascita arrivano già come
+ * codici ufficiali (tabelle Stati/Comuni della Polizia di Stato, vedi
+ * lib/reference-data.ts): non servono più segnaposto da completare a mano.
  *
  * L'unico valore che NON possiamo verificare con certezza è il codice
  * struttura assegnato dall'ente regionale (ROSS1000_CODICE_STRUTTURA):
@@ -48,15 +49,6 @@ function shortId(): string {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
-function addDaysCompact(isoDate: string, days: number): string {
-  const d = new Date(`${isoDate}T00:00:00`);
-  d.setDate(d.getDate() + days);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}${m}${day}`;
-}
-
 function tipoAlloggiato(index: number, total: number): "16" | "17" | "19" {
   // Semplificazione: 1 solo ospite = singolo; con piu' ospiti il primo e'
   // trattato come capofamiglia, gli altri come familiari (stesso criterio
@@ -81,7 +73,6 @@ function buildArrivo(
     : guest.localitaResidenzaEstera;
 
   const nascitaInItalia = guest.statoNascita?.code === ITALIA_CODE;
-  const rilascioInItalia = guest.statoRilascio?.code === ITALIA_CODE;
 
   const lines = [
     "    <arrivo>",
@@ -91,18 +82,14 @@ function buildArrivo(
     tag("cognome", guest.cognome),
     tag("nome", guest.nome),
     tag("sesso", guest.sesso),
-    tag("email", guest.email),
     tag("cittadinanza", guest.cittadinanza?.code),
     tag("statoresidenza", guest.statoResidenza?.code),
     tag("luogoresidenza", luogoResidenza),
-    tag("indirizzoresidenza", guest.indirizzoResidenza),
     tag("datanascita", toCompactDate(guest.dataNascita)),
-    tag("statonascita", guest.statoNascita?.code),
+    guest.statoNascita ? tag("statonascita", guest.statoNascita.code) : "",
     nascitaInItalia ? tag("comunenascita", guest.comuneNascita?.code) : "",
-    tag("tipodocumento", guest.tipoDocumento),
-    tag("numerodocumento", guest.numeroDocumento),
-    tag("statorilascio", guest.statoRilascio?.code),
-    rilascioInItalia ? tag("comunerilascio", guest.comuneRilascio?.code) : "",
+    tag("tipoturismo", guest.tipoTurismo),
+    tag("mezzotrasporto", guest.mezzoTrasporto),
     tag("canaleprenotazione", "Diretta web"),
     "    </arrivo>",
   ];
@@ -135,7 +122,6 @@ export function buildRoss1000File(data: CheckInData): {
     `  <prodotto>${xmlEscape(prodotto)}</prodotto>`,
     "  <movimento>",
     `    <data>${toCompactDate(data.dataArrivo)}</data>`,
-    `    <datapartenza>${addDaysCompact(data.dataArrivo, data.notti)}</datapartenza>`,
     "    <struttura>",
     "      <apertura>SI</apertura>",
     `      <camereoccupate>${CAMERE_OCCUPATE}</camereoccupate>`,

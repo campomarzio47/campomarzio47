@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendMail } from "@/lib/mailer";
 import { buildRoss1000File } from "@/lib/ross1000";
-import { documentTypeCodes } from "@/lib/checkin-types";
+import { buildCheckInPdf } from "@/lib/checkin-pdf";
+import { documentTypeCodes, tipoTurismoCodes, mezzoTrasportoCodes } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
+
+const FISCAL_CODE_PATTERN = /^[A-Z]{6}\d{2}[A-EHLMPR-T]\d{2}[A-Z]\d{3}[A-Z]$/;
 
 const placeSchema = z
   .object({
@@ -24,8 +27,11 @@ const guestSchema = z
     comuneResidenza: placeSchema,
     localitaResidenzaEstera: z.string().max(80).optional().default(""),
     indirizzoResidenza: z.string().min(1).max(120),
+    codiceFiscale: z.string().max(16).optional().default(""),
     statoNascita: placeSchema,
     comuneNascita: placeSchema,
+    tipoTurismo: z.enum(tipoTurismoCodes),
+    mezzoTrasporto: z.enum(mezzoTrasportoCodes),
     tipoDocumento: z.enum(documentTypeCodes),
     numeroDocumento: z.string().min(1).max(20),
     statoRilascio: placeSchema,
@@ -33,7 +39,6 @@ const guestSchema = z
   })
   .refine((g) => g.cittadinanza !== null, { message: "Cittadinanza obbligatoria." })
   .refine((g) => g.statoResidenza !== null, { message: "Stato di residenza obbligatorio." })
-  .refine((g) => g.statoNascita !== null, { message: "Stato di nascita obbligatorio." })
   .refine((g) => g.statoRilascio !== null, { message: "Stato di rilascio documento obbligatorio." })
   .refine(
     (g) => g.statoResidenza?.code !== ITALIA_CODE || g.comuneResidenza !== null,
@@ -46,6 +51,10 @@ const guestSchema = z
   .refine(
     (g) => g.statoRilascio?.code !== ITALIA_CODE || g.comuneRilascio !== null,
     { message: "Comune di rilascio documento obbligatorio se lo stato di rilascio è l'Italia." },
+  )
+  .refine(
+    (g) => g.cittadinanza?.code !== ITALIA_CODE || FISCAL_CODE_PATTERN.test(g.codiceFiscale),
+    { message: "Codice fiscale obbligatorio e valido per i cittadini italiani." },
   );
 
 const checkInSchema = z.object({
@@ -68,6 +77,7 @@ export async function POST(request: Request) {
 
   const data = parsed.data;
   const ross1000 = buildRoss1000File(data);
+  const pdf = await buildCheckInPdf(data);
 
   const summary = data.guests
     .map((g, i) => {
@@ -75,18 +85,20 @@ export async function POST(request: Request) {
         g.statoResidenza?.code === ITALIA_CODE
           ? `${g.comuneResidenza?.label} (Italia)`
           : `${g.localitaResidenzaEstera || "non specificata"} (${g.statoResidenza?.label})`;
-      const nascita =
-        g.statoNascita?.code === ITALIA_CODE
+      const nascita = g.statoNascita
+        ? g.statoNascita.code === ITALIA_CODE
           ? `${g.comuneNascita?.label} (Italia)`
-          : g.statoNascita?.label;
+          : g.statoNascita.label
+        : "non specificata";
       const rilascio =
         g.statoRilascio?.code === ITALIA_CODE
           ? `${g.comuneRilascio?.label} (Italia)`
           : g.statoRilascio?.label;
       return (
         `Ospite ${i + 1}: ${g.cognome} ${g.nome} (${g.sesso}), nato/a il ${g.dataNascita} — nascita: ${nascita} — ` +
-        `email: ${g.email} — cittadinanza: ${g.cittadinanza?.label} — residenza: ${residenza}, ${g.indirizzoResidenza} — ` +
-        `documento: ${g.tipoDocumento} n. ${g.numeroDocumento}, rilasciato in ${rilascio}`
+        `email: ${g.email} — cittadinanza: ${g.cittadinanza?.label} — residenza: ${residenza}, ${g.indirizzoResidenza}` +
+        (g.codiceFiscale ? ` — CF: ${g.codiceFiscale}` : "") +
+        ` — documento: ${g.tipoDocumento} n. ${g.numeroDocumento}, rilasciato in ${rilascio}`
       );
     })
     .join("\n");
@@ -102,16 +114,19 @@ export async function POST(request: Request) {
         "",
         "In allegato:",
         `- ${ross1000.filename} (movimentazione turistica Ross1000/GIES, da caricare sul portale regionale)`,
+        `- ${pdf.filename} (riepilogo leggibile di tutti i dati ospiti)`,
         "",
-        "Tutti i codici (cittadinanza, stato/comune di residenza, nascita e rilascio documento) sono",
+        "Tutti i codici richiesti dall'XML (cittadinanza, stato/comune di residenza e di nascita) sono",
         "già compilati automaticamente dalle tabelle ufficiali. L'unico campo che potrebbe restare",
         "segnato come \"DA_CONFIGURARE\" è il codice struttura, se non hai ancora impostato la",
         "variabile d'ambiente ROSS1000_CODICE_STRUTTURA.",
-        "Verifica anche che il portale flussituristici.regione.veneto.it accetti questo stesso",
-        "tracciato prima del primo invio reale (in particolare i campi email, documento, indirizzo",
-        "di residenza e data di partenza, aggiunti dopo un controllo diretto sul portale).",
+        "L'XML contiene solo i campi previsti dalla specifica originale; email, documento, indirizzo",
+        "e codice fiscale sono nel PDF/riepilogo qui sopra, non nell'XML.",
       ].join("\n"),
-      attachments: [{ filename: ross1000.filename, content: ross1000.buffer }],
+      attachments: [
+        { filename: ross1000.filename, content: ross1000.buffer },
+        { filename: pdf.filename, content: pdf.buffer },
+      ],
     });
 
     return NextResponse.json({ ok: true });
