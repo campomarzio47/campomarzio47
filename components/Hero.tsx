@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import BookingButtons from "@/components/BookingButtons";
+import { property } from "@/content/property";
 
 export default function Hero() {
   const { dict } = useLocale();
@@ -20,7 +21,7 @@ export default function Hero() {
       <div className="h-2 w-full bg-bordeaux" />
       <div className="relative h-[46vh] w-full overflow-hidden md:h-[58vh]">
         <Image
-          src="/photos/copertina.jpg"
+          src={property.heroImage}
           alt={dict.hero.tagline}
           fill
           priority
@@ -31,7 +32,7 @@ export default function Hero() {
       </div>
 
       <div className="mx-auto max-w-4xl px-6 py-12 md:px-10 md:py-16">
-        <h1 className="font-display text-4xl leading-tight md:text-6xl">Campo Marzio 47</h1>
+        <h1 className="font-display text-4xl leading-tight md:text-6xl">{property.name}</h1>
         <p className="mt-3 text-lg text-mid">{dict.hero.tagline}</p>
 
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-mid">

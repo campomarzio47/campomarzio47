@@ -1,5 +1,9 @@
 export const property = {
   name: "Campo Marzio 47",
+  // Parte del nome da evidenziare in bordeaux nel logo (sidebar). Deve
+  // comparire esattamente cosi' com'e' dentro "name". Lascia "" per non
+  // evidenziare nulla.
+  nameAccent: "47",
   type: "Casa a schiera",
   address: {
     street: "Via Campo Marzio 47",
@@ -54,6 +58,8 @@ export const property = {
       text: "L'appartamento è molto accogliente, luminoso e ben arredato. La cura di ogni dettaglio è evidente. La posizione è centrale ma tranquilla. Speriamo di tornare presto.",
     },
   ],
+  // Foto grande in cima alla home page.
+  heroImage: "/photos/copertina.jpg",
   gallery: [
     { src: "/photos/soggiorno-tavolo.jpg" },
     { src: "/photos/soggiorno-divano.jpg" },

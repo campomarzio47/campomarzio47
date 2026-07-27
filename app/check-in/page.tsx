@@ -3,9 +3,10 @@ import PageHeader from "@/components/PageHeader";
 import CheckInForm from "@/components/CheckInForm";
 import { dictionaries } from "@/content/dictionaries";
 import { defaultLocale } from "@/lib/locale";
+import { property } from "@/content/property";
 
 export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].checkin.title} — Campo Marzio 47`,
+  title: `${dictionaries[defaultLocale].checkin.title} — ${property.name}`,
 };
 
 export default function CheckInPage() {

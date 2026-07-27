@@ -3,9 +3,10 @@ import PageHeader from "@/components/PageHeader";
 import Amenities from "@/components/Amenities";
 import { dictionaries } from "@/content/dictionaries";
 import { defaultLocale } from "@/lib/locale";
+import { property } from "@/content/property";
 
 export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].amenities.title} — Campo Marzio 47`,
+  title: `${dictionaries[defaultLocale].amenities.title} — ${property.name}`,
 };
 
 export default function ServiziPage() {

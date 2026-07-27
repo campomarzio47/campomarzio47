@@ -160,7 +160,8 @@ export function buildRoss1000File(data: CheckInData): {
   buffer: Buffer;
 } {
   const codice = process.env.ROSS1000_CODICE_STRUTTURA || CODICE_STRUTTURA_PLACEHOLDER;
-  const prodotto = process.env.ROSS1000_PRODOTTO || "CampoMarzio47Website";
+  const prodotto =
+    process.env.ROSS1000_PRODOTTO || `${property.name.replace(/\s+/g, "")}Website`;
   const lettiDisponibili =
     process.env.ROSS1000_LETTI_DISPONIBILI || String(property.facts.maxGuests);
 

@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import type { CheckInData, Guest, PrimaryGuestExtra } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
+import { property } from "@/content/property";
 
 const MARGIN = 50;
 const PAGE_SIZE: [number, number] = [595.28, 841.89]; // A4
@@ -72,7 +73,7 @@ export async function buildCheckInPdf(data: CheckInData): Promise<{
     y -= gap;
   }
 
-  writeLine("Campo Marzio 47 — Riepilogo check-in", { size: 16, useBold: true, gap: 26 });
+  writeLine(`${property.name} — Riepilogo check-in`, { size: 16, useBold: true, gap: 26 });
   writeLine(`Data di arrivo: ${data.dataArrivo}    Notti: ${data.notti}    Ospiti: ${data.guests.length}`, {
     gap: 24,
   });

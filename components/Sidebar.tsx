@@ -17,6 +17,7 @@ import {
 import { useLocale } from "@/components/LocaleProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import type { Dictionary } from "@/content/dictionaries";
+import { property } from "@/content/property";
 
 function navItems(dict: Dictionary) {
   return [
@@ -30,9 +31,17 @@ function navItems(dict: Dictionary) {
 }
 
 function Logo() {
+  const { name, nameAccent } = property;
+  const base = nameAccent ? name.replace(nameAccent, "").trimEnd() : name;
   return (
     <Link href="/" className="font-display text-2xl tracking-wide">
-      Campo Marzio <span className="text-bordeaux">47</span>
+      {nameAccent ? (
+        <>
+          {base} <span className="text-bordeaux">{nameAccent}</span>
+        </>
+      ) : (
+        name
+      )}
     </Link>
   );
 }

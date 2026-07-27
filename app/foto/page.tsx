@@ -3,9 +3,10 @@ import PageHeader from "@/components/PageHeader";
 import Gallery from "@/components/Gallery";
 import { dictionaries } from "@/content/dictionaries";
 import { defaultLocale } from "@/lib/locale";
+import { property } from "@/content/property";
 
 export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].photos.title} — Campo Marzio 47`,
+  title: `${dictionaries[defaultLocale].photos.title} — ${property.name}`,
 };
 
 export default function FotoPage() {

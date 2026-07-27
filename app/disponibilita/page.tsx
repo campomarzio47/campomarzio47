@@ -5,9 +5,10 @@ import BookingRequestSection from "@/components/BookingRequestSection";
 import HouseRules from "@/components/HouseRules";
 import { dictionaries } from "@/content/dictionaries";
 import { defaultLocale } from "@/lib/locale";
+import { property } from "@/content/property";
 
 export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].availability.title} — Campo Marzio 47`,
+  title: `${dictionaries[defaultLocale].availability.title} — ${property.name}`,
 };
 
 export default function DisponibilitaPage() {

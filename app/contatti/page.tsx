@@ -4,9 +4,10 @@ import ContactForm from "@/components/ContactForm";
 import ContactInfo from "@/components/ContactInfo";
 import { dictionaries } from "@/content/dictionaries";
 import { defaultLocale } from "@/lib/locale";
+import { property } from "@/content/property";
 
 export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].contact.title} — Campo Marzio 47`,
+  title: `${dictionaries[defaultLocale].contact.title} — ${property.name}`,
 };
 
 export default function ContattiPage() {
