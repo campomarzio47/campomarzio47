@@ -6,24 +6,31 @@ import { property } from "@/content/property";
 /**
  * Generatore XML per la movimentazione turistica formato "GIES/Ross1000".
  *
- * La durata del soggiorno non è un campo: è il risultato di due eventi in
- * due giorni diversi, collegati dallo stesso <idswh>.
- * - Un <movimento> per ogni giorno da arrivo a partenza inclusi.
- * - <arrivi> SOLO nel giorno di arrivo (con tutti i dati anagrafici).
- * - <partenze> SOLO nel giorno di partenza, con <partenza> minimale
- *   (idswh, tipoalloggiato, idcapo se presente, e la data di arrivo
- *   originale per ricollegare il record — non i dati anagrafici, già dati
- *   in arrivo).
+ * Struttura confermata dal manuale tecnico ufficiale "Tracciato record di
+ * integrazione dati (XML) — Istruzioni per le software house" (GIES S.r.l.,
+ * https://www.ross1000.it/source/tracciato-xml.pdf), non più solo dedotta
+ * dai messaggi di errore XSD:
+ * - Un <movimento> per ogni giorno da arrivo a partenza inclusi (la durata
+ *   del soggiorno non è un campo, ma il risultato di due eventi in due
+ *   giorni diversi, collegati dallo stesso <idswh>).
+ * - <arrivi> SOLO nel giorno di arrivo, con tutti i dati anagrafici
+ *   dell'ospite (idswh, tipoalloggiato, idcapo se componente di un gruppo,
+ *   cognome, nome, sesso, cittadinanza, stato/luogo di residenza, data/stato/
+ *   comune di nascita, tipo turismo, mezzo di trasporto, canale
+ *   prenotazione).
+ * - <partenze> SOLO nel giorno di partenza, con <partenza> composta da
+ *   soli idswh, tipoalloggiato e arrivo (la data di arrivo originale, per
+ *   ricollegare il record) — NIENT'ALTRO, confermato dal manuale.
  * - Nei giorni intermedi solo <struttura>, senza <arrivi>/<partenze>.
  * - <camereoccupate> = 1 dal giorno di arrivo al giorno prima della
  *   partenza, poi 0 dal giorno di partenza (camera liberata quel giorno).
  *
- * Ricostruito dopo due errori XSD reali sul portale: il primo su un tag
- * "datapartenza" inventato dentro <movimento> (rimosso), il secondo su
- * <partenza> con solo <idswh> ("atteso tipoalloggiato"). Questa versione
- * segue un'analisi più approfondita della struttura standard di questi
- * tracciati "presenze giornaliere"; se il portale segnala ancora un errore
- * XSD, il messaggio indica sempre con precisione il campo da correggere.
+ * Nota: il manuale indica che l'obiettivo finale del sistema è ricevere una
+ * comunicazione per OGNI giorno dell'anno (anche quelli senza movimenti),
+ * per un riscontro continuo dell'occupazione. Questo generatore copre solo
+ * i giorni del soggiorno di ogni singolo check-in, che è lo scopo di questo
+ * form; se la struttura deve anche rendicontare i giorni senza ospiti,
+ * serve un processo separato (fuori scope per il check-in online).
  */
 
 const CODICE_STRUTTURA_PLACEHOLDER = "DA_CONFIGURARE";
