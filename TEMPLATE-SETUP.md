@@ -1,0 +1,80 @@
+# Come adattare questo repo a un nuovo host/immobile
+
+Questo sito è stato costruito per "Campo Marzio 47" ma il codice non ha
+più riferimenti hardcoded al nome/città/host: tutto il contenuto
+specifico dell'immobile vive in `content/`. Per generare un nuovo sito a
+partire da un brief compilato con `TEMPLATE-BRIEF.md`, seguire questi
+passaggi in ordine.
+
+## 1. Clonare il progetto
+
+Copiare l'intera cartella (o `git clone` di questo repo) in una nuova
+cartella/repo per il nuovo cliente. Non riusare lo stesso repo Vercel/
+GitHub del cliente precedente.
+
+## 2. `content/property.ts`
+
+Sostituire tutti i valori con quelli del brief: `name`, `nameAccent`,
+`type`, `address`, `host`, `facts`, `booking`, `reviews`, `heroImage`,
+`gallery`. Questo file guida logo, hero, meta title delle pagine, PDF di
+check-in e il nome "prodotto" di default nell'XML Ross1000 — va sempre
+aggiornato per primo.
+
+## 3. `content/dictionaries.ts`
+
+A differenza di `property.ts`, questo file contiene sia UI generica
+(riusabile senza modifiche: label dei form, bottoni, testi del check-in)
+sia testi discorsivi specifici dell'immobile che vanno riscritti a mano,
+in entrambe le lingue (`it` e `en`):
+
+- `home.meta.title` / `home.meta.description`
+- `home.tagline`
+- `home.description`
+- `photos.subtitle` (cita il nome della proprietà)
+- `contact.subtitle` (cita il nome dell'host)
+- messaggio di conferma del form di check-in (cita la città)
+
+Cercare nel file le occorrenze del vecchio nome proprietà/città per non
+dimenticarne nessuna prima di considerare la traduzione completa.
+
+## 4. Foto
+
+Sostituire i file in `public/photos/` con quelli del nuovo immobile,
+mantenendo `heroImage` e `gallery` in `property.ts` allineati ai nomi
+file effettivi. Preferire sempre foto ad alta risoluzione per l'hero (le
+foto scaricate direttamente da Airbnb/Booking sono spesso troppo
+compresse per un'immagine a piena larghezza).
+
+## 5. Variabili d'ambiente
+
+Copiare `.env.local.example` in `.env.local` e compilare con i dati del
+brief (account Gmail, App Password, indirizzo destinatario, URL iCal se
+disponibili, codice struttura Ross1000 se in Veneto). Impostare le
+stesse variabili nelle Environment Variables del progetto Vercel prima
+del primo deploy.
+
+## 6. Check-in / Ross1000
+
+`lib/ross1000.ts` implementa il tracciato ufficiale GIES/Ross1000 per la
+Regione Veneto. Se il nuovo immobile è in Veneto, basta impostare
+`ROSS1000_CODICE_STRUTTURA`. Se è in un'altra regione con un sistema di
+movimentazione turistica diverso, il generatore XML va rivisto secondo
+la documentazione ufficiale di quella regione — non riusare Ross1000
+assumendo che sia lo stesso formato ovunque.
+
+## 7. Dominio e deploy
+
+Creare un nuovo repo GitHub dedicato, importarlo su Vercel come nuovo
+progetto (non riusare il progetto Vercel del cliente precedente),
+collegare il dominio del brief o lasciare il sottodominio
+`<nome-progetto>.vercel.app`.
+
+## 8. Verifica finale
+
+- `npm run build` senza errori.
+- Controllo visivo di ogni pagina in locale (home, foto, servizi,
+  recensioni, disponibilità, contatti, check-in), sia IT che EN.
+- Un check-in di prova end-to-end per confermare che l'email arrivi con
+  XML + PDF allegati.
+- Se Ross1000 è attivo: caricamento di prova dell'XML generato sul
+  portale ufficiale prima di usarlo con ospiti reali.
