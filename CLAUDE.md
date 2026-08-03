@@ -32,6 +32,11 @@ test.
   drawer su mobile, bottone check-in flottante (`CheckInFab`). Pagine
   brevi, niente scroll infinito — è una scelta esplicita del progetto,
   non solo un dettaglio estetico.
+- Nav della sidebar: solo 4 voci, tutte allo stesso livello (nessun
+  bottone speciale) — La Casa, Prenota ora, Check-in online, Contatti.
+  Foto/Servizi/Recensioni non sono più voci di nav (vedi sotto: sono
+  ancore dentro la home, raggiungibili solo scorrendo o da link diretto
+  `/#foto` ecc., non dalla sidebar).
 - Home (`app/page.tsx` + `components/Hero.tsx`): hero minimale, solo foto
   a piena larghezza + nome della proprietà — niente facts (mq/camere/
   ospiti) né bottoni nell'hero. `hero.tagline`/`hero.description`
@@ -52,8 +57,7 @@ test.
   `components/ReviewsSection.tsx` (invariato). Le vecchie route
   `/foto`, `/servizi`, `/recensioni` restano come redirect verso le
   rispettive ancore (`redirect("/#foto")` ecc.) per non rompere link
-  salvati. La sidebar (`components/Sidebar.tsx`) punta a queste ancore
-  invece che a route dedicate.
+  salvati, ma non compaiono più nella sidebar.
 
 ## Contenuti e i18n
 
@@ -86,10 +90,11 @@ test.
   (`lib/checkin-pdf.ts`), inviati via email all'host.
   **`lib/ross1000.ts` è specifico per il Veneto**: non riusare per altre
   regioni senza verificare il tracciato ufficiale locale.
-- `/disponibilita` — calendario in sola lettura da feed iCal
-  Airbnb/Booking (`lib/ical.ts`, `lib/hooks/useBusyRanges.ts`) + form
-  "richiedi informazioni" (`app/api/prenotazione`, nessun pagamento).
-- `/prenota` — prenotazione diretta **a pagamento**, vedi sotto.
+- `/prenota` — prenotazione diretta **a pagamento**, vedi sotto. Usa il
+  feed iCal Airbnb/Booking (`lib/ical.ts`, `lib/hooks/useBusyRanges.ts`)
+  solo per disabilitare le date già occupate nel calendario — non esiste
+  più una pagina "Disponibilità" a sé stante né un form di richiesta
+  senza pagamento (rimossi: erano poco usati e duplicavano `/prenota`).
 - `/contatti` — form di contatto (`app/api/contatti`).
 
 ## Prenotazione diretta con pagamento (Stripe, senza database)

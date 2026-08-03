@@ -5,10 +5,6 @@ export type Dictionary = {
   languageSwitcher: { label: string };
   nav: {
     home: string;
-    photos: string;
-    amenities: string;
-    reviews: string;
-    availability: string;
     contact: string;
     checkin: string;
     book: string;
@@ -45,33 +41,10 @@ export type Dictionary = {
     allOnBooking: string;
   };
   availability: {
-    title: string;
-    subtitle: string;
     loading: string;
     unconfigured: string;
     error: string;
-    checkPlatforms: string;
     legendUnavailable: string;
-    rulesTitle: string;
-    rules: { label: string; value: string }[];
-  };
-  bookingRequest: {
-    title: string;
-    description: string;
-    nameLabel: string;
-    emailLabel: string;
-    phoneLabel: string;
-    checkinLabel: string;
-    checkoutLabel: string;
-    guestsLabel: string;
-    messagePlaceholder: string;
-    overlapWarning: string;
-    submit: string;
-    sending: string;
-    sentTitle: string;
-    sentBody: string;
-    errorPrefix: string;
-    errorFallbackLink: string;
   };
   booking: {
     title: string;
@@ -92,6 +65,7 @@ export type Dictionary = {
       invalid_dates: string;
       min_nights: string;
       dates_unavailable: string;
+      too_soon: string;
       server_error: string;
     };
   };
@@ -181,10 +155,6 @@ export const it: Dictionary = {
   languageSwitcher: { label: "Lingua" },
   nav: {
     home: "La Casa",
-    photos: "Foto",
-    amenities: "Servizi",
-    reviews: "Recensioni",
-    availability: "Disponibilità",
     contact: "Contatti",
     checkin: "Check-in online",
     book: "Prenota ora",
@@ -296,45 +266,10 @@ export const it: Dictionary = {
     allOnBooking: "Tutte le recensioni su Booking.com",
   },
   availability: {
-    title: "Disponibilità",
-    subtitle: "Le prenotazioni si completano su Airbnb o Booking.com.",
     loading: "Caricamento calendario…",
     unconfigured: "Il calendario live non è ancora collegato.",
     error: "Il calendario non è disponibile in questo momento.",
-    checkPlatforms: "Controlla le date direttamente sulle piattaforme di prenotazione:",
     legendUnavailable: "Non disponibile",
-    rulesTitle: "Regole della casa",
-    rules: [
-      { label: "Check-in", value: "Dalle 15:00 (comunicare orario in anticipo)" },
-      { label: "Check-out", value: "Entro le 10:00" },
-      { label: "Ospiti massimi", value: "4" },
-      { label: "Bambini", value: "Benvenuti (tutte le età)" },
-      { label: "Animali", value: "Non ammessi" },
-      { label: "Fumo", value: "Vietato" },
-      { label: "Feste/eventi", value: "Non consentiti" },
-      { label: "Culle/letti supplementari", value: "Non disponibili" },
-    ],
-  },
-  bookingRequest: {
-    title: "Richiedi informazioni",
-    description:
-      "Scegli le date che ti interessano dal calendario qui sopra e inviaci una richiesta: ti risponderemo per confermare la disponibilità e concordare insieme il pagamento. Non è un pagamento online.",
-    nameLabel: "Nome e cognome",
-    emailLabel: "Email",
-    phoneLabel: "Telefono",
-    checkinLabel: "Data di arrivo",
-    checkoutLabel: "Data di partenza",
-    guestsLabel: "Numero di ospiti",
-    messagePlaceholder: "Note aggiuntive (facoltativo)",
-    overlapWarning:
-      "Attenzione: queste date risultano già occupate nel calendario. Puoi comunque inviare la richiesta se pensi si tratti di un errore.",
-    submit: "Invia richiesta",
-    sending: "Invio…",
-    sentTitle: "Richiesta inviata",
-    sentBody:
-      "Grazie! Ti risponderemo il prima possibile per confermare la disponibilità e concordare il pagamento.",
-    errorPrefix: "Invio non riuscito.",
-    errorFallbackLink: "Scrivi direttamente via email",
   },
   booking: {
     title: "Prenota ora",
@@ -356,6 +291,7 @@ export const it: Dictionary = {
       invalid_dates: "Le date inserite non sono valide.",
       min_nights: "Il soggiorno minimo non è stato rispettato.",
       dates_unavailable: "Queste date non sono più disponibili.",
+      too_soon: "Serve più preavviso prima dell'arrivo per questa data.",
       server_error: "Qualcosa è andato storto, riprova più tardi.",
     },
   },
@@ -487,10 +423,6 @@ export const en: Dictionary = {
   languageSwitcher: { label: "Language" },
   nav: {
     home: "The House",
-    photos: "Photos",
-    amenities: "Amenities",
-    reviews: "Reviews",
-    availability: "Availability",
     contact: "Contact",
     checkin: "Online check-in",
     book: "Book now",
@@ -602,45 +534,10 @@ export const en: Dictionary = {
     allOnBooking: "All reviews on Booking.com",
   },
   availability: {
-    title: "Availability",
-    subtitle: "Bookings are completed on Airbnb or Booking.com.",
     loading: "Loading calendar…",
     unconfigured: "The live calendar isn't connected yet.",
     error: "The calendar isn't available right now.",
-    checkPlatforms: "Check dates directly on the booking platforms:",
     legendUnavailable: "Not available",
-    rulesTitle: "House rules",
-    rules: [
-      { label: "Check-in", value: "From 3:00 PM (please share your arrival time in advance)" },
-      { label: "Check-out", value: "By 10:00 AM" },
-      { label: "Max guests", value: "4" },
-      { label: "Children", value: "Welcome (all ages)" },
-      { label: "Pets", value: "Not allowed" },
-      { label: "Smoking", value: "Not allowed" },
-      { label: "Parties/events", value: "Not allowed" },
-      { label: "Extra beds/cots", value: "Not available" },
-    ],
-  },
-  bookingRequest: {
-    title: "Request information",
-    description:
-      "Pick the dates you're interested in from the calendar above and send us a request: we'll get back to you to confirm availability and arrange payment together. This is not an online payment.",
-    nameLabel: "Full name",
-    emailLabel: "Email",
-    phoneLabel: "Phone",
-    checkinLabel: "Arrival date",
-    checkoutLabel: "Departure date",
-    guestsLabel: "Number of guests",
-    messagePlaceholder: "Additional notes (optional)",
-    overlapWarning:
-      "Heads up: these dates already appear as booked on the calendar. You can still send the request if you think this is a mistake.",
-    submit: "Send request",
-    sending: "Sending…",
-    sentTitle: "Request sent",
-    sentBody:
-      "Thank you! We'll get back to you as soon as possible to confirm availability and arrange payment.",
-    errorPrefix: "Sending failed.",
-    errorFallbackLink: "Write directly via email",
   },
   booking: {
     title: "Book now",
@@ -662,6 +559,7 @@ export const en: Dictionary = {
       invalid_dates: "The selected dates aren't valid.",
       min_nights: "The minimum stay requirement wasn't met.",
       dates_unavailable: "These dates are no longer available.",
+      too_soon: "This date needs more advance notice before arrival.",
       server_error: "Something went wrong, please try again later.",
     },
   },

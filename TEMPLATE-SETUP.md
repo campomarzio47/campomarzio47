@@ -46,7 +46,7 @@ in una sezione separata, non nell'hero stesso. `components/AvailabilityBar.tsx`
 aggiunge una barra fissa in fondo pagina (solo nella home) con selezione
 Arrivo/Partenza che reindirizza a `/prenota?from=...&to=...` — non richiede
 setup aggiuntivo, ma se il nuovo host non vuole i pagamenti diretti (vedi
-`TEMPLATE-BRIEF.md`) va rimossa o puntata altrove (es. `/disponibilita`).
+`TEMPLATE-BRIEF.md`) va rimossa o puntata altrove.
 
 ## 4. Foto
 
@@ -120,8 +120,8 @@ collegare il dominio del brief o lasciare il sottodominio
 ## 8. Verifica finale
 
 - `npm run build` senza errori.
-- Controllo visivo di ogni pagina in locale (home, foto, servizi,
-  recensioni, disponibilità, contatti, check-in), sia IT che EN.
+- Controllo visivo di ogni pagina in locale (home — incluse le sezioni
+  Foto/Servizi/Recensioni —, prenota, check-in, contatti), sia IT che EN.
 - Un check-in di prova end-to-end per confermare che l'email arrivi con
   XML + PDF allegati.
 - Se Ross1000 è attivo: caricamento di prova dell'XML generato sul

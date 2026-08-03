@@ -3,18 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  Home,
-  Image as ImageIcon,
-  Sparkles,
-  Star,
-  CalendarDays,
-  Mail,
-  LogIn,
-  CreditCard,
-  Menu,
-  X,
-} from "lucide-react";
+import { Home, Mail, LogIn, CreditCard, Menu, X } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import type { Dictionary } from "@/content/dictionaries";
@@ -24,10 +13,7 @@ function navItems(dict: Dictionary) {
   return [
     { href: "/", label: dict.nav.home, icon: Home },
     { href: "/prenota", label: dict.nav.book, icon: CreditCard },
-    { href: "/#foto", label: dict.nav.photos, icon: ImageIcon },
-    { href: "/#servizi", label: dict.nav.amenities, icon: Sparkles },
-    { href: "/#recensioni", label: dict.nav.reviews, icon: Star },
-    { href: "/disponibilita", label: dict.nav.availability, icon: CalendarDays },
+    { href: "/check-in", label: dict.nav.checkin, icon: LogIn },
     { href: "/contatti", label: dict.nav.contact, icon: Mail },
   ];
 }
@@ -75,20 +61,6 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function CheckInButton({ onNavigate }: { onNavigate?: () => void }) {
-  const { dict } = useLocale();
-  return (
-    <Link
-      href="/check-in"
-      onClick={onNavigate}
-      className="flex items-center justify-center gap-2 rounded-md bg-bordeaux px-3 py-3 text-sm font-medium text-off-white transition-colors hover:bg-bordeaux-dark"
-    >
-      <LogIn size={17} strokeWidth={2} />
-      {dict.nav.checkin}
-    </Link>
-  );
-}
-
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -100,12 +72,9 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col justify-between border-r border-divider bg-off-white px-5 py-8 md:flex">
-        <div className="flex flex-col gap-8">
-          <Logo />
-          <NavLinks />
-        </div>
-        <CheckInButton />
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-8 border-r border-divider bg-off-white px-5 py-8 md:flex">
+        <Logo />
+        <NavLinks />
       </aside>
 
       {/* Mobile top bar */}
@@ -130,21 +99,18 @@ export default function Sidebar() {
             className="absolute inset-0 bg-charcoal/40"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col justify-between bg-off-white px-5 py-8 shadow-xl">
-            <div className="flex flex-col gap-8">
-              <div className="flex items-center justify-between">
-                <Logo />
-                <button
-                  aria-label="Chiudi menu"
-                  onClick={() => setOpen(false)}
-                  className="rounded-md p-2 text-charcoal"
-                >
-                  <X size={22} />
-                </button>
-              </div>
-              <NavLinks onNavigate={() => setOpen(false)} />
+          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col gap-8 bg-off-white px-5 py-8 shadow-xl">
+            <div className="flex items-center justify-between">
+              <Logo />
+              <button
+                aria-label="Chiudi menu"
+                onClick={() => setOpen(false)}
+                className="rounded-md p-2 text-charcoal"
+              >
+                <X size={22} />
+              </button>
             </div>
-            <CheckInButton onNavigate={() => setOpen(false)} />
+            <NavLinks onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}

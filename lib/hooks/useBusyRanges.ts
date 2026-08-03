@@ -10,8 +10,8 @@ export type BusyRangesState = "loading" | "ready" | "unconfigured" | "error";
 
 // Recupera e trasforma le date occupate da /api/availability (feed iCal di
 // Airbnb/Booking) nel formato DateRange[] atteso da react-day-picker.
-// Condiviso da AvailabilityCalendar (sola lettura) e BookingCalendar
-// (selezione intervallo per la prenotazione diretta).
+// Condiviso da AvailabilityBar e BookingCalendar (selezione intervallo per
+// la prenotazione diretta).
 export function useBusyRanges(): { state: BusyRangesState; busy: DateRange[] } {
   const [state, setState] = useState<BusyRangesState>("loading");
   const [busy, setBusy] = useState<DateRange[]>([]);

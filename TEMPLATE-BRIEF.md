@@ -41,16 +41,6 @@ passaggio.
 Elenco puntato di tutto ciò che è incluso (es. Wi-Fi, aria condizionata,
 lavatrice, parcheggio, giardino, culla su richiesta, animali ammessi...).
 
-## 5. Regole della casa
-
-- Orario check-in:
-- Orario check-out:
-- Animali ammessi? (si/no, condizioni):
-- Fumo ammesso? (si/no):
-- Feste/eventi ammessi? (si/no):
-- Letti supplementari disponibili? (si/no, condizioni):
-- Altre regole specifiche:
-
 ## 6. Recensioni (facoltative, 2-3 reali se disponibili)
 
 Per ciascuna: nome ospite, gruppo (famiglia/coppia/gruppo...), mese/anno,
@@ -95,8 +85,9 @@ voto, testo della recensione (lasciare nella lingua originale, non tradurre).
 - URL "Esporta calendario" (iCal) dal pannello host Airbnb:
 - URL "Esporta calendario" (iCal) da Booking.com:
 
-(Se non forniti, la pagina Disponibilità mostra solo i bottoni verso le
-piattaforme, senza calendario live — il sito funziona comunque.)
+(Se non forniti, il calendario di `/prenota` e la barra "Verifica
+disponibilità" in home funzionano comunque, ma senza disabilitare le
+date già occupate su Airbnb/Booking — il sito funziona comunque.)
 
 ## 11. Check-in online / obbligo flussi turistici (Ross1000-GIES, Veneto)
 
