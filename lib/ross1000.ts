@@ -38,6 +38,17 @@ const CODICE_STRUTTURA_PLACEHOLDER = "DA_CONFIGURARE";
 // Configurazione della struttura (unità unica, non un hotel multi-camera).
 const CAMERE_DISPONIBILI = 1;
 
+// Un copia-incolla nella dashboard Vercel può portarsi dietro testo
+// indesiderato oltre al valore vero e proprio (es. un'altra riga, spazi
+// finali) — stesso problema già visto con STRIPE_SECRET_KEY. Qui è
+// particolarmente insidioso perché il testo in più finirebbe dentro il
+// tag XML (es. <codice>024057-LOC-00037\nredeploy</codice>), causando un
+// errore di caricamento sul portale Ross1000. Si tiene solo la prima riga,
+// ripulita degli spazi.
+function sanitizeEnvValue(raw: string): string {
+  return raw.split(/\r?\n/, 1)[0].trim();
+}
+
 function xmlEscape(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -159,11 +170,15 @@ export function buildRoss1000File(data: CheckInData): {
   filename: string;
   buffer: Buffer;
 } {
-  const codice = process.env.ROSS1000_CODICE_STRUTTURA || CODICE_STRUTTURA_PLACEHOLDER;
-  const prodotto =
-    process.env.ROSS1000_PRODOTTO || `${property.name.replace(/\s+/g, "")}Website`;
-  const lettiDisponibili =
-    process.env.ROSS1000_LETTI_DISPONIBILI || String(property.facts.maxGuests);
+  const codice = sanitizeEnvValue(
+    process.env.ROSS1000_CODICE_STRUTTURA || CODICE_STRUTTURA_PLACEHOLDER,
+  );
+  const prodotto = sanitizeEnvValue(
+    process.env.ROSS1000_PRODOTTO || `${property.name.replace(/\s+/g, "")}Website`,
+  );
+  const lettiDisponibili = sanitizeEnvValue(
+    process.env.ROSS1000_LETTI_DISPONIBILI || String(property.facts.maxGuests),
+  );
 
   const idswhByIndex = data.guests.map((_, i) => {
     const base = `${toCompactDate(data.dataArrivo)}-${shortId()}-${i}`;
