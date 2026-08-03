@@ -25,11 +25,6 @@ export type Dictionary = {
     selectDate: string;
   };
   buttons: { airbnb: string; booking: string };
-  home: {
-    photos: { title: string; description: string };
-    amenities: { title: string; description: string };
-    availability: { title: string; description: string };
-  };
   photos: {
     title: string;
     subtitle: string;
@@ -196,7 +191,7 @@ export const it: Dictionary = {
   },
   hero: {
     tagline: "Casa a schiera moderna nel cuore di Marostica",
-    description: `La casa, completamente ristrutturata nel 2023 con la massima certificazione energetica, è perfetta per famiglie, coppie, single o gruppi di amici che vogliono trascorrere una vacanza in completa armonia, vicino al centro di Marostica ma in un ambiente privato e tranquillo, riccamente arredata e dotata di ogni comfort. Le stanze sono molto luminose, con una meravigliosa vista sulle colline. Oltre al giardino esclusivo, di fronte alla casa c'è un'ampia area verde attrezzata con un parco giochi.`,
+    description: `Ristrutturata di recente, la casa è ideale per famiglie, coppie o gruppi di amici in cerca di una vacanza tranquilla vicino al centro di Marostica: luminosa, arredata con cura, con giardino privato e un'area verde attrezzata proprio di fronte.`,
     facts: {
       surface: "120 m²",
       bedrooms: "2 camere",
@@ -211,14 +206,6 @@ export const it: Dictionary = {
     selectDate: "Seleziona",
   },
   buttons: { airbnb: "Prenota su Airbnb", booking: "Prenota su Booking.com" },
-  home: {
-    photos: { title: "Foto", description: "Guarda gli interni e gli spazi esterni della casa." },
-    amenities: { title: "Servizi", description: "Tutti i comfort inclusi nel soggiorno." },
-    availability: {
-      title: "Disponibilità",
-      description: "Controlla le date libere e richiedi la prenotazione direttamente.",
-    },
-  },
   photos: {
     title: "Foto",
     subtitle: "Gli spazi di Campo Marzio 47, dagli interni al giardino.",
@@ -510,7 +497,7 @@ export const en: Dictionary = {
   },
   hero: {
     tagline: "A modern townhouse in the heart of Marostica",
-    description: `Fully renovated in 2023 to the highest energy efficiency standard, this house is perfect for families, couples, solo travellers or groups of friends looking for a peaceful, harmonious stay close to the centre of Marostica, yet private and quiet. It's richly furnished and equipped with every comfort, with bright rooms and a wonderful view over the hills. Besides the private garden, there's a large green area with a playground right in front of the house.`,
+    description: `Recently renovated, the house is ideal for families, couples or groups of friends looking for a quiet stay close to the centre of Marostica: bright, thoughtfully furnished, with a private garden and a green area with a playground right in front.`,
     facts: {
       surface: "120 sqm",
       bedrooms: "2 bedrooms",
@@ -525,14 +512,6 @@ export const en: Dictionary = {
     selectDate: "Select",
   },
   buttons: { airbnb: "Book on Airbnb", booking: "Book on Booking.com" },
-  home: {
-    photos: { title: "Photos", description: "See the interiors and outdoor spaces of the house." },
-    amenities: { title: "Amenities", description: "All the comforts included in your stay." },
-    availability: {
-      title: "Availability",
-      description: "Check open dates and request your booking directly.",
-    },
-  },
   photos: {
     title: "Photos",
     subtitle: "The spaces of Campo Marzio 47, from the interiors to the garden.",

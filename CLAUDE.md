@@ -43,6 +43,17 @@ test.
   sidebar (`md:left-64`); su mobile è un bottone full-width fisso in
   basso che apre un pannello con il calendario — per questo `CheckInFab`
   si nasconde in home su mobile (altrimenti si sovrapporrebbero).
+- Foto, Servizi e Recensioni **non sono più pagine separate**: sono
+  sezioni della home (`id="foto"`/`"servizi"`/`"recensioni"` in
+  `app/page.tsx`), con `components/PhotoCarousel.tsx` (scroll
+  orizzontale nativo con snap + `Lightbox.tsx` riusato per l'ingrandimento
+  — niente libreria di carousel esterna), `components/Amenities.tsx`
+  (griglia compatta 4 colonne, pensata per stare senza troppo scroll) e
+  `components/ReviewsSection.tsx` (invariato). Le vecchie route
+  `/foto`, `/servizi`, `/recensioni` restano come redirect verso le
+  rispettive ancore (`redirect("/#foto")` ecc.) per non rompere link
+  salvati. La sidebar (`components/Sidebar.tsx`) punta a queste ancore
+  invece che a route dedicate.
 
 ## Contenuti e i18n
 

@@ -1,19 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { ImageIcon, Sparkles, CalendarDays } from "lucide-react";
 import Hero from "@/components/Hero";
 import AvailabilityBar from "@/components/AvailabilityBar";
+import PhotoCarousel from "@/components/PhotoCarousel";
+import Amenities from "@/components/Amenities";
+import ReviewsSection from "@/components/ReviewsSection";
 import { useLocale } from "@/components/LocaleProvider";
 
 export default function Home() {
   const { dict } = useLocale();
-
-  const teasers = [
-    { href: "/disponibilita", icon: CalendarDays, ...dict.home.availability },
-    { href: "/foto", icon: ImageIcon, ...dict.home.photos },
-    { href: "/servizi", icon: Sparkles, ...dict.home.amenities },
-  ];
 
   return (
     <>
@@ -26,19 +21,33 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="border-t border-divider">
-        <div className="mx-auto grid max-w-4xl gap-px bg-divider px-6 py-px sm:grid-cols-3 md:px-10">
-          {teasers.map(({ href, icon: Icon, title, description }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex flex-col gap-2 bg-off-white p-6 transition-colors hover:bg-divider/40"
-            >
-              <Icon size={20} strokeWidth={1.75} className="text-bordeaux" />
-              <span className="font-display text-xl">{title}</span>
-              <span className="text-sm text-mid">{description}</span>
-            </Link>
-          ))}
+      <section id="foto" className="border-t border-divider px-6 py-14 md:px-10 md:py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="font-display text-2xl md:text-3xl">{dict.photos.title}</h2>
+          <p className="mt-1 text-sm text-mid">{dict.photos.subtitle}</p>
+          <div className="mt-6">
+            <PhotoCarousel />
+          </div>
+        </div>
+      </section>
+
+      <section id="servizi" className="border-t border-divider px-6 py-14 md:px-10 md:py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="font-display text-2xl md:text-3xl">{dict.amenities.title}</h2>
+          <p className="mt-1 text-sm text-mid">{dict.amenities.subtitle}</p>
+          <div className="mt-6">
+            <Amenities />
+          </div>
+        </div>
+      </section>
+
+      <section id="recensioni" className="border-t border-divider px-6 py-14 md:px-10 md:py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="font-display text-2xl md:text-3xl">{dict.reviews.title}</h2>
+          <p className="mt-1 text-sm text-mid">{dict.reviews.subtitle}</p>
+          <div className="mt-6">
+            <ReviewsSection />
+          </div>
         </div>
       </section>
 

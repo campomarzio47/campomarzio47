@@ -24,9 +24,9 @@ function navItems(dict: Dictionary) {
   return [
     { href: "/", label: dict.nav.home, icon: Home },
     { href: "/prenota", label: dict.nav.book, icon: CreditCard },
-    { href: "/foto", label: dict.nav.photos, icon: ImageIcon },
-    { href: "/servizi", label: dict.nav.amenities, icon: Sparkles },
-    { href: "/recensioni", label: dict.nav.reviews, icon: Star },
+    { href: "/#foto", label: dict.nav.photos, icon: ImageIcon },
+    { href: "/#servizi", label: dict.nav.amenities, icon: Sparkles },
+    { href: "/#recensioni", label: dict.nav.reviews, icon: Star },
     { href: "/disponibilita", label: dict.nav.availability, icon: CalendarDays },
     { href: "/contatti", label: dict.nav.contact, icon: Mail },
   ];
