@@ -44,6 +44,12 @@ export const property = {
     pricePerNight: 140,
     cleaningFee: 0,
     minNights: 2,
+    // Preavviso minimo in giorni prima dell'arrivo: oggi e i giorni
+    // successivi fino a questo numero (oggi incluso) risultano sempre
+    // "occupati" sul calendario e non prenotabili da /prenota, anche se il
+    // feed iCal di Booking.com non lo segnala (non include il preavviso
+    // minimo impostato lì, solo le prenotazioni vere e proprie).
+    minAdvanceDays: 2,
   },
   // Le recensioni restano nella lingua originale in cui sono state scritte
   // dagli ospiti (citazioni autentiche, non tradotte).

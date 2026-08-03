@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { getBusyRanges } from "@/lib/ical";
 import { getStripe } from "@/lib/stripe";
-import { computeStayTotalCents } from "@/lib/pricing";
+import { computeStayTotalCents, earliestCheckinIso } from "@/lib/pricing";
 import { nightsBetween, toStripeMetadata } from "@/lib/booking-metadata";
 import { property } from "@/content/property";
 import { defaultLocale, isLocale, LOCALE_COOKIE } from "@/lib/locale";
@@ -33,6 +33,10 @@ export async function POST(request: Request) {
 
   if (checkin >= checkout) {
     return NextResponse.json({ ok: false, code: "invalid_dates" }, { status: 400 });
+  }
+
+  if (checkin < earliestCheckinIso()) {
+    return NextResponse.json({ ok: false, code: "too_soon" }, { status: 400 });
   }
 
   const nights = nightsBetween(checkin, checkout);
