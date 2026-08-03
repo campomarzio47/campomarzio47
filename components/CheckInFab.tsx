@@ -18,7 +18,8 @@ export default function CheckInFab() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (pathname === "/check-in" || !scrolled) return null;
+  // In home la barra "Verifica disponibilità" occupa già il basso schermo su mobile.
+  if (pathname === "/check-in" || pathname === "/" || !scrolled) return null;
 
   return (
     <Link

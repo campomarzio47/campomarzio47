@@ -9,11 +9,17 @@ export const metadata: Metadata = {
   title: `${dictionaries[defaultLocale].booking.title} — ${property.name}`,
 };
 
-export default function PrenotaPage() {
+export default async function PrenotaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>;
+}) {
+  const { from, to } = await searchParams;
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16">
       <PageHeader section="booking" />
-      <BookingForm />
+      <BookingForm initialFrom={from} initialTo={to} />
     </div>
   );
 }

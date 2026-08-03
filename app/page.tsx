@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ImageIcon, Sparkles, CalendarDays } from "lucide-react";
 import Hero from "@/components/Hero";
+import AvailabilityBar from "@/components/AvailabilityBar";
 import { useLocale } from "@/components/LocaleProvider";
 
 export default function Home() {
@@ -17,6 +18,14 @@ export default function Home() {
   return (
     <>
       <Hero />
+
+      <section className="mx-auto max-w-3xl px-6 pb-16 text-center md:px-10">
+        <p className="font-display text-2xl italic text-mid">{dict.hero.tagline}</p>
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-charcoal/90">
+          {dict.hero.description}
+        </p>
+      </section>
+
       <section className="border-t border-divider">
         <div className="mx-auto grid max-w-4xl gap-px bg-divider px-6 py-px sm:grid-cols-3 md:px-10">
           {teasers.map(({ href, icon: Icon, title, description }) => (
@@ -32,6 +41,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <AvailabilityBar />
     </>
   );
 }

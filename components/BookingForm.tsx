@@ -28,9 +28,25 @@ function formatPrice(amount: number, currency: string, locale: string): string {
   }).format(amount);
 }
 
-export default function BookingForm() {
+function initialRangeFrom(from?: string, to?: string): DateRange | undefined {
+  if (!from || !to) return undefined;
+  const fromDate = new Date(from);
+  const toDate = new Date(to);
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) return undefined;
+  return { from: fromDate, to: toDate };
+}
+
+export default function BookingForm({
+  initialFrom,
+  initialTo,
+}: {
+  initialFrom?: string;
+  initialTo?: string;
+} = {}) {
   const { dict, locale } = useLocale();
-  const [range, setRange] = useState<DateRange | undefined>();
+  const [range, setRange] = useState<DateRange | undefined>(() =>
+    initialRangeFrom(initialFrom, initialTo),
+  );
   const [guests, setGuests] = useState(1);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");

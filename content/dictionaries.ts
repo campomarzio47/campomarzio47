@@ -18,6 +18,12 @@ export type Dictionary = {
     description: string;
     facts: { surface: string; bedrooms: string; guests: string; garden: string };
   };
+  availabilityBar: {
+    cta: string;
+    arrivalLabel: string;
+    departureLabel: string;
+    selectDate: string;
+  };
   buttons: { airbnb: string; booking: string };
   home: {
     photos: { title: string; description: string };
@@ -197,6 +203,12 @@ export const it: Dictionary = {
       guests: "Fino a 4 ospiti",
       garden: "Giardino privato",
     },
+  },
+  availabilityBar: {
+    cta: "Verifica disponibilità",
+    arrivalLabel: "Arrivo",
+    departureLabel: "Partenza",
+    selectDate: "Seleziona",
   },
   buttons: { airbnb: "Prenota su Airbnb", booking: "Prenota su Booking.com" },
   home: {
@@ -505,6 +517,12 @@ export const en: Dictionary = {
       guests: "Up to 4 guests",
       garden: "Private garden",
     },
+  },
+  availabilityBar: {
+    cta: "Check availability",
+    arrivalLabel: "Arrival",
+    departureLabel: "Departure",
+    selectDate: "Select",
   },
   buttons: { airbnb: "Book on Airbnb", booking: "Book on Booking.com" },
   home: {

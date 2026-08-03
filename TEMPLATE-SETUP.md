@@ -37,6 +37,17 @@ in entrambe le lingue (`it` e `en`):
 Cercare nel file le occorrenze del vecchio nome proprietà/città per non
 dimenticarne nessuna prima di considerare la traduzione completa.
 
+## 3bis. Home page: hero minimale + barra "Verifica disponibilità"
+
+La home (`app/page.tsx` + `components/Hero.tsx`) è volutamente minimale:
+l'hero mostra solo foto a piena larghezza + nome della proprietà; `hero.tagline`
+e `hero.description` (da `dictionaries.ts`) vengono renderizzati subito sotto,
+in una sezione separata, non nell'hero stesso. `components/AvailabilityBar.tsx`
+aggiunge una barra fissa in fondo pagina (solo nella home) con selezione
+Arrivo/Partenza che reindirizza a `/prenota?from=...&to=...` — non richiede
+setup aggiuntivo, ma se il nuovo host non vuole i pagamenti diretti (vedi
+`TEMPLATE-BRIEF.md`) va rimossa o puntata altrove (es. `/disponibilita`).
+
 ## 4. Foto
 
 Sostituire i file in `public/photos/` con quelli del nuovo immobile,

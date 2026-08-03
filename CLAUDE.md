@@ -32,6 +32,17 @@ test.
   drawer su mobile, bottone check-in flottante (`CheckInFab`). Pagine
   brevi, niente scroll infinito — è una scelta esplicita del progetto,
   non solo un dettaglio estetico.
+- Home (`app/page.tsx` + `components/Hero.tsx`): hero minimale, solo foto
+  a piena larghezza + nome della proprietà — niente facts (mq/camere/
+  ospiti) né bottoni nell'hero. `hero.tagline`/`hero.description`
+  vivono subito sotto, in una sezione a parte. La CTA di prenotazione è
+  `components/AvailabilityBar.tsx`: barra fissa in fondo pagina, **solo
+  nella home** (non nelle altre pagine), con selezione Arrivo/Partenza
+  che porta a `/prenota?from=...&to=...` (BookingForm legge questi query
+  param per precompilare il calendario). Su desktop è affiancata alla
+  sidebar (`md:left-64`); su mobile è un bottone full-width fisso in
+  basso che apre un pannello con il calendario — per questo `CheckInFab`
+  si nasconde in home su mobile (altrimenti si sovrapporrebbero).
 
 ## Contenuti e i18n
 
