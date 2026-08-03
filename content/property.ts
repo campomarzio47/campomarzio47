@@ -33,6 +33,18 @@ export const property = {
     bookingUrl:
       "https://www.booking.com/hotel/it/exclusive-house-in-marostica.it.html",
   },
+  // Prezzi per la prenotazione diretta con pagamento (/prenota). Importi in
+  // euro interi (niente centesimi).
+  // Prezzo unico per ora. Prezzi diversi per periodo/stagione sono
+  // pianificati ma non ancora implementati: quando le date saranno
+  // decise andrà aggiunta una logica di tariffe per intervallo di date
+  // (non solo questo valore fisso).
+  pricing: {
+    currency: "EUR",
+    pricePerNight: 140,
+    cleaningFee: 0,
+    minNights: 2,
+  },
   // Le recensioni restano nella lingua originale in cui sono state scritte
   // dagli ospiti (citazioni autentiche, non tradotte).
   reviews: [

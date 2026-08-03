@@ -62,6 +62,43 @@ movimentazione turistica diverso, il generatore XML va rivisto secondo
 la documentazione ufficiale di quella regione — non riusare Ross1000
 assumendo che sia lo stesso formato ovunque.
 
+## 6b. Prenotazione diretta con pagamento (Stripe)
+
+`content/property.ts` ha un blocco `pricing` (`pricePerNight`,
+`cleaningFee`, `minNights`, `currency`) da compilare con i valori del
+brief prima di attivare `/prenota` — di default `pricePerNight` è `0`,
+che mostrerebbe un totale a zero se lasciato così.
+
+Non serve altro codice: `/prenota`, le email di richiesta/conferma/
+rifiuto e la pagina host `/host/prenotazioni/azione` funzionano già,
+senza database (i dati della prenotazione vivono nei metadata del
+PaymentIntent Stripe — vedi il piano archiviato in questo file per il
+dettaglio architetturale).
+
+Variabili d'ambiente da impostare (`.env.local` in locale, poi le stesse
+su Vercel):
+- `STRIPE_SECRET_KEY` — dalla Dashboard Stripe
+  (`dashboard.stripe.com/test/apikeys` per la chiave di TEST,
+  `dashboard.stripe.com/apikeys` per quella live). È la chiave
+  **segreta** (`sk_...`), non quella pubblicabile (`pk_...`) — questo
+  sito non la usa mai, perché il pagamento avviene su una pagina ospitata
+  da Stripe (Checkout), non con un form carta custom nel sito.
+- `STRIPE_WEBHOOK_SECRET` — creato quando si configura l'endpoint
+  webhook su Stripe (`dashboard.stripe.com/webhooks`, endpoint puntato a
+  `https://<dominio>/api/stripe/webhook`, sottoscritto SOLO all'evento
+  `checkout.session.completed`). **Senza questo valore configurato, dopo
+  che un ospite paga l'host non riceve alcuna email di notifica: il
+  flusso si interrompe silenziosamente.** Da non dimenticare.
+- `BOOKING_TOKEN_SECRET` — generato una tantum con `openssl rand -hex
+  32`, non deve mai cambiare dopo il primo deploy (invaliderebbe i link
+  di conferma/rifiuto già inviati agli host in attesa).
+
+**Sempre testare in modalità TEST prima di passare alle chiavi live**:
+chiavi che iniziano con `sk_test_`/`pk_test_`, webhook di test, carta di
+prova `4242 4242 4242 4242`. Solo dopo aver verificato l'intero flusso
+(autorizzazione → email host → conferma o rifiuto → email finali) si
+passa alle chiavi `sk_live_...` e a un endpoint webhook live separato.
+
 ## 7. Dominio e deploy
 
 Creare un nuovo repo GitHub dedicato, importarlo su Vercel come nuovo
@@ -78,3 +115,6 @@ collegare il dominio del brief o lasciare il sottodominio
   XML + PDF allegati.
 - Se Ross1000 è attivo: caricamento di prova dell'XML generato sul
   portale ufficiale prima di usarlo con ospiti reali.
+- Se la prenotazione diretta è attiva: una prenotazione di prova in
+  modalità Stripe TEST end-to-end, prima di attivare le chiavi live
+  (vedi §6b).

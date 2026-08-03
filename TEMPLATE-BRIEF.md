@@ -62,6 +62,18 @@ voto, testo della recensione (lasciare nella lingua originale, non tradurre).
 - URL annuncio Booking.com:
 - Altri canali di prenotazione diretta da collegare?
 
+## 7b. Prenotazione diretta con pagamento (Stripe)
+
+- Prezzo per notte (in euro, un unico valore fisso — prezzi diversi per
+  stagione/periodo non sono ancora supportati dal sito):
+- Costo pulizie finali (facoltativo, 0 se incluso nel prezzo per notte):
+- Soggiorno minimo in notti (facoltativo, di default 2):
+- L'host ha già un account Stripe? Se sì, è verificato/attivo per
+  accettare pagamenti reali?
+- Nota: la carta dell'ospite viene solo autorizzata al momento della
+  prenotazione; l'host conferma o rifiuta a mano entro un paio di
+  giorni, e solo alla conferma avviene l'addebito reale.
+
 ## 8. Foto
 
 - 1 foto di copertina in alta risoluzione (idealmente >3000px sul lato

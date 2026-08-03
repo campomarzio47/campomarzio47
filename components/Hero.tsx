@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, CreditCard } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import BookingButtons from "@/components/BookingButtons";
 import { property } from "@/content/property";
@@ -45,10 +45,17 @@ export default function Hero() {
 
         <div className="mt-8">
           <Link
-            href="/disponibilita#richiedi-prenotazione"
+            href="/prenota"
             className="inline-flex items-center justify-center gap-2 rounded-md bg-bordeaux px-8 py-4 text-base font-semibold text-off-white shadow-md transition-colors hover:bg-bordeaux-dark"
           >
-            <CalendarCheck size={19} strokeWidth={2} />
+            <CreditCard size={19} strokeWidth={2} />
+            {dict.nav.book}
+          </Link>
+          <Link
+            href="/disponibilita#richiedi-prenotazione"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md border border-charcoal px-6 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-charcoal hover:text-off-white"
+          >
+            <CalendarCheck size={17} strokeWidth={2} />
             {dict.bookingRequest.title}
           </Link>
           <BookingButtons className="mt-4" />

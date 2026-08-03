@@ -5,6 +5,7 @@ export type Attachment = { filename: string; content: string | Buffer };
 export async function sendMail(options: {
   subject: string;
   text: string;
+  to?: string;
   replyTo?: string;
   attachments?: Attachment[];
 }) {
@@ -25,7 +26,7 @@ export async function sendMail(options: {
 
   await transporter.sendMail({
     from: user,
-    to: hostEmail,
+    to: options.to || hostEmail,
     replyTo: options.replyTo,
     subject: options.subject,
     text: options.text,

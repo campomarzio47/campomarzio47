@@ -11,6 +11,7 @@ export type Dictionary = {
     availability: string;
     contact: string;
     checkin: string;
+    book: string;
   };
   hero: {
     tagline: string;
@@ -70,6 +71,32 @@ export type Dictionary = {
     sentBody: string;
     errorPrefix: string;
     errorFallbackLink: string;
+  };
+  booking: {
+    title: string;
+    subtitle: string;
+    guestsLabel: string;
+    nameLabel: string;
+    emailLabel: string;
+    phoneLabel: string;
+    nightsLabel: string;
+    pricePerNightLabel: string;
+    cleaningFeeLabel: string;
+    totalLabel: string;
+    minNightsWarning: string;
+    continueButton: string;
+    sendingLabel: string;
+    errors: {
+      validation_error: string;
+      invalid_dates: string;
+      min_nights: string;
+      dates_unavailable: string;
+      server_error: string;
+    };
+  };
+  bookingConfirmation: {
+    title: string;
+    subtitle: string;
   };
   contact: {
     title: string;
@@ -159,6 +186,7 @@ export const it: Dictionary = {
     availability: "Disponibilità",
     contact: "Contatti",
     checkin: "Check-in online",
+    book: "Prenota ora",
   },
   hero: {
     tagline: "Casa a schiera moderna nel cuore di Marostica",
@@ -289,7 +317,7 @@ export const it: Dictionary = {
     ],
   },
   bookingRequest: {
-    title: "Richiedi una prenotazione",
+    title: "Richiedi informazioni",
     description:
       "Scegli le date che ti interessano dal calendario qui sopra e inviaci una richiesta: ti risponderemo per confermare la disponibilità e concordare insieme il pagamento. Non è un pagamento online.",
     nameLabel: "Nome e cognome",
@@ -308,6 +336,34 @@ export const it: Dictionary = {
       "Grazie! Ti risponderemo il prima possibile per confermare la disponibilità e concordare il pagamento.",
     errorPrefix: "Invio non riuscito.",
     errorFallbackLink: "Scrivi direttamente via email",
+  },
+  booking: {
+    title: "Prenota ora",
+    subtitle:
+      "Scegli le date, paga con carta e ricevi conferma dall'host entro un paio di giorni. L'importo viene solo autorizzato: verrà addebitato soltanto se la prenotazione viene confermata.",
+    guestsLabel: "Numero di ospiti",
+    nameLabel: "Nome e cognome",
+    emailLabel: "Email",
+    phoneLabel: "Telefono",
+    nightsLabel: "Notti",
+    pricePerNightLabel: "Prezzo per notte",
+    cleaningFeeLabel: "Pulizie finali",
+    totalLabel: "Totale",
+    minNightsWarning: "Soggiorno minimo {min} notti.",
+    continueButton: "Continua al pagamento",
+    sendingLabel: "Attendere…",
+    errors: {
+      validation_error: "Dati non validi. Controlla i campi e riprova.",
+      invalid_dates: "Le date inserite non sono valide.",
+      min_nights: "Il soggiorno minimo non è stato rispettato.",
+      dates_unavailable: "Queste date non sono più disponibili.",
+      server_error: "Qualcosa è andato storto, riprova più tardi.",
+    },
+  },
+  bookingConfirmation: {
+    title: "Richiesta ricevuta!",
+    subtitle:
+      "La tua carta è stata autorizzata (non ancora addebitata). L'host confermerà la prenotazione entro un paio di giorni; riceverai un'email non appena lo farà.",
   },
   contact: {
     title: "Contatti",
@@ -438,6 +494,7 @@ export const en: Dictionary = {
     availability: "Availability",
     contact: "Contact",
     checkin: "Online check-in",
+    book: "Book now",
   },
   hero: {
     tagline: "A modern townhouse in the heart of Marostica",
@@ -568,7 +625,7 @@ export const en: Dictionary = {
     ],
   },
   bookingRequest: {
-    title: "Request a booking",
+    title: "Request information",
     description:
       "Pick the dates you're interested in from the calendar above and send us a request: we'll get back to you to confirm availability and arrange payment together. This is not an online payment.",
     nameLabel: "Full name",
@@ -587,6 +644,34 @@ export const en: Dictionary = {
       "Thank you! We'll get back to you as soon as possible to confirm availability and arrange payment.",
     errorPrefix: "Sending failed.",
     errorFallbackLink: "Write directly via email",
+  },
+  booking: {
+    title: "Book now",
+    subtitle:
+      "Pick your dates, pay by card, and get confirmation from the host within a couple of days. Your card is only authorised: it will be charged only if the booking is confirmed.",
+    guestsLabel: "Number of guests",
+    nameLabel: "Full name",
+    emailLabel: "Email",
+    phoneLabel: "Phone",
+    nightsLabel: "Nights",
+    pricePerNightLabel: "Price per night",
+    cleaningFeeLabel: "Cleaning fee",
+    totalLabel: "Total",
+    minNightsWarning: "Minimum stay {min} nights.",
+    continueButton: "Continue to payment",
+    sendingLabel: "Please wait…",
+    errors: {
+      validation_error: "Invalid data. Please check the fields and try again.",
+      invalid_dates: "The selected dates aren't valid.",
+      min_nights: "The minimum stay requirement wasn't met.",
+      dates_unavailable: "These dates are no longer available.",
+      server_error: "Something went wrong, please try again later.",
+    },
+  },
+  bookingConfirmation: {
+    title: "Request received!",
+    subtitle:
+      "Your card has been authorised (not charged yet). The host will confirm the booking within a couple of days; you'll get an email as soon as they do.",
   },
   contact: {
     title: "Contact",

@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Mail,
   LogIn,
+  CreditCard,
   Menu,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { property } from "@/content/property";
 function navItems(dict: Dictionary) {
   return [
     { href: "/", label: dict.nav.home, icon: Home },
+    { href: "/prenota", label: dict.nav.book, icon: CreditCard },
     { href: "/foto", label: dict.nav.photos, icon: ImageIcon },
     { href: "/servizi", label: dict.nav.amenities, icon: Sparkles },
     { href: "/recensioni", label: dict.nav.reviews, icon: Star },
