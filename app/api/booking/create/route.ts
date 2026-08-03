@@ -102,7 +102,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ ok: true, url: session.url });
-  } catch {
+  } catch (error) {
+    console.error("Errore nella creazione della Checkout Session", error);
     return NextResponse.json({ ok: false, code: "server_error" }, { status: 500 });
   }
 }
