@@ -10,7 +10,7 @@ export default function Hero() {
   return (
     <section>
       <div className="h-2 w-full bg-bordeaux" />
-      <div className="relative h-[62vh] w-full overflow-hidden md:h-[58vh]">
+      <div className="relative h-[42dvh] w-full overflow-hidden md:h-[58vh]">
         <Image
           src={property.heroImage}
           alt={dict.hero.tagline}
