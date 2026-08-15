@@ -44,7 +44,10 @@ export default function Home() {
         </Reveal>
       </section>
 
-      <section id="recensioni" className="border-t border-divider px-6 py-14 md:px-10 md:py-16">
+      <section
+        id="recensioni"
+        className="border-t border-divider px-6 pt-14 pb-32 md:px-10 md:pt-16 md:pb-40"
+      >
         <Reveal className="mx-auto max-w-4xl">
           <h2 className="font-display text-2xl md:text-3xl">{dict.reviews.title}</h2>
           <p className="mt-1 text-sm text-mid">{dict.reviews.subtitle}</p>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 
@@ -40,7 +41,11 @@ export default function Lightbox({
   const { dict } = useLocale();
   const photo = photos[index];
 
-  return (
+  // Portale su document.body: la lightbox è "fixed" e non deve dipendere
+  // dagli antenati (es. il wrapper Reveal usa transform per l'animazione,
+  // che altrimenti diventerebbe il nuovo contenitore di riferimento per
+  // "fixed", spostando l'overlay fuori posto).
+  return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-charcoal/95 px-4">
       <button
         aria-label={dict.photos.close}
@@ -79,6 +84,7 @@ export default function Lightbox({
       >
         <ChevronRight size={32} />
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }
