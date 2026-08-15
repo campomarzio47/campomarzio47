@@ -148,9 +148,9 @@ export type Dictionary = {
 
 export const it: Dictionary = {
   meta: {
-    title: "Campo Marzio 47 — Casa a schiera moderna nel cuore di Marostica",
+    title: "Campo Marzio 47 — Casa vacanze in affitto breve a Marostica (VI)",
     description:
-      "Casa a schiera moderna a Marostica, 120 m², fino a 4 ospiti. Prenota su Airbnb o Booking.com e completa il check-in online.",
+      "Campo Marzio 47: casa a schiera in affitto breve nel centro di Marostica (VI), 120 m², fino a 4 ospiti. Prenota direttamente online o su Airbnb/Booking.com, check-in digitale incluso.",
   },
   languageSwitcher: { label: "Lingua" },
   nav: {
@@ -416,9 +416,9 @@ export const it: Dictionary = {
 
 export const en: Dictionary = {
   meta: {
-    title: "Campo Marzio 47 — A modern townhouse in the heart of Marostica",
+    title: "Campo Marzio 47 — Short-term rental home in Marostica (VI), Italy",
     description:
-      "Modern townhouse in Marostica, 120 sqm, up to 4 guests. Book on Airbnb or Booking.com and complete online check-in.",
+      "Campo Marzio 47: a townhouse for short-term rental in the centre of Marostica (VI), Italy, 120 sqm, up to 4 guests. Book directly online or via Airbnb/Booking.com, digital check-in included.",
   },
   languageSwitcher: { label: "Language" },
   nav: {

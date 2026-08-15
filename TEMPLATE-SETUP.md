@@ -171,6 +171,28 @@ progetto (non riusare il progetto Vercel del cliente precedente),
 collegare il dominio del brief o lasciare il sottodominio
 `<nome-progetto>.vercel.app`.
 
+## 7b. SEO
+
+`NEXT_PUBLIC_SITE_URL` (env var) va impostato al dominio reale scelto al
+punto 7 **prima** del lancio — è usato per `sitemap.xml`, `robots.txt`,
+il tag `canonical` e Open Graph (`app/layout.tsx`). Se lasciato vuoto il
+sito usa come fallback `https://campomarzio47.vercel.app`, sbagliato per
+qualunque nuovo progetto.
+
+`meta.title`/`meta.description` in `content/dictionaries.ts` (sezione
+`it`) vanno riscritti per includere naturalmente termini che un host
+locale userebbe per cercare l'immobile (tipo di alloggio + "affitto
+breve"/"casa vacanze" + città) — non limitarsi al nome della proprietà.
+I dati strutturati JSON-LD (`LodgingBusiness`, generati automaticamente
+da `content/property.ts`) non richiedono modifiche manuali.
+
+Fuori dal codice, indispensabile e più efficace di qualunque
+ottimizzazione on-page per ricerche locali: registrare/verificare una
+scheda **Google Business Profile** per l'immobile e sottomettere il
+sito su **Google Search Console** (richiede accesso Google dell'host,
+non automatizzabile) — un sito nuovo, per quanto ben ottimizzato, spesso
+non compare nei risultati finché non viene scoperto/indicizzato.
+
 ## 8. Verifica finale
 
 - `npm run build` senza errori.
