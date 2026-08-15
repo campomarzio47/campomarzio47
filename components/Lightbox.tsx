@@ -41,11 +41,11 @@ export default function Lightbox({
   const photo = photos[index];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/95 px-4">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-charcoal/95 px-4">
       <button
         aria-label={dict.photos.close}
         onClick={onClose}
-        className="absolute right-5 top-5 text-off-white/80 transition-colors hover:text-off-white"
+        className="absolute right-5 top-5 rounded-full p-1 text-off-white/80 transition-all duration-200 hover:text-off-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-off-white"
       >
         <X size={28} />
       </button>
@@ -53,12 +53,12 @@ export default function Lightbox({
       <button
         aria-label={dict.photos.prev}
         onClick={goPrev}
-        className="absolute left-3 text-off-white/70 transition-colors hover:text-off-white md:left-8"
+        className="absolute left-3 rounded-full p-1 text-off-white/70 transition-all duration-200 hover:text-off-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-off-white md:left-8"
       >
         <ChevronLeft size={32} />
       </button>
 
-      <div className="flex max-h-[85vh] w-full max-w-4xl flex-col items-center gap-4">
+      <div className="animate-pop-in flex max-h-[85vh] w-full max-w-4xl flex-col items-center gap-4">
         <div className="relative h-[70vh] w-full">
           <Image
             src={photo.src}
@@ -75,7 +75,7 @@ export default function Lightbox({
       <button
         aria-label={dict.photos.next}
         onClick={goNext}
-        className="absolute right-3 text-off-white/70 transition-colors hover:text-off-white md:right-8"
+        className="absolute right-3 rounded-full p-1 text-off-white/70 transition-all duration-200 hover:text-off-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-off-white md:right-8"
       >
         <ChevronRight size={32} />
       </button>

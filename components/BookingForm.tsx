@@ -165,7 +165,7 @@ export default function BookingForm({
         <button
           type="submit"
           disabled={!canSubmit || status === "sending"}
-          className="inline-flex items-center justify-center rounded-md bg-bordeaux px-6 py-3 text-sm font-medium text-off-white transition-colors hover:bg-bordeaux-dark disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-md bg-bordeaux px-6 py-3 text-sm font-medium text-off-white transition-all duration-200 hover:bg-bordeaux-dark active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
         >
           {status === "sending" ? dict.booking.sendingLabel : dict.booking.continueButton}
         </button>

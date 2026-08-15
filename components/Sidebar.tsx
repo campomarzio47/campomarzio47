@@ -46,7 +46,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             key={href}
             href={href}
             onClick={onNavigate}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux ${
               active
                 ? "bg-charcoal text-off-white"
                 : "text-mid hover:bg-divider/60 hover:text-charcoal"

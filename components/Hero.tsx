@@ -18,7 +18,7 @@ export default function Hero() {
           priority
           quality={90}
           sizes="100vw"
-          className="object-cover"
+          className="animate-kenburns object-cover"
         />
       </div>
 

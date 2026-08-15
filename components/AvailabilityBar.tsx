@@ -78,7 +78,7 @@ export default function AvailabilityBar() {
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 hidden justify-center px-6 md:left-64 md:flex">
         <div ref={wrapRef} className="pointer-events-auto relative">
           {desktopOpen && (
-            <div className="absolute bottom-full left-0 mb-3 rounded-lg border border-divider bg-off-white p-3 shadow-xl">
+            <div className="animate-pop-in absolute bottom-full left-0 mb-3 rounded-lg border border-divider bg-off-white p-3 shadow-xl">
               {calendar}
             </div>
           )}
@@ -86,7 +86,7 @@ export default function AvailabilityBar() {
             <button
               type="button"
               onClick={() => setDesktopOpen((v) => !v)}
-              className="flex flex-col items-start rounded-full px-5 py-2 text-left hover:bg-divider/40"
+              className="flex flex-col items-start rounded-full px-5 py-2 text-left transition-colors hover:bg-divider/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
             >
               <span className="text-[11px] uppercase tracking-wide text-mid">
                 {dict.availabilityBar.arrivalLabel}
@@ -97,7 +97,7 @@ export default function AvailabilityBar() {
             <button
               type="button"
               onClick={() => setDesktopOpen((v) => !v)}
-              className="flex flex-col items-start rounded-full px-5 py-2 text-left hover:bg-divider/40"
+              className="flex flex-col items-start rounded-full px-5 py-2 text-left transition-colors hover:bg-divider/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
             >
               <span className="text-[11px] uppercase tracking-wide text-mid">
                 {dict.availabilityBar.departureLabel}
@@ -107,7 +107,7 @@ export default function AvailabilityBar() {
             <button
               type="button"
               onClick={goToBooking}
-              className="ml-1 rounded-full bg-bordeaux px-8 text-sm font-semibold text-off-white transition-colors hover:bg-bordeaux-dark"
+              className="ml-1 rounded-full bg-bordeaux px-8 text-sm font-semibold text-off-white transition-all duration-200 hover:bg-bordeaux-dark active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
             >
               {dict.availabilityBar.cta}
             </button>
@@ -120,7 +120,7 @@ export default function AvailabilityBar() {
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-bordeaux py-3 text-sm font-semibold text-off-white shadow-md transition-colors hover:bg-bordeaux-dark"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-bordeaux py-3 text-sm font-semibold text-off-white shadow-md transition-all duration-200 hover:bg-bordeaux-dark active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
         >
           <CalendarDays size={17} strokeWidth={2} />
           {dict.availabilityBar.cta}
@@ -130,15 +130,18 @@ export default function AvailabilityBar() {
       {/* Mobile: pannello date */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-charcoal/40" onClick={() => setMobileOpen(false)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-off-white p-5 shadow-2xl">
+          <div
+            className="animate-fade-in absolute inset-0 bg-charcoal/40"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="animate-sheet-in absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-off-white p-5 shadow-2xl">
             <div className="mb-4 flex items-center justify-between">
               <span className="font-display text-lg">{dict.availabilityBar.cta}</span>
               <button
                 type="button"
                 aria-label={dict.photos.close}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-md p-1 text-charcoal"
+                className="rounded-md p-1 text-charcoal transition-colors hover:bg-divider/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
               >
                 <X size={20} />
               </button>
@@ -164,7 +167,7 @@ export default function AvailabilityBar() {
                 setMobileOpen(false);
                 goToBooking();
               }}
-              className="mt-4 w-full rounded-md bg-bordeaux py-3 text-sm font-semibold text-off-white transition-colors hover:bg-bordeaux-dark"
+              className="mt-4 w-full rounded-md bg-bordeaux py-3 text-sm font-semibold text-off-white transition-all duration-200 hover:bg-bordeaux-dark active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
             >
               {dict.availabilityBar.cta}
             </button>
