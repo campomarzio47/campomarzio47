@@ -58,6 +58,22 @@ test.
   `/foto`, `/servizi`, `/recensioni` restano come redirect verso le
   rispettive ancore (`redirect("/#foto")` ecc.) per non rompere link
   salvati, ma non compaiono più nella sidebar.
+- Micro-interazioni (tutte in `app/globals.css`, rispettano
+  `prefers-reduced-motion`): `.animate-kenburns` (zoom lentissimo sulla
+  foto hero), `components/Reveal.tsx` + `.reveal`/`.reveal-visible`
+  (fade+slide-up all'ingresso in viewport via IntersectionObserver,
+  usato per le sezioni della home), `.animate-pop-in`/`.animate-sheet-in`/
+  `.animate-fade-in` (popover, pannello mobile, lightbox). Il calendario
+  (`react-day-picker`) è restilizzato in stile minimalista via le CSS
+  custom property della libreria sotto `.rdp-root` — eredita
+  automaticamente la palette del sito.
+  **Attenzione ai `transform` su antenati di elementi `fixed`**: un
+  antenato con `transform` (anche `.reveal`) ridefinisce il contenitore
+  di riferimento per `position: fixed` nei discendenti. `Lightbox.tsx`
+  ci è cascato (era annidato dentro `Reveal`) ed è per questo che si
+  monta con `createPortal` su `document.body` invece che nell'albero
+  normale — pattern da riusare per qualunque futuro overlay/modale
+  potenzialmente annidato in un `Reveal`.
 
 ## Contenuti e i18n
 
@@ -123,6 +139,13 @@ necessario al volume atteso (1-2 prenotazioni dirette/mese).
 - Il calendario di `/prenota` mostra occupate solo le date bloccate su
   Airbnb/Booking (iCal) — non le altre richieste dirette in attesa di
   conferma. Compromesso consapevole, non un bug.
+- `property.pricing.minAdvanceDays` (default 2, in `content/property.ts`)
+  blocca sempre come "occupati" oggi e i giorni successivi fino a quel
+  numero, sia sul calendario sia lato server in `/api/booking/create`
+  (`lib/pricing.ts`, `earliestCheckinIso`/`leadTimeBusyRange`) —
+  necessario perché Booking.com non riporta nel proprio export iCal il
+  preavviso minimo impostato sulla piattaforma, solo le prenotazioni
+  vere e proprie.
 - Dettaglio completo del piano architetturale in
   `C:\Users\fv28\.claude\plans\stateful-prancing-hamming.md` se serve
   ricostruire il ragionamento.
