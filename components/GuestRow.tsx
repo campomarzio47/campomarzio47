@@ -155,6 +155,7 @@ export default function GuestRow({
         <label className={labelClasses}>
           {dict.checkin.birthState}
           <PlaceAutocomplete
+            required
             value={guest.statoNascita}
             onChange={(v) => onChange({ ...guest, statoNascita: v, comuneNascita: null })}
             options={statiOptions}

@@ -127,6 +127,25 @@ assumendo che sia lo stesso formato ovunque. Il resto del flusso di
 check-in (form, validazione, PDF di riepilogo, invio email) è generico e
 riusabile senza modifiche indipendentemente dalla regione.
 
+Il check-in genera anche `lib/alloggiati.ts` — il file `.txt` per
+**Alloggiati Web** (Questura, pubblica sicurezza): adempimento nazionale,
+distinto da quello statistico regionale e valido per qualunque regione,
+quindi non va adattato per un nuovo cliente. L'host deve caricare i due
+file su due portali diversi.
+
+Attenzione a non "semplificare" queste due cose, che sembrano ridondanti
+ma non lo sono:
+- il file Questura **non** è scaricabile da Ross1000 quando i dati
+  arrivano da un gestionale esterno (le FAQ ufficiali GIES: *"Tale
+  funzione è disponibile solo per chi carica da check-in"*), e il
+  tracciato XML di movimentazione non prevede affatto i campi del
+  documento d'identità — per questo lo generiamo direttamente noi;
+- `<idswh>` nell'XML Ross1000 deve restare **invariato** per lo stesso
+  check-in (lo impone il manuale GIES). È un hash dei dati anagrafici +
+  data di arrivo: se diventasse casuale, ogni ri-caricamento dello stesso
+  soggiorno verrebbe registrato dal portale come ospiti nuovi, gonfiando
+  le presenze.
+
 ## 6b. Prenotazione diretta con pagamento (Stripe)
 
 `content/property.ts` ha un blocco `pricing` (`pricePerNight`,

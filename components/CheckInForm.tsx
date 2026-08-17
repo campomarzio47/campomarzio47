@@ -44,9 +44,11 @@ function emptyPrimary(): PrimaryGuestExtra {
 const FISCAL_CODE_PATTERN = /^[A-Z]{6}\d{2}[A-EHLMPR-T]\d{2}[A-Z]\d{3}[A-Z]$/;
 
 function guestHasIncompletePlace(guest: Guest): boolean {
-  if (!guest.cittadinanza || !guest.statoResidenza) return true;
+  // Lo stato di nascita e' obbligatorio per il tracciato Alloggiati Web,
+  // che lo richiede per ogni tipo di alloggiato.
+  if (!guest.cittadinanza || !guest.statoResidenza || !guest.statoNascita) return true;
   if (guest.statoResidenza.code === ITALIA_CODE && !guest.comuneResidenza) return true;
-  if (guest.statoNascita?.code === ITALIA_CODE && !guest.comuneNascita) return true;
+  if (guest.statoNascita.code === ITALIA_CODE && !guest.comuneNascita) return true;
   return false;
 }
 

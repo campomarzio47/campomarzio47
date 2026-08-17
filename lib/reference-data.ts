@@ -20,3 +20,15 @@ export const comuniOptions: PlaceOption[] = (
 
 export const italiaOption: PlaceOption =
   statiOptions.find((s) => s.code === ITALIA_CODE) ?? { code: ITALIA_CODE, label: "ITALIA" };
+
+// Sigla della provincia per codice comune. Serve al tracciato Alloggiati Web
+// (campo "Provincia Nascita", 2 caratteri), che la richiede separata dal
+// codice del comune quando l'ospite e' nato in Italia.
+const provinceByComune = new Map(
+  (comuniData as { code: string; province: string }[]).map((c) => [c.code, c.province]),
+);
+
+export function provinciaByComuneCode(code: string | undefined | null): string {
+  if (!code) return "";
+  return provinceByComune.get(code) ?? "";
+}

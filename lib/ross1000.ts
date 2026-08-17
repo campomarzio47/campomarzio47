@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import type { CheckInData, Guest } from "@/lib/checkin-types";
 import { toCompactDate } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
@@ -63,8 +64,31 @@ function tag(name: string, value: string | number | null | undefined): string {
   return `      <${name}>${xmlEscape(String(value))}</${name}>`;
 }
 
-function shortId(): string {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+/**
+ * Identificativo stabile del check-in di un ospite (campo <idswh>).
+ *
+ * Il manuale GIES e' esplicito: "Tale codice dovrebbe essere assegnato alla
+ * registrazione del check-in e DEVE RIMANERE INVARIATO a prescindere da
+ * qualsiasi tipo di variazione che essa possa subire", perche' e' la chiave
+ * con cui il portale riconosce un ospite gia' comunicato.
+ *
+ * Prima qui c'era un valore casuale: ogni ri-generazione dello stesso
+ * check-in produceva idswh diversi, quindi ogni ri-caricamento dello stesso
+ * soggiorno veniva registrato dal portale come ospiti NUOVI invece che come
+ * lo stesso ospite — da cui le presenze gonfiate. Derivandolo con un hash
+ * dai dati anagrafici + data di arrivo, lo stesso soggiorno produce sempre
+ * lo stesso identificativo.
+ */
+function stableGuestId(guest: Guest, dataArrivo: string): string {
+  const identity = [
+    dataArrivo,
+    guest.cognome.trim().toUpperCase(),
+    guest.nome.trim().toUpperCase(),
+    guest.dataNascita,
+  ].join("|");
+  const digest = createHash("sha256").update(identity).digest("hex").slice(0, 10);
+  // 8 (data) + 1 + 10 = 19 caratteri, entro il limite di 20 del tracciato.
+  return `${toCompactDate(dataArrivo)}-${digest}`;
 }
 
 function addDaysIso(isoDate: string, days: number): string {
@@ -180,9 +204,17 @@ export function buildRoss1000File(data: CheckInData): {
     process.env.ROSS1000_LETTI_DISPONIBILI || String(property.facts.maxGuests),
   );
 
-  const idswhByIndex = data.guests.map((_, i) => {
-    const base = `${toCompactDate(data.dataArrivo)}-${shortId()}-${i}`;
-    return base.slice(0, 20);
+  // Gli identificativi devono essere stabili (vedi stableGuestId) ma anche
+  // univoci: nel caso limite di due ospiti con stessi nome, cognome e data
+  // di nascita nello stesso soggiorno si aggiunge un suffisso progressivo.
+  const usedIds = new Set<string>();
+  const idswhByIndex = data.guests.map((guest) => {
+    const base = stableGuestId(guest, data.dataArrivo);
+    let id = base;
+    let n = 1;
+    while (usedIds.has(id)) id = `${base}-${n++}`;
+    usedIds.add(id);
+    return id.slice(0, 20);
   });
 
   const dataPartenzaIso = addDaysIso(data.dataArrivo, data.notti);

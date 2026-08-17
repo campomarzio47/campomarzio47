@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendMail } from "@/lib/mailer";
 import { buildRoss1000File } from "@/lib/ross1000";
+import { buildAlloggiatiFile } from "@/lib/alloggiati";
 import { buildCheckInPdf } from "@/lib/checkin-pdf";
 import { documentTypeCodes, tipoTurismoCodes, mezzoTrasportoCodes } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
@@ -32,6 +33,9 @@ const guestSchema = z
   })
   .refine((g) => g.cittadinanza !== null, { message: "Cittadinanza obbligatoria." })
   .refine((g) => g.statoResidenza !== null, { message: "Stato di residenza obbligatorio." })
+  // Obbligatorio per il tracciato Alloggiati Web (campo "Stato Nascita",
+  // richiesto per ogni tipo di alloggiato).
+  .refine((g) => g.statoNascita !== null, { message: "Stato di nascita obbligatorio." })
   .refine(
     (g) => g.statoResidenza?.code !== ITALIA_CODE || g.comuneResidenza !== null,
     { message: "Comune di residenza obbligatorio se lo stato di residenza è l'Italia." },
@@ -83,6 +87,7 @@ export async function POST(request: Request) {
 
   const data = parsed.data;
   const ross1000 = buildRoss1000File(data);
+  const alloggiati = buildAlloggiatiFile(data);
   const pdf = await buildCheckInPdf(data);
 
   const guestSummary = data.guests
@@ -126,19 +131,22 @@ export async function POST(request: Request) {
         primarySummary,
         "",
         "In allegato:",
-        `- ${ross1000.filename} (movimentazione turistica Ross1000/GIES, da caricare sul portale regionale)`,
-        `- ${pdf.filename} (riepilogo leggibile di tutti i dati ospiti)`,
+        `- ${ross1000.filename} — movimentazione turistica, da caricare su Ross1000/GIES`,
+        `- ${alloggiati.filename} — pubblica sicurezza, da caricare su Alloggiati Web (Questura)`,
+        `- ${pdf.filename} — riepilogo leggibile di tutti i dati ospiti`,
         "",
-        "Tutti i codici richiesti dall'XML (cittadinanza, stato/comune di residenza e di nascita) sono",
+        "Sono due adempimenti distinti e vanno caricati su due portali diversi. Il file",
+        "Questura non è scaricabile da Ross1000 quando i dati arrivano da un gestionale",
+        "esterno (come questo sito), per questo lo generiamo qui direttamente.",
+        "",
+        "Tutti i codici richiesti (cittadinanza, stato/comune di residenza e di nascita) sono",
         "già compilati automaticamente dalle tabelle ufficiali. L'unico campo che potrebbe restare",
         "segnato come \"DA_CONFIGURARE\" è il codice struttura, se non hai ancora impostato la",
         "variabile d'ambiente ROSS1000_CODICE_STRUTTURA.",
-        "L'XML contiene solo i campi previsti dalla specifica originale; email, documento, indirizzo",
-        "e codice fiscale (chiesti solo all'ospite principale) sono nel PDF/riepilogo qui sopra,",
-        "non nell'XML.",
       ].join("\n"),
       attachments: [
         { filename: ross1000.filename, content: ross1000.buffer },
+        { filename: alloggiati.filename, content: alloggiati.buffer },
         { filename: pdf.filename, content: pdf.buffer },
       ],
     });

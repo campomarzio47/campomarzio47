@@ -100,12 +100,29 @@ test.
 
 ## Funzionalità principali
 
-- `/check-in` — check-in ospiti, genera XML Ross1000/GIES
-  (`lib/ross1000.ts`, tracciato ufficiale Regione Veneto, confermato
-  contro il manuale tecnico ufficiale) + PDF riepilogo
-  (`lib/checkin-pdf.ts`), inviati via email all'host.
-  **`lib/ross1000.ts` è specifico per il Veneto**: non riusare per altre
-  regioni senza verificare il tracciato ufficiale locale.
+- `/check-in` — check-in ospiti. Genera e invia via email all'host **tre**
+  allegati, che coprono due adempimenti distinti su due portali diversi:
+  - `lib/ross1000.ts` — XML di movimentazione turistica (statistica) per
+    il portale Ross1000/GIES. Tracciato confermato contro il manuale
+    ufficiale GIES. **Specifico per il Veneto**: non riusare per altre
+    regioni senza verificare il tracciato locale.
+  - `lib/alloggiati.ts` — file `.txt` a larghezza fissa (168 caratteri per
+    riga) per Alloggiati Web (pubblica sicurezza, Questura). Tracciato
+    confermato contro il manuale ufficiale della Polizia di Stato.
+    **Lo generiamo noi di proposito**: la funzione "Genera file questura"
+    di Ross1000 esiste solo per chi inserisce gli ospiti a mano nel
+    portale, e il tracciato XML di movimentazione non ha nemmeno i campi
+    del documento d'identità, quindi da lì il file non sarebbe
+    ricostruibile. Non rimuoverlo pensando che Ross1000 lo produca.
+  - `lib/checkin-pdf.ts` — PDF riepilogo leggibile.
+
+  **`<idswh>` nell'XML Ross1000 deve restare invariato** per lo stesso
+  check-in (lo impone il manuale GIES: è la chiave con cui il portale
+  riconosce un ospite già comunicato). È derivato con un hash dai dati
+  anagrafici + data di arrivo, quindi ri-generare lo stesso check-in
+  produce lo stesso identificativo. Non tornare mai a un valore casuale:
+  ogni ri-caricamento creerebbe ospiti nuovi invece di aggiornare quelli
+  esistenti, gonfiando le presenze sul portale.
 - `/prenota` — prenotazione diretta **a pagamento**, vedi sotto. Usa il
   feed iCal Airbnb/Booking (`lib/ical.ts`, `lib/hooks/useBusyRanges.ts`)
   solo per disabilitare le date già occupate nel calendario — non esiste
