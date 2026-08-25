@@ -212,6 +212,21 @@ sito su **Google Search Console** (richiede accesso Google dell'host,
 non automatizzabile) — un sito nuovo, per quanto ben ottimizzato, spesso
 non compare nei risultati finché non viene scoperto/indicizzato.
 
+## 7c. Google Analytics (facoltativo)
+
+Già integrato via `@next/third-parties` in `app/layout.tsx`: non serve
+incollare nessuno snippet. Basta impostare la variabile
+`NEXT_PUBLIC_GA_ID` con l'ID misurazione dell'host (`G-XXXXXXXXXX`).
+
+Impostarla **solo nell'ambiente Production** di Vercel: se la variabile è
+assente lo script non viene caricato affatto, così le visite fatte in
+locale e nelle anteprime non falsano le statistiche reali.
+
+Attenzione: Analytics installa cookie di profilazione. Per un sito
+rivolto a visitatori UE servirebbe un banner di consenso cookie, che
+**questo modello non include** — se l'host attiva Analytics, va valutato
+se aggiungerlo (o se restare senza Analytics).
+
 ## 8. Verifica finale
 
 - `npm run build` senza errori.

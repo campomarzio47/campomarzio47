@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import CheckInFab from "@/components/CheckInFab";
@@ -26,6 +27,12 @@ const dmSans = DM_Sans({
 // basato su questo modello (vedi .env.local.example).
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://campomarzio47.vercel.app";
 const meta = dictionaries[defaultLocale].meta;
+
+// ID misurazione Google Analytics (formato "G-XXXXXXXXXX"). Se la variabile
+// non è impostata, lo script non viene caricato affatto: così in locale e
+// nelle anteprime Vercel le visite di sviluppo non finiscono nelle
+// statistiche reali del sito.
+const gaId = process.env.NEXT_PUBLIC_GA_ID?.trim();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -102,6 +109,7 @@ export default async function RootLayout({
           <CheckInFab />
           <LanguageSwitcher className="fixed right-4 top-4 z-40 hidden md:flex" />
         </LocaleProvider>
+        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );

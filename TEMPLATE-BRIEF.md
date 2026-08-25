@@ -130,6 +130,17 @@ localmente (non riusare Ross1000 automaticamente) — vedi
 - Dominio personalizzato da collegare (se già acquistato), oppure va bene
   il sottodominio gratuito `<nome-progetto>.vercel.app`?
 
+## 11b. Statistiche di visita (facoltativo)
+
+- L'host vuole Google Analytics sul sito? Se sì, serve che crei un account
+  su https://analytics.google.com con la propria email e fornisca l'**ID
+  misurazione** (formato `G-XXXXXXXXXX`, in Amministrazione → Flussi di
+  dati). Non serve incollare codice: basta l'ID.
+- Nota: Analytics usa cookie di profilazione. Se l'host lo attiva, per un
+  sito rivolto a visitatori UE andrebbe aggiunto anche un banner di
+  consenso cookie — **non incluso** nel modello attuale, va valutato
+  caso per caso con l'host.
+
 ## 12. Note aggiuntive
 
 Qualsiasi cosa il modello Campo Marzio 47 non copre (es. prezzi da
