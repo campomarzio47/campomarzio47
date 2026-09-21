@@ -28,6 +28,13 @@ test.
   - `--color-mid: #6b6560` — testo secondario
   - `--color-beam: #d4c5b0` — accento secondario
   - `--color-divider: #e2ddd8` — bordi/separatori
+- Icone del sito: `app/favicon.ico` (16/32/48), `app/icon.png` (512) e
+  `app/apple-icon.png` (180) — marchio "47" off-white su bordeaux, coerente
+  con l'accento del logo in sidebar. Sono generati da
+  `scripts/generate-icons.mjs` (da lanciare a mano, gli asset sono
+  committati); Next emette i `<link>` da solo in base al nome dei file,
+  `layout.tsx` non c'entra. Alle dimensioni piccole il marchio usa il serif
+  **in grassetto**: a 16 px il peso normale si sfalda nell'antialiasing.
 - Layout: sidebar fissa a sinistra su desktop (`components/Sidebar.tsx`),
   drawer su mobile, bottone check-in flottante (`CheckInFab`). Pagine
   brevi, niente scroll infinito — è una scelta esplicita del progetto,

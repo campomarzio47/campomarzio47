@@ -205,6 +205,34 @@ breve"/"casa vacanze" + città) — non limitarsi al nome della proprietà.
 I dati strutturati JSON-LD (`LodgingBusiness`, generati automaticamente
 da `content/property.ts`) non richiedono modifiche manuali.
 
+**Favicon e icone del sito.** È l'icona che Google mostra accanto al
+risultato di ricerca e il browser nella scheda: se resta quella di
+default di `create-next-app`, il sito si presenta col logo di
+Vercel. Tre file, tutti in `app/` (Next li riconosce dal nome e
+genera da solo i `<link>`, non serve toccare `layout.tsx`):
+
+| file                 | dimensioni  | dove si vede                          |
+| -------------------- | ----------- | ------------------------------------- |
+| `app/favicon.ico`    | 16/32/48 px | risultati Google, schede del browser  |
+| `app/icon.png`       | 512 px      | schermi ad alta densità, anteprime    |
+| `app/apple-icon.png` | 180 px      | schermata Home di iOS                 |
+
+Per rigenerarli: `node scripts/generate-icons.mjs`, dopo aver cambiato
+in cima allo script il testo del marchio (`MARK`, di solito
+`property.nameAccent` o le iniziali) e i colori (`BG`/`FG`, da tenere
+allineati alle variabili CSS di `app/globals.css`). Lo script è
+commentato e va lanciato a mano: gli asset prodotti sono committati e
+non entrano nella build.
+
+Due vincoli da non perdere se si rifà il marchio a mano: deve reggere
+a **16 px** (niente tratti sottili né testo lungo — alle dimensioni
+piccole lo script usa il serif in grassetto proprio per questo), e
+`apple-icon.png` deve essere un **quadrato pieno senza angoli
+arrotondati**, perché iOS applica da sé la propria maschera.
+
+Se il nuovo host ha già un logo suo, sostituire direttamente i tre
+file (stesse dimensioni) e ignorare lo script.
+
 Fuori dal codice, indispensabile e più efficace di qualunque
 ottimizzazione on-page per ricerche locali: registrare/verificare una
 scheda **Google Business Profile** per l'immobile e sottomettere il

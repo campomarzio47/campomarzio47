@@ -13,6 +13,11 @@ passaggio.
 
 - Nome commerciale dell'immobile (es. "Campo Marzio 47"):
 - Parte del nome da evidenziare in bordeaux nel logo (es. "47"), se presente:
+- Hai già un logo o un marchio tuo (file vettoriale o immagine ad alta
+  risoluzione)? Se sì allegalo: diventa l'icona del sito (quella che si
+  vede nei risultati Google e nella scheda del browser). Se no, la
+  generiamo dal nome — serve solo sapere quale sigla usare, massimo 2-3
+  caratteri perché va letta a 16 pixel:
 - Tipo di immobile (casa a schiera, appartamento, B&B, villa...):
 - Indirizzo completo (via, CAP, città, provincia):
 - Superficie (m²):
