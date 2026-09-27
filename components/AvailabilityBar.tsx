@@ -20,7 +20,7 @@ function toIso(date: Date): string {
 export default function AvailabilityBar() {
   const { dict, locale } = useLocale();
   const router = useRouter();
-  const { busy } = useBusyRanges();
+  const { busy, disabled, firstDay } = useBusyRanges();
   const [range, setRange] = useState<DateRange | undefined>();
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -61,11 +61,11 @@ export default function AvailabilityBar() {
       mode="range"
       locale={dateLocale}
       numberOfMonths={1}
-      disabled={busy}
+      disabled={disabled}
       excludeDisabled
       modifiers={{ busy }}
       modifiersClassNames={{ busy: "rdp-busy" }}
-      startMonth={new Date()}
+      startMonth={firstDay}
       selected={range}
       onSelect={handleSelect}
       className="!bg-transparent"

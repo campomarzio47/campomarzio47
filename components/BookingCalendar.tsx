@@ -21,7 +21,7 @@ export default function BookingCalendar({
   onChange: (range: DateRange | undefined) => void;
 }) {
   const { dict, locale } = useLocale();
-  const { state, busy } = useBusyRanges();
+  const { state, busy, disabled, firstDay } = useBusyRanges();
   const minNights = property.pricing.minNights || 1;
   const nights = nightsInRange(value);
   const tooShort = Boolean(value?.from && value?.to && nights < minNights);
@@ -44,11 +44,11 @@ export default function BookingCalendar({
         mode="range"
         locale={locale === "it" ? itLocale : enUS}
         numberOfMonths={2}
-        disabled={busy}
+        disabled={disabled}
         excludeDisabled
         modifiers={{ busy }}
         modifiersClassNames={{ busy: "rdp-busy" }}
-        startMonth={new Date()}
+        startMonth={firstDay}
         selected={value}
         onSelect={onChange}
         className="!bg-transparent"
