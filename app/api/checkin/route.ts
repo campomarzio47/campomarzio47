@@ -4,6 +4,7 @@ import { sendMail } from "@/lib/mailer";
 import { buildRoss1000File } from "@/lib/ross1000";
 import { buildAlloggiatiFile } from "@/lib/alloggiati";
 import { buildCheckInPdf } from "@/lib/checkin-pdf";
+import { buildCheckInAttachments } from "@/lib/checkin-attachments";
 import { documentTypeCodes, tipoTurismoCodes, mezzoTrasportoCodes } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
 
@@ -67,7 +68,10 @@ const checkInSchema = z
     notti: z.coerce.number().int().min(1).max(60),
     guests: z.array(guestSchema).min(1).max(8),
     primary: primarySchema,
-    consenso: z.literal(true),
+    // Presa visione dell'informativa, non consenso: il trattamento è un
+    // obbligo di legge (art. 6.1.c GDPR), non qualcosa che l'ospite possa
+    // autorizzare o negare. Vedi /privacy.
+    privacyAck: z.literal(true),
   })
   .refine(
     (d) => d.guests[0]?.cittadinanza?.code !== ITALIA_CODE || FISCAL_CODE_PATTERN.test(d.primary.codiceFiscale),
@@ -90,47 +94,36 @@ export async function POST(request: Request) {
   const alloggiati = buildAlloggiatiFile(data);
   const pdf = await buildCheckInPdf(data);
 
-  const guestSummary = data.guests
-    .map((g, i) => {
-      const residenza =
-        g.statoResidenza?.code === ITALIA_CODE
-          ? `${g.comuneResidenza?.label} (Italia)`
-          : `${g.localitaResidenzaEstera || "non specificata"} (${g.statoResidenza?.label})`;
-      const nascita = g.statoNascita
-        ? g.statoNascita.code === ITALIA_CODE
-          ? `${g.comuneNascita?.label} (Italia)`
-          : g.statoNascita.label
-        : "non specificata";
-      return (
-        `Ospite ${i + 1}: ${g.cognome} ${g.nome} (${g.sesso}), nato/a il ${g.dataNascita} — nascita: ${nascita} — ` +
-        `cittadinanza: ${g.cittadinanza?.label} — residenza: ${residenza} — ` +
-        `turismo: ${g.tipoTurismo} — trasporto: ${g.mezzoTrasporto}`
-      );
-    })
-    .join("\n");
+  // Il corpo dell'email contiene solo quanto basta a riconoscere di quale
+  // arrivo si tratta. Tutti i dati personali — anagrafiche, residenze,
+  // codice fiscale, numero del documento — stanno esclusivamente negli
+  // allegati. Ripeterli qui significherebbe lasciarne una copia in chiaro,
+  // indicizzata e cercabile, nella casella di posta dell'host: una
+  // duplicazione che non serve a nulla e che il principio di
+  // minimizzazione (art. 5.1.c GDPR) chiede di evitare.
+  const attachments = await buildCheckInAttachments(
+    [
+      { filename: ross1000.filename, content: ross1000.buffer },
+      { filename: alloggiati.filename, content: alloggiati.buffer },
+      { filename: pdf.filename, content: pdf.buffer },
+    ],
+    data.dataArrivo,
+  );
 
-  const primaryRilascio =
-    data.primary.statoRilascio?.code === ITALIA_CODE
-      ? `${data.primary.comuneRilascio?.label} (Italia)`
-      : data.primary.statoRilascio?.label;
-
-  const primarySummary =
-    `Ospite principale — email: ${data.primary.email} — indirizzo: ${data.primary.indirizzoResidenza}` +
-    (data.primary.codiceFiscale ? ` — CF: ${data.primary.codiceFiscale}` : "") +
-    ` — documento: ${data.primary.tipoDocumento} n. ${data.primary.numeroDocumento}, rilasciato in ${primaryRilascio}`;
+  const encrypted = attachments.length === 1 && attachments[0].filename.endsWith(".zip");
 
   try {
     await sendMail({
       subject: `Check-in online — arrivo ${data.dataArrivo} — ${data.guests.length} ospiti`,
       text: [
-        `Nuovo check-in online ricevuto dal sito.`,
+        "Nuovo check-in online ricevuto dal sito.",
+        "",
         `Arrivo: ${data.dataArrivo}  ·  Notti: ${data.notti}  ·  Ospiti: ${data.guests.length}`,
+        `A nome di: ${data.guests[0].cognome}`,
         "",
-        guestSummary,
-        "",
-        primarySummary,
-        "",
-        "In allegato:",
+        encrypted
+          ? `In allegato un unico archivio cifrato (${attachments[0].filename}), da aprire con 7-Zip e la password che conosci. Dentro trovi:`
+          : "In allegato:",
         `- ${ross1000.filename} — movimentazione turistica, da caricare su Ross1000/GIES`,
         `- ${alloggiati.filename} — pubblica sicurezza, da caricare su Alloggiati Web (Questura)`,
         `- ${pdf.filename} — riepilogo leggibile di tutti i dati ospiti`,
@@ -141,26 +134,22 @@ export async function POST(request: Request) {
         "",
         "Tutti i codici richiesti (cittadinanza, stato/comune di residenza e di nascita) sono",
         "già compilati automaticamente dalle tabelle ufficiali. L'unico campo che potrebbe restare",
-        "segnato come \"DA_CONFIGURARE\" è il codice struttura, se non hai ancora impostato la",
+        'segnato come "DA_CONFIGURARE" è il codice struttura, se non hai ancora impostato la',
         "variabile d'ambiente ROSS1000_CODICE_STRUTTURA.",
+        "",
+        "— Dopo aver caricato i file sui due portali, cancella questa email: contiene i",
+        "documenti d'identità dei tuoi ospiti e non c'è motivo di conservarla.",
       ].join("\n"),
-      attachments: [
-        { filename: ross1000.filename, content: ross1000.buffer },
-        { filename: alloggiati.filename, content: alloggiati.buffer },
-        { filename: pdf.filename, content: pdf.buffer },
-      ],
+      attachments,
     });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    // Il messaggio di un errore SMTP può contenere host, utenza o motivo
+    // del rifiuto: resta nei log, al client va una frase generica.
+    console.error("Invio del check-in non riuscito", error);
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Invio non riuscito, riprova più tardi.",
-      },
+      { ok: false, error: "Invio non riuscito, riprova più tardi." },
       { status: 500 },
     );
   }

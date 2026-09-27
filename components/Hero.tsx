@@ -13,7 +13,10 @@ export default function Hero() {
       <div className="relative h-[52dvh] w-full overflow-hidden md:h-[58vh]">
         <Image
           src={property.heroImage}
-          alt={dict.hero.tagline}
+          // Descrizione della foto, non lo slogan: a chi non vede
+          // l'immagine serve sapere cosa mostra, e lo slogan è già nel
+          // testo subito sotto.
+          alt={dict.hero.imageAlt}
           fill
           priority
           quality={90}

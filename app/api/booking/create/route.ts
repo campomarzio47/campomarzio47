@@ -2,12 +2,19 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { getBusyRanges } from "@/lib/ical";
-import { getStripe } from "@/lib/stripe";
-import { computeStayTotalCents, earliestCheckinIso } from "@/lib/pricing";
-import { nightsBetween, toStripeMetadata } from "@/lib/booking-metadata";
+import { computeStayTotal, earliestCheckinIso, nightsBetween } from "@/lib/pricing";
+import { sendBookingRequestEmails } from "@/lib/booking-notifications";
 import { property } from "@/content/property";
 import { defaultLocale, isLocale, LOCALE_COOKIE } from "@/lib/locale";
 
+/**
+ * Richiesta di prenotazione diretta.
+ *
+ * Non c'è pagamento: la richiesta viene inoltrata via email all'host, che
+ * risponde a mano. I controlli su date, preavviso e disponibilità restano
+ * comunque lato server — il form li fa già, ma un client può inviare
+ * qualsiasi cosa.
+ */
 const schema = z.object({
   checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   checkout: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -15,6 +22,10 @@ const schema = z.object({
   nome: z.string().min(1).max(200),
   email: z.string().email(),
   telefono: z.string().max(40).optional().or(z.literal("")),
+  messaggio: z.string().max(2000).optional().or(z.literal("")),
+  // Presa visione dell'informativa privacy: il form non lascia inviare
+  // senza, ma va verificato anche qui.
+  privacyAck: z.literal(true),
 });
 
 function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
@@ -29,7 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, code: "validation_error" }, { status: 400 });
   }
 
-  const { checkin, checkout, guests, nome, email, telefono } = parsed.data;
+  const { checkin, checkout, guests, nome, email, telefono, messaggio } = parsed.data;
 
   if (checkin >= checkout) {
     return NextResponse.json({ ok: false, code: "invalid_dates" }, { status: 400 });
@@ -52,62 +63,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, code: "dates_unavailable" }, { status: 409 });
     }
   } catch {
-    // Se il calendario esterno non è raggiungibile, non blocchiamo la
-    // prenotazione: l'host resta comunque l'ultimo controllo prima
-    // dell'addebito reale.
+    // Se il calendario esterno non è raggiungibile non blocchiamo la
+    // richiesta: l'host resta comunque l'ultimo controllo prima di
+    // confermare qualsiasi cosa.
   }
 
   const cookieStore = await cookies();
   const rawLocale = cookieStore.get(LOCALE_COOKIE)?.value;
   const locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
 
-  const origin = new URL(request.url).origin;
-  const totalCents = computeStayTotalCents(nights);
-
   try {
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      locale: locale === "en" ? "en" : "it",
-      customer_email: email,
-      // Minimo consentito da Stripe: 30 minuti dalla creazione. Margine di
-      // un minuto per evitare di finire esattamente sul limite.
-      expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
-      line_items: [
-        {
-          price_data: {
-            currency: property.pricing.currency.toLowerCase(),
-            unit_amount: totalCents,
-            product_data: {
-              name: `${property.name} — ${checkin} → ${checkout}`,
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      payment_intent_data: {
-        capture_method: "manual",
-        metadata: toStripeMetadata({
-          checkin,
-          checkout,
-          guests: String(guests),
-          guestName: nome,
-          guestEmail: email,
-          guestPhone: telefono || "",
-          guestLocale: locale,
-        }),
-      },
-      success_url: `${origin}/prenota/conferma`,
-      cancel_url: `${origin}/prenota?canceled=1`,
+    await sendBookingRequestEmails({
+      checkin,
+      checkout,
+      guests,
+      nome,
+      email,
+      telefono: telefono || "",
+      messaggio: messaggio || "",
+      locale,
+      total: computeStayTotal(nights),
     });
-
-    if (!session.url) {
-      throw new Error("Stripe non ha restituito un URL di pagamento.");
-    }
-
-    return NextResponse.json({ ok: true, url: session.url });
+    return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("Errore nella creazione della Checkout Session", error);
+    // Il dettaglio resta nei log del server: il messaggio di un errore
+    // SMTP può contenere host, utenza o motivi di rifiuto, che non vanno
+    // rimandati al browser.
+    console.error("Invio della richiesta di prenotazione non riuscito", error);
     return NextResponse.json({ ok: false, code: "server_error" }, { status: 500 });
   }
 }

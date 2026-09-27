@@ -28,7 +28,8 @@ export default function PrimaryGuestExtraFields({
 
   return (
     <div className="mt-5 border-t border-divider pt-5">
-      <h4 className="mb-1 text-sm font-medium text-charcoal">{dict.checkin.primaryExtraTitle}</h4>
+      {/* h3: sottosezione dentro la scheda ospite (h2). */}
+      <h3 className="mb-1 text-sm font-medium text-charcoal">{dict.checkin.primaryExtraTitle}</h3>
       <p className="mb-4 text-xs text-mid">{dict.checkin.primaryExtraSubtitle}</p>
 
       <div className="grid gap-4 sm:grid-cols-2">

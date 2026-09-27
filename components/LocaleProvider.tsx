@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { dictionaries, type Dictionary } from "@/content/dictionaries";
 import { LOCALE_COOKIE, type Locale } from "@/lib/locale";
 
@@ -20,6 +27,15 @@ export function LocaleProvider({
   children: ReactNode;
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+
+  // `<html lang>` viene reso dal server con la lingua del cookie, ma il
+  // cambio lingua avviene solo lato client: senza questo effetto
+  // l'attributo resterebbe quello iniziale e uno screen reader
+  // continuerebbe a pronunciare l'inglese con la fonetica italiana (o
+  // viceversa). È il criterio WCAG 3.1.1.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   function setLocale(next: Locale) {
     setLocaleState(next);

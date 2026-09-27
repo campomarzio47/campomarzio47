@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
 import BookingForm from "@/components/BookingForm";
-import { dictionaries } from "@/content/dictionaries";
-import { defaultLocale } from "@/lib/locale";
-import { property } from "@/content/property";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].booking.title} — ${property.name}`,
-};
+export const metadata: Metadata = pageMetadata("booking", "/prenota");
 
 export default async function PrenotaPage({
   searchParams,

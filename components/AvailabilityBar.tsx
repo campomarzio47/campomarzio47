@@ -33,9 +33,27 @@ export default function AvailabilityBar() {
         setDesktopOpen(false);
       }
     }
+    // Il calendario si chiudeva solo cliccando fuori: da tastiera non
+    // c'era modo di uscirne senza selezionare due date.
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDesktopOpen(false);
+    }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      window.removeEventListener("keydown", onKey);
+    };
   }, [desktopOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMobileOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
 
   function handleSelect(next: DateRange | undefined) {
     setRange(next);
@@ -83,8 +101,14 @@ export default function AvailabilityBar() {
             </div>
           )}
           <div className="flex items-stretch gap-1 rounded-full border border-divider bg-off-white/95 p-1.5 shadow-xl backdrop-blur-sm">
+            {/* aria-label esplicita: letto da solo, il bottone
+                annuncerebbe "Arrivo, 12 mag", senza dire che serve ad
+                aprire un calendario. */}
             <button
               type="button"
+              aria-label={dict.a11y.selectArrival}
+              aria-expanded={desktopOpen}
+              aria-haspopup="dialog"
               onClick={() => setDesktopOpen((v) => !v)}
               className="flex flex-col items-start rounded-full px-5 py-2 text-left transition-colors hover:bg-divider/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
             >
@@ -96,6 +120,9 @@ export default function AvailabilityBar() {
             <div className="my-2 w-px bg-divider" />
             <button
               type="button"
+              aria-label={dict.a11y.selectDeparture}
+              aria-expanded={desktopOpen}
+              aria-haspopup="dialog"
               onClick={() => setDesktopOpen((v) => !v)}
               className="flex flex-col items-start rounded-full px-5 py-2 text-left transition-colors hover:bg-divider/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
             >
@@ -119,10 +146,12 @@ export default function AvailabilityBar() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-divider bg-off-white p-3 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.15)] md:hidden">
         <button
           type="button"
+          aria-expanded={mobileOpen}
+          aria-haspopup="dialog"
           onClick={() => setMobileOpen(true)}
           className="flex w-full items-center justify-center gap-2 rounded-full bg-bordeaux py-3 text-sm font-semibold text-off-white shadow-md transition-all duration-200 hover:bg-bordeaux-dark active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
         >
-          <CalendarDays size={17} strokeWidth={2} />
+          <CalendarDays size={17} strokeWidth={2} aria-hidden="true" />
           {dict.availabilityBar.cta}
         </button>
       </div>
@@ -134,7 +163,12 @@ export default function AvailabilityBar() {
             className="animate-fade-in absolute inset-0 bg-charcoal/40"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="animate-sheet-in absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-off-white p-5 shadow-2xl">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={dict.a11y.datesDialog}
+            className="animate-sheet-in absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-off-white p-5 shadow-2xl"
+          >
             <div className="mb-4 flex items-center justify-between">
               <span className="font-display text-lg">{dict.availabilityBar.cta}</span>
               <button
@@ -143,7 +177,7 @@ export default function AvailabilityBar() {
                 onClick={() => setMobileOpen(false)}
                 className="rounded-md p-1 text-charcoal transition-colors hover:bg-divider/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
             <div className="mb-4 flex gap-3 text-sm">

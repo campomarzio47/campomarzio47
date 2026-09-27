@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import CheckInFab from "@/components/CheckInFab";
+import Footer from "@/components/Footer";
+import SkipLink from "@/components/SkipLink";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { dictionaries } from "@/content/dictionaries";
 import { LOCALE_COOKIE, defaultLocale, isLocale } from "@/lib/locale";
 import { property } from "@/content/property";
+import { legal } from "@/content/legal";
+import { siteUrl, ogImage } from "@/lib/seo";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -22,17 +25,20 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
-// Fallback all'URL Vercel attuale se NEXT_PUBLIC_SITE_URL non è
-// impostato — da compilare col dominio reale per ogni nuovo progetto
-// basato su questo modello (vedi .env.local.example).
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://campomarzio47.vercel.app";
 const meta = dictionaries[defaultLocale].meta;
 
-// ID misurazione Google Analytics (formato "G-XXXXXXXXXX"). Se la variabile
-// non è impostata, lo script non viene caricato affatto: così in locale e
-// nelle anteprime Vercel le visite di sviluppo non finiscono nelle
-// statistiche reali del sito.
-const gaId = process.env.NEXT_PUBLIC_GA_ID?.trim();
+// Codice di verifica della proprietà in Google Search Console (solo la
+// stringa dentro content="...", non il tag intero). Se assente, il meta
+// tag non viene emesso. Vedi .env.local.example.
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+
+// Nessuno script di statistica, di proposito: Google Analytics era l'unico
+// terzo a scrivere cookie su questo sito, e la sua presenza avrebbe
+// imposto un banner di consenso preventivo (Linee guida cookie del
+// Garante). Senza, restano solo cookie tecnici e il banner non serve.
+// Se un giorno servissero le statistiche, usare uno strumento che non
+// profila e non scrive cookie, oppure rimettere GA INSIEME a un vero
+// banner che lo blocchi finché l'utente non accetta.
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -44,7 +50,7 @@ export const metadata: Metadata = {
     description: meta.description,
     url: "/",
     siteName: property.name,
-    images: [{ url: property.heroImage }],
+    images: [ogImage],
     locale: "it_IT",
     type: "website",
   },
@@ -52,8 +58,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: meta.title,
     description: meta.description,
-    images: [property.heroImage],
+    images: [ogImage.url],
   },
+  ...(googleVerification
+    ? { verification: { google: googleVerification } }
+    : {}),
 };
 
 // Dati strutturati (schema.org) per far capire a Google che questa è
@@ -61,6 +70,11 @@ export const metadata: Metadata = {
 // per ricerche locali tipo "affitto <nome> <città>". replace(/</...):
 // se mai un valore contenesse "<", non deve poter chiudere in anticipo
 // il tag <script> che lo racchiude.
+// Nessun AggregateRating/Review qui di proposito: le recensioni mostrate
+// vengono da Airbnb/Booking, e marcarle come proprie ricade nelle
+// "recensioni auto-referenziali" vietate dalle linee guida Google per le
+// strutture ricettive (rischio di azione manuale). Restano visibili agli
+// utenti, semplicemente non dichiarate nei dati strutturati.
 function structuredData() {
   const json = {
     "@context": "https://schema.org",
@@ -70,6 +84,7 @@ function structuredData() {
     image: `${siteUrl}${property.heroImage}`,
     url: siteUrl,
     telephone: property.host.phone,
+    email: property.host.email,
     address: {
       "@type": "PostalAddress",
       streetAddress: property.address.street,
@@ -78,6 +93,17 @@ function structuredData() {
       postalCode: property.address.zip,
       addressCountry: "IT",
     },
+    // Collega questa pagina alle inserzioni sulle piattaforme: aiuta i
+    // motori a capire che sono la stessa struttura.
+    sameAs: [property.booking.airbnbUrl, property.booking.bookingUrl],
+    numberOfRooms: property.facts.bedrooms,
+    priceRange: `€${property.pricing.pricePerNight}`,
+    currenciesAccepted: property.pricing.currency,
+    availableLanguage: property.host.languages,
+    // Codice Identificativo Nazionale: schema.org non ha una proprietà
+    // dedicata, `identifier` è il contenitore generico previsto per i
+    // codici ufficiali. Omesso se non ancora compilato.
+    ...(legal.codes.cin ? { identifier: legal.codes.cin } : {}),
   };
   return JSON.stringify(json).replace(/</g, "\\u003c");
 }
@@ -102,14 +128,20 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: structuredData() }}
         />
         <LocaleProvider initialLocale={initialLocale}>
-          <div className="md:pl-64">
+          <SkipLink />
+          {/* Colonna flex: con `flex-1` sul contenuto il footer resta in
+              fondo alla finestra anche sulle pagine corte, senza dover
+              forzare un'altezza minima che creerebbe scroll inutile. */}
+          <div className="flex min-h-screen flex-col md:pl-64">
             <Sidebar />
-            <main className="min-h-screen">{children}</main>
+            <main id="contenuto" className="flex-1">
+              {children}
+            </main>
+            <Footer />
           </div>
           <CheckInFab />
           <LanguageSwitcher className="fixed right-4 top-4 z-40 hidden md:flex" />
         </LocaleProvider>
-        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );

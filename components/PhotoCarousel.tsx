@@ -61,7 +61,7 @@ export default function PhotoCarousel() {
         onClick={() => scrollByCard(-1)}
         className="absolute left-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-off-white/90 p-2.5 text-charcoal shadow-md transition-all duration-200 hover:bg-off-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux sm:flex"
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={20} aria-hidden="true" />
       </button>
       <button
         type="button"
@@ -69,7 +69,7 @@ export default function PhotoCarousel() {
         onClick={() => scrollByCard(1)}
         className="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-off-white/90 p-2.5 text-charcoal shadow-md transition-all duration-200 hover:bg-off-white active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux sm:flex"
       >
-        <ChevronRight size={20} />
+        <ChevronRight size={20} aria-hidden="true" />
       </button>
 
       {openIndex !== null && (

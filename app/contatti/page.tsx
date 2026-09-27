@@ -2,13 +2,9 @@ import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
 import ContactForm from "@/components/ContactForm";
 import ContactInfo from "@/components/ContactInfo";
-import { dictionaries } from "@/content/dictionaries";
-import { defaultLocale } from "@/lib/locale";
-import { property } from "@/content/property";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `${dictionaries[defaultLocale].contact.title} — ${property.name}`,
-};
+export const metadata: Metadata = pageMetadata("contact", "/contatti");
 
 export default function ContattiPage() {
   return (

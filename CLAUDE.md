@@ -14,6 +14,11 @@ branch `main`). Nessun database, nessun ORM.
 Comandi: `npm run dev`, `npm run build`, `npm run lint`. Nessuna suite di
 test.
 
+`npm run lint` riporta migliaia di problemi provenienti da
+`.claude/worktrees/`, un vecchio worktree con dentro il proprio `.next`:
+è rumore preesistente, non codice del progetto. Guardare solo i file
+sotto `app/`, `components/`, `lib/`, `content/`.
+
 ## Design
 
 - Font: **Cormorant Garamond** (`font-display`, titoli) + **DM Sans**
@@ -63,7 +68,7 @@ test.
   (griglia compatta 4 colonne, pensata per stare senza troppo scroll) e
   `components/ReviewsSection.tsx` (invariato). Le vecchie route
   `/foto`, `/servizi`, `/recensioni` restano come redirect verso le
-  rispettive ancore (`redirect("/#foto")` ecc.) per non rompere link
+  rispettive ancore (`permanentRedirect("/#foto")` ecc., 308) per non rompere link
   salvati, ma non compaiono più nella sidebar.
 - Micro-interazioni (tutte in `app/globals.css`, rispettano
   `prefers-reduced-motion`): `.animate-kenburns` (zoom lentissimo sulla
@@ -82,6 +87,31 @@ test.
   normale — pattern da riusare per qualunque futuro overlay/modale
   potenzialmente annidato in un `Reveal`.
 
+### Accessibilità
+
+Il sito rientra nell'esenzione per microimprese del D.Lgs. 82/2022: non è
+un obbligo di legge, ma i difetti che sono stati corretti escludevano
+persone davvero. Cose da non rompere:
+
+- `components/PlaceAutocomplete.tsx` implementa il pattern ARIA combobox
+  (`aria-activedescendant`, frecce/Invio/Esc). Le opzioni sono `<li
+  role="option">` e **non** bottoni focusabili: col pattern combobox il
+  focus resta sull'input. Erano bottoni, e il `blur` chiudeva la lista
+  prima che il Tab potesse raggiungerli — il check-in, cioè la funzione
+  principale del sito, era impossibile da completare senza mouse.
+- `Lightbox`, drawer della `Sidebar` e pannello date di `AvailabilityBar`
+  sono finestre modali: `role="dialog"`, Esc, trappola del focus e focus
+  restituito all'elemento di partenza. Se aggiungi un overlay, seguili.
+- `LocaleProvider` aggiorna `document.documentElement.lang` a ogni cambio
+  lingua: l'HTML iniziale arriva dal cookie, ma il cambio è solo client.
+- Ogni campo ha un'etichetta associata: i placeholder non danno un nome
+  accessibile e spariscono appena si digita.
+- `.rdp-busy` (date occupate) **deroga alla scelta di design** "attenuate
+  invece che barrate": con opacità 0.4 il contrasto era circa 2:1 e la
+  sola differenza di tono affidava l'informazione al solo colore. Ora
+  0.85 più una riga. Se si torna a barrarle di meno, serve un altro
+  segnale non cromatico.
+
 ## Contenuti e i18n
 
 - `content/property.ts` — unico posto per i fatti dell'immobile (nome,
@@ -91,7 +121,11 @@ test.
 - `content/dictionaries.ts` — tutte le stringhe UI, tipizzate
   (`Dictionary`), con oggetti paralleli `it`/`en`. Contiene sia UI
   generica sia alcuni testi discorsivi specifici della proprietà (vedi
-  `TEMPLATE-SETUP.md` per l'elenco esatto).
+  `TEMPLATE-SETUP.md` per l'elenco esatto). La sezione `a11y` raccoglie
+  le stringhe che vedono solo screen reader e tastiera: vanno tradotte
+  come le altre, non lasciate in italiano fisso nei componenti.
+- `content/legal.ts` e `content/legal-texts.ts` — dati e testi legali,
+  vedi la sezione "Pagine legali e conformità".
 - i18n **cookie-based**, non URL-based: nessuna route `/it/`, `/en/`.
   `lib/locale.ts` (`Locale`, `LOCALE_COOKIE`, `defaultLocale="it"`),
   `components/LocaleProvider.tsx` espone `useLocale() -> {locale, dict,
@@ -130,36 +164,35 @@ test.
   produce lo stesso identificativo. Non tornare mai a un valore casuale:
   ogni ri-caricamento creerebbe ospiti nuovi invece di aggiornare quelli
   esistenti, gonfiando le presenze sul portale.
-- `/prenota` — prenotazione diretta **a pagamento**, vedi sotto. Usa il
+- `/prenota` — **richiesta** di prenotazione diretta, vedi sotto. Usa il
   feed iCal Airbnb/Booking (`lib/ical.ts`, `lib/hooks/useBusyRanges.ts`)
   solo per disabilitare le date già occupate nel calendario — non esiste
-  più una pagina "Disponibilità" a sé stante né un form di richiesta
-  senza pagamento (rimossi: erano poco usati e duplicavano `/prenota`).
+  più una pagina "Disponibilità" a sé stante (rimossa: poco usata e
+  duplicava `/prenota`).
 - `/contatti` — form di contatto (`app/api/contatti`).
+- `/privacy`, `/cookie-policy`, `/termini` — pagine legali, vedi sotto.
 
-## Prenotazione diretta con pagamento (Stripe, senza database)
+## Prenotazione diretta: richiesta via email, nessun pagamento
 
-Scelta architetturale deliberata: **nessun database**. L'host conferma o
-rifiuta ogni prenotazione a mano (Stripe Checkout con
-`capture_method: "manual"` — la carta viene solo autorizzata, l'addebito
-avviene solo alla conferma), quindi è l'host stesso a evitare il doppio
-addebito; un database sarebbe servito solo a mostrare come "occupate" sul
-calendario le richieste dirette non ancora confermate, ritenuto non
-necessario al volume atteso (1-2 prenotazioni dirette/mese).
+**Stripe è stato rimosso** (settembre 2026). In due anni non è mai
+arrivata una prenotazione diretta dal sito, che di fatto è usato dagli
+ospiti già in arrivo per il check-in: il pagamento online portava con sé
+obblighi (PSD2, rimborsi, contestazioni) che quel volume non giustifica.
+Non reintrodurlo senza una ragione nuova — e, se lo fai, rileggi prima
+`/termini`, che oggi dichiara esplicitamente che il sito non raccoglie
+dati di pagamento.
 
-- I dati della prenotazione vivono **solo** nei metadata del
-  `PaymentIntent` Stripe (`lib/booking-metadata.ts`) — Stripe è l'unico
-  "archivio".
-- I link email di conferma/rifiuto per l'host sono **firmati (HMAC)**,
-  non basati su sessione/login (`lib/booking-tokens.ts`,
-  `BOOKING_TOKEN_SECRET`). Pagina di destinazione
-  `/host/prenotazioni/azione` (GET, senza effetti collaterali) con due
-  form POST (`/api/host/bookings/confirm`, `.../decline`).
-  **Mai** rendere l'azione (cattura/annullamento pagamento) eseguibile
-  da una richiesta GET diretta: gli scanner email (es. Outlook Safe
-  Links) prefetchano i link nelle email.
-- Webhook Stripe (`app/api/stripe/webhook/route.ts`) ascolta **solo**
-  `checkout.session.completed`.
+Resta la scelta deliberata di **non avere un database**: la richiesta
+viene inoltrata via email e non è archiviata da nessuna parte.
+
+- `POST /api/booking/create` valida (date, preavviso, notti minime,
+  sovrapposizione con l'iCal) e chiama `sendBookingRequestEmails`
+  (`lib/booking-notifications.ts`): email all'host con `replyTo`
+  dell'ospite, più una presa in carico all'ospite nella sua lingua.
+- Le email dicono a chiare lettere che **la richiesta non è una
+  prenotazione** finché l'host non conferma per iscritto. Non è una
+  formalità: senza pagamento né calendario condiviso, l'unica difesa
+  contro il doppio impegno è che l'ospite non dia per scontato nulla.
 - Il calendario di `/prenota` mostra occupate solo le date bloccate su
   Airbnb/Booking (iCal) — non le altre richieste dirette in attesa di
   conferma. Compromesso consapevole, non un bug.
@@ -170,15 +203,63 @@ necessario al volume atteso (1-2 prenotazioni dirette/mese).
   necessario perché Booking.com non riporta nel proprio export iCal il
   preavviso minimo impostato sulla piattaforma, solo le prenotazioni
   vere e proprie.
-- Dettaglio completo del piano architetturale in
-  `C:\Users\fv28\.claude\plans\stateful-prancing-hamming.md` se serve
-  ricostruire il ragionamento.
+## Pagine legali e conformità
+
+Non sono contenuto decorativo: rispondono a obblighi precisi, e chi le
+modifica dovrebbe sapere quale.
+
+- `content/legal.ts` — identità dell'impresa, **CIN/CIR**, condizioni di
+  pagamento, imposta di soggiorno, fornitori. I campi vuoti vengono
+  **omessi**, mai mostrati come segnaposto: il sito sembra a posto anche
+  quando non lo è, ed è per questo che esiste `LEGALE.md`.
+- `content/legal-texts.ts` — prosa di privacy, cookie e termini (it/en),
+  resa da `components/LegalPage.tsx`. Sta fuori da `dictionaries.ts`, che
+  resta per le stringhe di UI. I valori variabili sono interpolati da
+  `legal.ts`, **incluso il nome del cookie** letto da `lib/locale.ts`:
+  una cookie policy che nomina un cookie diverso da quello reale è essa
+  stessa un'informazione falsa.
+- `components/Footer.tsx` — su ogni pagina. Il **CIN va indicato in ogni
+  annuncio ovunque pubblicato**, sito diretto compreso (art. 13-ter DL
+  145/2023, sanzione 500-5.000 €): non spostarlo in una pagina sola.
+- **Niente Google Analytics, niente banner cookie.** GA era l'unico terzo
+  a scrivere cookie; rimosso lui, resta il solo cookie tecnico della
+  lingua, esente da consenso. Reintrodurre GA significa reintrodurre un
+  banner che lo blocchi *prima* del consenso e riscrivere la cookie
+  policy: non è una variabile d'ambiente in più.
+- **Nessun riferimento alla piattaforma ODR europea**: dismessa il 20
+  luglio 2025, obbligo di link decaduto. Quasi tutti i template italiani
+  la citano ancora.
+- `components/PrivacyAck.tsx` — presa visione, **non consenso**. Per il
+  check-in la base giuridica è l'obbligo di legge (art. 6.1.c GDPR), per
+  gli altri moduli le misure precontrattuali (6.1.b): chiedere un
+  "consenso" implicherebbe un diritto di revoca che non esiste.
 
 ### Email
 
 `lib/mailer.ts`: `sendMail({subject, text, to?, replyTo?, attachments?})`
-via nodemailer + Gmail SMTP. `to` è opzionale, default `HOST_EMAIL`. Solo
+via nodemailer su **SMTP generico** (`SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/
+`SMTP_PASSWORD`/`MAIL_FROM`). `to` è opzionale, default `HOST_EMAIL`. Solo
 testo semplice (niente HTML) per coerenza con lo stile esistente.
+
+Non era Gmail per caso ed è stato cambiato di proposito: le email portano
+dati personali fino agli estremi di un documento d'identità, e chi li
+trasporta dev'essere un responsabile del trattamento con accordo art. 28
+GDPR — che un account Gmail gratuito non ha. Non tornare a
+`service: "gmail"`.
+
+Due conseguenze nel corpo delle email, da non "semplificare":
+- l'email di check-in **non ripete i dati personali** già presenti negli
+  allegati (minimizzazione, art. 5.1.c GDPR) e ricorda di cancellarla
+  dopo il caricamento sui portali;
+- gli errori SMTP finiscono nei log, **mai nella risposta al client**:
+  possono contenere host, utenza e motivo del rifiuto.
+
+`lib/checkin-attachments.ts` può impacchettare i tre allegati in un unico
+ZIP AES-256 se `CHECKIN_ZIP_PASSWORD` è impostata (spento di default: lo
+ZIP AES non si apre col doppio clic su Windows, serve 7-Zip).
+**Richiede `archiver` 7.x**: la 8 è ESM pura e ha rimosso
+`registerFormat`, su cui si appoggia `archiver-zip-encrypted`. Aggiornare
+archiver rompe la cifratura a runtime, non in compilazione.
 
 ## Variabili d'ambiente
 
@@ -187,16 +268,62 @@ Vedi `.env.local.example` per l'elenco completo e commentato. `.env.local`
 per `.env.local.example`) — mai committare segreti reali.
 
 Punti da ricordare:
-- `STRIPE_SECRET_KEY` è la chiave **segreta** (`sk_...`), non quella
-  pubblicabile — questo sito usa Stripe Checkout ospitata, mai Stripe.js
-  lato client.
-- Testare sempre in modalità Stripe **test** prima di passare alle
-  chiavi live.
 - Un copia-incolla nella dashboard Vercel può includere uno spazio o un
-  a-capo finale invisibile, che rompe l'header HTTP verso Stripe
-  (`ERR_INVALID_CHAR`) — `lib/stripe.ts` fa `.trim()` sulla chiave per
-  difendersi da questo, ma vale la pena tenerlo a mente per qualunque
-  altro env var futuro usato per costruire richieste HTTP.
+  a-capo finale invisibile, che rompe le richieste costruite con quel
+  valore. Per questo `lib/mailer.ts` fa `.trim()` su host, porta, utenza
+  e mittente: vale la pena tenerlo a mente per qualunque altro env var
+  futuro usato per costruire richieste di rete.
+- `HOST_EMAIL` non è un dettaglio operativo: è la casella che riceve i
+  documenti d'identità degli ospiti. Vedi `LEGALE.md` §5.1.
+- **Il piano Hobby di Vercel vieta l'uso commerciale** e la loro
+  definizione include «pubblicizzare un prodotto o servizio a pagamento»:
+  togliere Stripe ha ridotto il rischio, non l'ha eliminato. Punto aperto
+  documentato in `LEGALE.md` §6.
+
+## SEO
+
+- `lib/seo.ts` è l'unico posto dove vive `siteUrl` (lo importano
+  `app/layout.tsx`, `app/sitemap.ts`, `app/robots.ts`) e dove si
+  costruiscono i metadati delle pagine interne con `pageMetadata()`.
+- **Il dominio ufficiale è `campomarzio47.it`** (apex, senza www) e deve
+  combaciare in tre posti: `NEXT_PUBLIC_SITE_URL` nelle env var di
+  Vercel, `CANONICAL_HOST` in `next.config.ts` (da cui nasce il redirect
+  308 da `campomarzio47.vercel.app`) e il dominio primario impostato su
+  Vercel. Se divergono, il sito funziona lo stesso ma dichiara col
+  canonical un indirizzo diverso da quello che serve le pagine, e Google
+  indicizza quello sbagliato: è già successo con il sottodominio
+  `.vercel.app`. Il redirect in `next.config.ts` fa match sull'host
+  **esatto** di produzione, non su tutto `*.vercel.app`, per non rompere
+  le anteprime dei branch.
+- `NEXT_PUBLIC_SITE_URL` è letta a **build time**: cambiarla su Vercel
+  senza rifare il deploy non ha alcun effetto.
+- **I metadati in Next si ereditano**: il layout dichiara
+  `alternates: { canonical: "/" }`, quindi una pagina che imposta solo
+  `title` eredita il canonical della home e si autodichiara un duplicato
+  — Google la esclude dall'indice. Ogni pagina indicizzabile deve quindi
+  usare `pageMetadata(key, path)`, mai un `metadata` scritto a mano con
+  il solo titolo. Stessa cosa per la `description`: senza override, tutte
+  le pagine condividono quella della home.
+- Aggiungendo una pagina indicizzabile: description in
+  `dictionaries.meta.pages` (it + en, max ~160 caratteri), metadati via
+  `pageMetadata()`, route in `app/sitemap.ts`.
+- Le vecchie route `/foto`, `/servizi`, `/recensioni` usano
+  `permanentRedirect` (308, non 307): sono redirect definitivi e il 307
+  lascerebbe il vecchio URL nell'indice.
+- `public/og-image.jpg` è 1200x630 e va tenuta leggera. Non puntare
+  l'Open Graph alla foto di copertina originale: i crawler social
+  scaricano il file grezzo senza passare da `next/image` e oltre ~5 MB
+  rinunciano all'anteprima. Le foto in `public/photos/` vanno
+  ridimensionate (max ~2560px) prima del commit; gli originali stanno in
+  `foto_campomarzio/`, gitignorata.
+- Niente `AggregateRating`/`Review` nei dati strutturati: le recensioni
+  vengono da Airbnb/Booking e marcarle come proprie ricade nelle
+  recensioni auto-referenziali vietate da Google per le strutture
+  ricettive.
+- `SEO-PROMOZIONE.md` — la parte non tecnica (Search Console, Google
+  Business Profile, link locali, aspettative sui tempi). È il documento
+  da dare all'host: il codice da solo non fa comparire un sito nuovo su
+  Google.
 
 ## Gotcha di framework
 
@@ -213,7 +340,11 @@ toccare il codice, solo `content/`:
 - `TEMPLATE-BRIEF.md` — questionario da far compilare a un nuovo cliente.
 - `TEMPLATE-SETUP.md` — passaggi tecnici per adattare il codice a un
   brief compilato.
+- `LEGALE.md` — cosa il cliente deve compilare e decidere perché il sito
+  sia in regola, e cosa resta in capo a lui e non al codice.
 
 **Regola permanente**: ogni volta che si aggiunge una funzionalità o si
 introduce una nuova variabile/passaggio di setup, aggiornare anche questi
-due file, non solo il codice.
+file, non solo il codice. Per un nuovo immobile, `LEGALE.md` va rifatto
+da capo: CIN, P.IVA e condizioni di soggiorno sono diversi per ciascuno,
+e un CIN sbagliato è peggio di un CIN assente.

@@ -20,7 +20,7 @@ export default function ReviewsSection() {
           href={property.booking.airbnbUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-bordeaux underline underline-offset-4 hover:text-bordeaux-dark"
+          className="rounded-sm text-bordeaux underline underline-offset-4 hover:text-bordeaux-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
         >
           {dict.reviews.allOnAirbnb}
         </a>
@@ -28,11 +28,18 @@ export default function ReviewsSection() {
           href={property.booking.bookingUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-bordeaux underline underline-offset-4 hover:text-bordeaux-dark"
+          className="rounded-sm text-bordeaux underline underline-offset-4 hover:text-bordeaux-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
         >
           {dict.reviews.allOnBooking}
         </a>
       </div>
+
+      {/* Chi pubblica recensioni deve dire se e come verifica che
+          provengano da clienti reali: art. 22 comma 4-bis del Codice del
+          consumo, introdotto dalla direttiva Omnibus. */}
+      <p className="mt-6 max-w-3xl text-xs leading-relaxed text-mid">
+        {dict.reviews.provenance}
+      </p>
     </>
   );
 }

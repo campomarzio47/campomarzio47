@@ -36,7 +36,7 @@ export default function Amenities() {
             key={amenity.title}
             className="flex flex-col gap-1.5 bg-off-white p-4 transition-colors duration-200 hover:bg-beam/20"
           >
-            <Icon size={18} strokeWidth={1.5} className="text-bordeaux" />
+            <Icon size={18} strokeWidth={1.5} aria-hidden="true" className="text-bordeaux" />
             <span className="font-display text-base leading-snug">{amenity.title}</span>
             <span className="text-xs leading-snug text-mid">{amenity.description}</span>
           </div>

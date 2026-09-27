@@ -3,15 +3,16 @@
 import { useState, type FormEvent } from "react";
 import type { DateRange } from "react-day-picker";
 import BookingCalendar, { nightsInRange } from "@/components/BookingCalendar";
+import PrivacyAck from "@/components/PrivacyAck";
 import { useLocale } from "@/components/LocaleProvider";
 import { property } from "@/content/property";
 import type { Dictionary } from "@/content/dictionaries";
 
-type Status = "idle" | "sending" | "error";
+type Status = "idle" | "sending" | "sent" | "error";
 type ErrorCode = keyof Dictionary["booking"]["errors"];
 
 const inputClasses =
-  "w-full rounded-md border border-divider bg-off-white px-3 py-2 text-sm outline-none focus:border-bordeaux";
+  "w-full rounded-md border border-divider bg-off-white px-3 py-2 text-sm outline-none placeholder:text-mid focus:border-bordeaux focus-visible:ring-2 focus-visible:ring-bordeaux";
 const labelClasses = "flex flex-col gap-1 text-xs text-mid";
 
 function toIso(date: Date): string {
@@ -51,6 +52,8 @@ export default function BookingForm({
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [messaggio, setMessaggio] = useState("");
+  const [privacyAck, setPrivacyAck] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [errorCode, setErrorCode] = useState<ErrorCode | null>(null);
 
@@ -59,7 +62,7 @@ export default function BookingForm({
   const { pricePerNight, cleaningFee, currency } = property.pricing;
   const total = nights >= minNights ? nights * pricePerNight + cleaningFee : 0;
   const canSubmit = Boolean(
-    range?.from && range?.to && nights >= minNights && nome && email,
+    range?.from && range?.to && nights >= minNights && nome && email && privacyAck,
   );
 
   async function handleSubmit(e: FormEvent) {
@@ -80,6 +83,8 @@ export default function BookingForm({
           nome,
           email,
           telefono,
+          messaggio,
+          privacyAck,
         }),
       });
       const data = await res.json();
@@ -90,11 +95,24 @@ export default function BookingForm({
         return;
       }
 
-      window.location.href = data.url;
+      setStatus("sent");
     } catch {
       setErrorCode("server_error");
       setStatus("error");
     }
+  }
+
+  // Conferma mostrata al posto del modulo. `role="status"` perché chi usa
+  // uno screen reader non vedrebbe altrimenti che la pagina è cambiata.
+  if (status === "sent") {
+    return (
+      <div role="status" className="rounded-md border border-divider p-6">
+        <p className="font-display text-xl">{dict.bookingConfirmation.title}</p>
+        <p className="mt-2 text-sm leading-relaxed text-mid">
+          {dict.bookingConfirmation.subtitle}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -104,9 +122,10 @@ export default function BookingForm({
       </div>
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
-        <label className={labelClasses}>
+        <label className={labelClasses} htmlFor="booking-guests">
           {dict.booking.guestsLabel}
           <input
+            id="booking-guests"
             required
             type="number"
             min={1}
@@ -117,27 +136,55 @@ export default function BookingForm({
           />
         </label>
 
-        <input
-          required
-          placeholder={dict.booking.nameLabel}
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          className={inputClasses}
-        />
-        <input
-          required
-          type="email"
-          placeholder={dict.booking.emailLabel}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={inputClasses}
-        />
-        <input
-          placeholder={dict.booking.phoneLabel}
-          value={telefono}
-          onChange={(e) => setTelefono(e.target.value)}
-          className={inputClasses}
-        />
+        <label className={labelClasses} htmlFor="booking-name">
+          {dict.booking.nameLabel}
+          <input
+            id="booking-name"
+            required
+            autoComplete="name"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            className={inputClasses}
+          />
+        </label>
+
+        <label className={labelClasses} htmlFor="booking-email">
+          {dict.booking.emailLabel}
+          <input
+            id="booking-email"
+            required
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={inputClasses}
+          />
+        </label>
+
+        <label className={labelClasses} htmlFor="booking-phone">
+          {dict.booking.phoneLabel}{" "}
+          <span className="font-normal">({dict.booking.optionalLabel})</span>
+          <input
+            id="booking-phone"
+            type="tel"
+            autoComplete="tel"
+            value={telefono}
+            onChange={(e) => setTelefono(e.target.value)}
+            className={inputClasses}
+          />
+        </label>
+
+        <label className={labelClasses} htmlFor="booking-message">
+          {dict.booking.messageLabel}{" "}
+          <span className="font-normal">({dict.booking.optionalLabel})</span>
+          <textarea
+            id="booking-message"
+            rows={3}
+            value={messaggio}
+            onChange={(e) => setMessaggio(e.target.value)}
+            className={inputClasses}
+          />
+        </label>
 
         {nights > 0 && (
           <div className="rounded-md border border-divider p-4 text-sm">
@@ -159,19 +206,24 @@ export default function BookingForm({
               <span>{dict.booking.totalLabel}</span>
               <span>{formatPrice(total, currency, locale)}</span>
             </div>
+            <p className="mt-3 text-xs leading-relaxed text-mid">{dict.booking.quoteNote}</p>
           </div>
         )}
+
+        <PrivacyAck id="booking-privacy" checked={privacyAck} onChange={setPrivacyAck} />
 
         <button
           type="submit"
           disabled={!canSubmit || status === "sending"}
           className="inline-flex items-center justify-center rounded-md bg-bordeaux px-6 py-3 text-sm font-medium text-off-white transition-all duration-200 hover:bg-bordeaux-dark active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
         >
-          {status === "sending" ? dict.booking.sendingLabel : dict.booking.continueButton}
+          {status === "sending" ? dict.booking.sendingLabel : dict.booking.submitButton}
         </button>
 
         {status === "error" && errorCode && (
-          <p className="text-sm text-bordeaux">{dict.booking.errors[errorCode]}</p>
+          <p role="alert" className="text-sm text-bordeaux">
+            {dict.booking.errors[errorCode]}
+          </p>
         )}
       </form>
     </div>

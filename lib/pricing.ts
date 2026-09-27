@@ -1,11 +1,30 @@
 import { property } from "@/content/property";
 import type { BusyRange } from "@/lib/ical";
 
-// Prezzo totale del soggiorno in centesimi (per gli importi passati a
-// Stripe, che lavora sempre in unità minime della valuta).
-export function computeStayTotalCents(nights: number): number {
+/**
+ * Numero di notti fra due date in formato YYYY-MM-DD.
+ *
+ * Le date sono trattate come UTC di proposito: con l'ora locale, il
+ * passaggio all'ora legale fra check-in e check-out sposterebbe la
+ * differenza di un'ora e l'arrotondamento potrebbe restituire una notte
+ * in più o in meno.
+ */
+export function nightsBetween(checkinIso: string, checkoutIso: string): number {
+  const start = new Date(`${checkinIso}T00:00:00Z`);
+  const end = new Date(`${checkoutIso}T00:00:00Z`);
+  return Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+/**
+ * Totale indicativo del soggiorno, in euro interi.
+ *
+ * È un preventivo, non un importo dovuto: il sito non incassa nulla e il
+ * prezzo che fa fede è quello dell'email di conferma dell'host (vedi
+ * /termini). Per questo lavoriamo in euro e non in centesimi.
+ */
+export function computeStayTotal(nights: number): number {
   const { pricePerNight, cleaningFee } = property.pricing;
-  return Math.round((pricePerNight * nights + cleaningFee) * 100);
+  return pricePerNight * nights + cleaningFee;
 }
 
 function todayUtcMidnightMs(): number {
@@ -23,7 +42,7 @@ function isoFromMs(ms: number): string {
 
 // Prima data di check-in accettata rispettando il preavviso minimo
 // (property.pricing.minAdvanceDays). Date trattate come UTC, coerentemente
-// con lib/booking-metadata.ts.
+// con nightsBetween qui sopra.
 export function earliestCheckinIso(): string {
   const days = property.pricing.minAdvanceDays || 0;
   return isoFromMs(todayUtcMidnightMs() + days * 24 * 60 * 60 * 1000);

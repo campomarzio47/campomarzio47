@@ -103,10 +103,17 @@ body {
   background: var(--color-bordeaux);
 }
 
+/* Date occupate. Il progetto le voleva "attenuate invece che barrate", ma
+   con opacità 0.4 il contrasto scendeva intorno a 2:1 — illeggibile per
+   molti — e la sola differenza di tono è un'informazione affidata al solo
+   colore (WCAG 1.4.1). Restano attenuate, ma a un livello leggibile, e la
+   riga le rende riconoscibili anche a chi il colore non lo distingue. */
 .rdp-busy .rdp-day_button {
   color: var(--color-mid) !important;
-  opacity: 0.4;
+  opacity: 0.85;
   cursor: not-allowed;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 @keyframes kenburns {

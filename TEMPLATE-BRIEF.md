@@ -75,7 +75,12 @@ voto, testo della recensione (lasciare nella lingua originale, non tradurre).
 - URL annuncio Booking.com:
 - Altri canali di prenotazione diretta da collegare?
 
-## 6b. Prenotazione diretta con pagamento (Stripe)
+## 6b. Richiesta di prenotazione diretta
+
+Il sito **non incassa pagamenti**: l'ospite invia una richiesta, l'host
+risponde via email e il pagamento avviene fuori dal sito. Serve comunque
+sapere prezzi e condizioni, perché finiscono nel preventivo indicativo e
+nei Termini e condizioni.
 
 - Prezzo per notte (in euro, un unico valore fisso — prezzi diversi per
   stagione/periodo non sono ancora supportati dal sito):
@@ -84,11 +89,28 @@ voto, testo della recensione (lasciare nella lingua originale, non tradurre).
 - Preavviso minimo prima dell'arrivo, in giorni (facoltativo, di default
   2 — oggi e i giorni successivi fino a questo numero risultano sempre
   "occupati" e non prenotabili, per dare tempo all'host di organizzarsi):
-- L'host ha già un account Stripe? Se sì, è verificato/attivo per
-  accettare pagamenti reali?
-- Nota: la carta dell'ospite viene solo autorizzata al momento della
-  prenotazione; l'host conferma o rifiuta a mano entro un paio di
-  giorni, e solo alla conferma avviene l'addebito reale.
+- Quando è dovuto il saldo? (di default: entro 24 ore prima dell'arrivo,
+  contestualmente all'invio del codice di accesso)
+- Con quali mezzi di pagamento (bonifico, contanti all'arrivo, altro):
+- Politica di cancellazione applicata davvero (di default: nessuna penale
+  fino al momento del saldo):
+
+## 6c. Dati legali obbligatori
+
+Senza questi il sito non può essere pubblicato. Dettagli in `LEGALE.md`.
+
+- **CIN** (Codice Identificativo Nazionale, dalla BDSR) — **obbligatorio**:
+  va indicato in ogni annuncio, sito diretto compreso. Sanzione 500-5.000 €
+  se manca:
+- CIR (Codice Identificativo Regionale, per il Veneto su Ross1000):
+- L'host affitta come privato o come impresa con P.IVA?
+- Se impresa: ragione sociale, P.IVA, codice fiscale, numero REA, sede
+  legale, PEC:
+- Il Comune applica l'imposta di soggiorno? Se sì, con quale tariffa?
+- Le recensioni da pubblicare sono autentiche e verificabili sulle
+  piattaforme? (pubblicarne di inventate è una pratica commerciale
+  scorretta)
+- L'host possiede i diritti sulle foto fornite?
 
 ## 7. Foto
 
@@ -100,11 +122,20 @@ voto, testo della recensione (lasciare nella lingua originale, non tradurre).
 
 ## 8. Email (per invio check-in e richieste di prenotazione)
 
-- Indirizzo Gmail dedicato al sito (o esistente) che invierà le email:
-- L'account ha la verifica in due passaggi attiva? (necessaria per generare
-  l'App Password su https://myaccount.google.com/apppasswords)
-- Indirizzo email a cui devono arrivare le notifiche (check-in, richieste
-  di prenotazione, contatti) — può coincidere con quello sopra:
+Le email trasportano dati personali degli ospiti, fino agli estremi del
+documento d'identità. Chi le veicola è un responsabile del trattamento e
+serve un accordo ai sensi dell'art. 28 GDPR: **un account Gmail gratuito
+non ne ha uno**, essendo un servizio per uso personale. Vedi `LEGALE.md`.
+
+- Servizio SMTP per l'invio (consigliati Brevo o Mailjet: europei, con DPA
+  incluso anche nel piano gratuito; in alternativa la casella SMTP del
+  dominio dell'host):
+- Indirizzo mittente autorizzato da quel servizio:
+- Indirizzo a cui devono **arrivare** le notifiche (check-in, richieste di
+  prenotazione, contatti). Non dovrebbe essere una casella personale
+  gratuita, per la stessa ragione di cui sopra:
+- L'host vuole ricevere gli allegati del check-in dentro uno ZIP cifrato
+  AES-256? (più sicuro, ma per aprirlo serve 7-Zip: di default è spento)
 
 ## 9. Calendario disponibilità (facoltativo)
 
@@ -126,7 +157,7 @@ localmente (non riusare Ross1000 automaticamente) — vedi
 - Regione dell'immobile (per capire se Ross1000/GIES si applica o va
   sostituito con il sistema locale):
 - Codice struttura Ross1000 (CIR regionale, es. "024057-LOC-00037" — NON è
-  il CIN nazionale, sono due codici diversi):
+  il CIN nazionale, sono due codici diversi: il CIN sta al §6c):
 - Nome "prodotto" da riportare nell'XML (facoltativo, di default deriva dal
   nome della proprietà):
 
@@ -134,17 +165,40 @@ localmente (non riusare Ross1000 automaticamente) — vedi
 
 - Dominio personalizzato da collegare (se già acquistato), oppure va bene
   il sottodominio gratuito `<nome-progetto>.vercel.app`?
+- Se l'obiettivo dell'host è **essere trovato su Google**, spiegargli che
+  il dominio proprio non è un vezzo estetico: un sottodominio
+  `*.vercel.app` non è collegabile a una scheda Google Business Profile,
+  non può essere verificato in Search Console come proprietà di dominio e
+  parte svantaggiato nelle ricerche locali. Costo tipico 10-15 €/anno.
+
+## 11a. Visibilità su Google (da concordare con l'host)
+
+- L'host ha già una scheda **Google Business Profile** per la struttura?
+  È il fattore singolo più efficace per le ricerche locali ("casa
+  vacanze <città>") e va collegata al sito.
+- Serve l'accesso Google dell'host per **Search Console**: chi lo fa,
+  l'host o noi con un account condiviso? (Senza, il sito può restare
+  mesi fuori dall'indice — vedi `TEMPLATE-SETUP.md` §7c.)
+- L'immobile è presente su portali/siti locali (Pro Loco, consorzio
+  turistico, comune, associazione albergatori) che possono linkarlo?
+  Sono i link più utili e più facili da ottenere.
 
 ## 11b. Statistiche di visita (facoltativo)
 
-- L'host vuole Google Analytics sul sito? Se sì, serve che crei un account
-  su https://analytics.google.com con la propria email e fornisca l'**ID
-  misurazione** (formato `G-XXXXXXXXXX`, in Amministrazione → Flussi di
-  dati). Non serve incollare codice: basta l'ID.
-- Nota: Analytics usa cookie di profilazione. Se l'host lo attiva, per un
-  sito rivolto a visitatori UE andrebbe aggiunto anche un banner di
-  consenso cookie — **non incluso** nel modello attuale, va valutato
-  caso per caso con l'host.
+Il modello **non include più Google Analytics**, ed è una scelta, non una
+dimenticanza: era l'unico strumento a scrivere cookie di terze parti, e la
+sua presenza obbliga a un banner di consenso preventivo che blocchi lo
+script *prima* dell'accettazione (Linee guida cookie del Garante). Senza
+di lui il sito usa solo un cookie tecnico ed è esente dal banner.
+
+- L'host vuole comunque delle statistiche? In tal caso proporre uno
+  strumento **senza cookie e senza profilazione** (Vercel Web Analytics,
+  incluso nel piano Pro, oppure Plausible): nessun banner necessario.
+- Se l'host insiste per Google Analytics, va messo in conto il lavoro
+  aggiuntivo: banner di consenso con rifiuto allo stesso livello
+  dell'accettazione, blocco dello script fino al consenso, riscrittura
+  della cookie policy e un modo per cambiare idea in seguito. Non è una
+  variabile d'ambiente in più.
 
 ## 12. Note aggiuntive
 

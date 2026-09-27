@@ -1,14 +1,23 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://campomarzio47.vercel.app";
+import { siteUrl } from "@/lib/seo";
 
 // Solo le route canoniche: /foto, /servizi, /recensioni sono redirect
 // verso ancore della home e non vanno elencate qui.
-const routes = ["", "/prenota", "/check-in", "/contatti"];
+// Niente lastModified: sarebbe new Date() a ogni build, cioè "tutte le
+// pagine sono cambiate oggi" a ogni deploy. Un lastmod che mente viene
+// semplicemente ignorato dai motori, meglio ometterlo.
+const routes = [
+  "",
+  "/prenota",
+  "/check-in",
+  "/contatti",
+  "/privacy",
+  "/cookie-policy",
+  "/termini",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return routes.map((route) => ({
     url: `${siteUrl}${route}`,
-    lastModified: new Date(),
   }));
 }

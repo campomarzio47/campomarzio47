@@ -8,6 +8,9 @@ const schema = z.object({
   arrivo: z.string().max(20).optional().or(z.literal("")),
   partenza: z.string().max(20).optional().or(z.literal("")),
   messaggio: z.string().min(1).max(4000),
+  // Presa visione dell'informativa privacy: il form non lascia inviare
+  // senza, ma va verificato anche qui.
+  privacyAck: z.literal(true),
 });
 
 export async function POST(request: Request) {
@@ -41,14 +44,11 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ ok: true });
   } catch (error) {
+    // Il messaggio di un errore SMTP può contenere host, utenza o motivo
+    // del rifiuto: resta nei log, al client va una frase generica.
+    console.error("Invio del messaggio di contatto non riuscito", error);
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Invio non riuscito, riprova più tardi.",
-      },
+      { ok: false, error: "Invio non riuscito, riprova più tardi." },
       { status: 500 },
     );
   }

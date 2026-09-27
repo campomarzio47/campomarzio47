@@ -43,9 +43,12 @@ export default function GuestRow({
   return (
     <div className="rounded-md border border-divider p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-display text-xl">
+        {/* h2: è il primo livello sotto l'h1 della pagina check-in.
+            Saltare da h1 a h3 rompe la gerarchia per screen reader e
+            crawler — lo stile resta identico, cambia solo il tag. */}
+        <h2 className="font-display text-xl">
           {isPrimary ? dict.checkin.primaryGuestLabel : `${dict.checkin.guest} ${index + 1}`}
-        </h3>
+        </h2>
         {removable && (
           <button
             type="button"

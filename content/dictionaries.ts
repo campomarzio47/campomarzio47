@@ -1,8 +1,62 @@
 import type { DocumentTypeCode, TipoTurismo, MezzoTrasporto } from "@/lib/checkin-types";
 
 export type Dictionary = {
-  meta: { title: string; description: string };
+  meta: {
+    title: string;
+    description: string;
+    // Descrizione specifica di ogni pagina interna. Serve per SEO: pagine
+    // diverse con la stessa description vengono trattate da Google come
+    // quasi-duplicati. Le chiavi corrispondono alle sezioni omonime del
+    // dizionario (booking/checkin/contact), da cui si prende il titolo.
+    pages: {
+      booking: { description: string };
+      checkin: { description: string };
+      contact: { description: string };
+      privacy: { description: string };
+      cookies: { description: string };
+      terms: { description: string };
+    };
+  };
   languageSwitcher: { label: string };
+  // Stringhe che esistono solo per chi naviga da tastiera o con uno screen
+  // reader: non sono mai visibili a schermo (tranne skipToContent, che
+  // compare al primo Tab), ma vanno tradotte come tutto il resto.
+  a11y: {
+    skipToContent: string;
+    openMenu: string;
+    closeMenu: string;
+    mainNavigation: string;
+    selectArrival: string;
+    selectDeparture: string;
+    ratingOutOfFive: string;
+    photoDialog: string;
+    datesDialog: string;
+    suggestions: string;
+  };
+  footer: {
+    legalHeading: string;
+    contactHeading: string;
+    cinLabel: string;
+    cirLabel: string;
+    vatLabel: string;
+    taxCodeLabel: string;
+    reaLabel: string;
+    privacyLink: string;
+    cookiesLink: string;
+    termsLink: string;
+  };
+  // Presa visione dell'informativa, comune ai tre moduli. Non è un
+  // consenso: per il check-in il trattamento è un obbligo di legge, per
+  // gli altri due è l'esecuzione di misure precontrattuali. Vedi
+  // /privacy.
+  privacyAck: {
+    label: string;
+    linkText: string;
+  };
+  privacy: { title: string; subtitle: string };
+  cookies: { title: string; subtitle: string };
+  terms: { title: string; subtitle: string };
+  legalPage: { lastUpdated: string };
   nav: {
     home: string;
     contact: string;
@@ -12,6 +66,9 @@ export type Dictionary = {
   hero: {
     tagline: string;
     description: string;
+    // Descrizione della foto di copertina per chi non la vede. Deve
+    // descrivere l'immagine, non ripetere lo slogan.
+    imageAlt: string;
     facts: { surface: string; bedrooms: string; guests: string; garden: string };
   };
   availabilityBar: {
@@ -39,6 +96,9 @@ export type Dictionary = {
     subtitle: string;
     allOnAirbnb: string;
     allOnBooking: string;
+    // Dichiarazione sulla provenienza delle recensioni, richiesta
+    // dall'art. 22 comma 4-bis del Codice del consumo a chi le pubblica.
+    provenance: string;
   };
   availability: {
     loading: string;
@@ -58,7 +118,12 @@ export type Dictionary = {
     cleaningFeeLabel: string;
     totalLabel: string;
     minNightsWarning: string;
-    continueButton: string;
+    // Il riquadro del prezzo è un preventivo, non un importo dovuto: il
+    // contratto nasce solo con la conferma scritta dell'host. Vedi /termini.
+    quoteNote: string;
+    messageLabel: string;
+    optionalLabel: string;
+    submitButton: string;
     sendingLabel: string;
     errors: {
       validation_error: string;
@@ -135,7 +200,10 @@ export type Dictionary = {
     transportMeans: string;
     transportMeansOptions: { code: MezzoTrasporto; label: string }[];
     addGuest: string;
-    consent: string;
+    // Spiegazione dei due adempimenti di legge, mostrata sopra la casella
+    // di presa visione. Non è una richiesta di consenso: il trattamento è
+    // obbligatorio per legge (art. 6.1.c GDPR).
+    privacyNotice: string;
     submit: string;
     sending: string;
     sentTitle: string;
@@ -149,10 +217,78 @@ export type Dictionary = {
 export const it: Dictionary = {
   meta: {
     title: "Campo Marzio 47 — Casa vacanze in affitto breve a Marostica (VI)",
+    // Max ~160 caratteri: oltre, Google taglia il testo nei risultati.
     description:
-      "Campo Marzio 47: casa a schiera in affitto breve nel centro di Marostica (VI), 120 m², fino a 4 ospiti. Prenota direttamente online o su Airbnb/Booking.com, check-in digitale incluso.",
+      "Campo Marzio 47: casa a schiera in affitto breve nel centro di Marostica (VI). 120 m², fino a 4 ospiti, giardino privato. Richiedi le date senza intermediari.",
+    pages: {
+      booking: {
+        description:
+          "Richiedi le tue date a Campo Marzio 47, Marostica (VI): verifica la disponibilità e invia una richiesta senza intermediari. Ti rispondiamo via email.",
+      },
+      checkin: {
+        description:
+          "Check-in online per gli ospiti di Campo Marzio 47: compila i dati dei documenti prima dell'arrivo e salta le pratiche una volta in casa.",
+      },
+      contact: {
+        description:
+          "Contatta Francesco, host di Campo Marzio 47 a Marostica (VI): telefono, email e modulo per domande su disponibilità, prezzi e soggiorno.",
+      },
+      privacy: {
+        description:
+          "Come Campo Marzio 47 tratta i dati personali raccolti dal sito: finalità, basi giuridiche, destinatari, tempi di conservazione e come esercitare i tuoi diritti.",
+      },
+      cookies: {
+        description:
+          "Questo sito usa un solo cookie tecnico, per ricordare la lingua. Nessuna statistica, nessuna pubblicità, nessun cookie di terze parti.",
+      },
+      terms: {
+        description:
+          "Condizioni di soggiorno a Campo Marzio 47: come nasce la prenotazione, prezzo, pagamento, cancellazione e obblighi di ospite e host.",
+      },
+    },
   },
   languageSwitcher: { label: "Lingua" },
+  a11y: {
+    skipToContent: "Vai al contenuto",
+    openMenu: "Apri il menu",
+    closeMenu: "Chiudi il menu",
+    mainNavigation: "Navigazione principale",
+    selectArrival: "Scegli la data di arrivo",
+    selectDeparture: "Scegli la data di partenza",
+    ratingOutOfFive: "Valutazione {rating} su 5",
+    photoDialog: "Foto ingrandita",
+    datesDialog: "Scelta delle date",
+    suggestions: "Suggerimenti",
+  },
+  footer: {
+    legalHeading: "Dati dell'attività",
+    contactHeading: "Contatti",
+    cinLabel: "CIN",
+    cirLabel: "CIR",
+    vatLabel: "P. IVA",
+    taxCodeLabel: "C.F.",
+    reaLabel: "REA",
+    privacyLink: "Privacy",
+    cookiesLink: "Cookie",
+    termsLink: "Termini e condizioni",
+  },
+  privacyAck: {
+    label: "Ho letto l'{link} e so come vengono trattati i miei dati.",
+    linkText: "informativa privacy",
+  },
+  privacy: {
+    title: "Informativa privacy",
+    subtitle: "Quali dati raccogliamo, perché, e cosa puoi chiederci.",
+  },
+  cookies: {
+    title: "Cookie",
+    subtitle: "Uno solo, tecnico. Nessun tracciamento.",
+  },
+  terms: {
+    title: "Termini e condizioni",
+    subtitle: "Le regole del soggiorno, in chiaro.",
+  },
+  legalPage: { lastUpdated: "Ultimo aggiornamento: {date}" },
   nav: {
     home: "La Casa",
     contact: "Contatti",
@@ -162,6 +298,8 @@ export const it: Dictionary = {
   hero: {
     tagline: "Casa a schiera moderna nel cuore di Marostica",
     description: `Ristrutturata di recente, la casa è ideale per famiglie, coppie o gruppi di amici in cerca di una vacanza tranquilla vicino al centro di Marostica: luminosa, arredata con cura, con giardino privato e un'area verde attrezzata proprio di fronte.`,
+    imageAlt:
+      "La facciata di Campo Marzio 47 vista dal giardino, con l'area verde di fronte alla casa",
     facts: {
       surface: "120 m²",
       bedrooms: "2 camere",
@@ -213,7 +351,7 @@ export const it: Dictionary = {
         icon: "Wifi",
         category: "Connettività",
         title: "WiFi gratuito",
-        description: "Connessione ad alta velocità in tutta la casa.",
+        description: "Connessione Wi-Fi in tutta la casa, inclusa nel prezzo.",
       },
       {
         icon: "Car",
@@ -255,7 +393,7 @@ export const it: Dictionary = {
         icon: "DoorOpen",
         category: "Accesso",
         title: "Ingresso indipendente",
-        description: "Insonorizzazione e giochi da tavolo (scacchi) inclusi.",
+        description: "Accesso riservato e giochi da tavolo (scacchi) inclusi.",
       },
     ],
   },
@@ -264,6 +402,8 @@ export const it: Dictionary = {
     subtitle: "Cosa dicono gli ospiti.",
     allOnAirbnb: "Tutte le recensioni su Airbnb",
     allOnBooking: "Tutte le recensioni su Booking.com",
+    provenance:
+      "Le recensioni qui sopra sono state scritte da ospiti che hanno effettivamente soggiornato nella casa e sono pubblicate su Airbnb e Booking.com, dove ciascuna piattaforma verifica che l'autore abbia davvero prenotato. Le riportiamo nella lingua originale, senza modificarle. Non offriamo nulla in cambio di una recensione.",
   },
   availability: {
     loading: "Caricamento calendario…",
@@ -274,7 +414,7 @@ export const it: Dictionary = {
   booking: {
     title: "Prenota ora",
     subtitle:
-      "Scegli le date, paga con carta e ricevi conferma dall'host entro un paio di giorni. L'importo viene solo autorizzato: verrà addebitato soltanto se la prenotazione viene confermata.",
+      "Scegli le date e inviaci una richiesta: nessun pagamento e nessuna carta: ti rispondiamo via email, di solito entro un paio di giorni.",
     guestsLabel: "Numero di ospiti",
     nameLabel: "Nome e cognome",
     emailLabel: "Email",
@@ -282,10 +422,14 @@ export const it: Dictionary = {
     nightsLabel: "Notti",
     pricePerNightLabel: "Prezzo per notte",
     cleaningFeeLabel: "Pulizie finali",
-    totalLabel: "Totale",
+    totalLabel: "Totale indicativo",
     minNightsWarning: "Soggiorno minimo {min} notti.",
-    continueButton: "Continua al pagamento",
-    sendingLabel: "Attendere…",
+    quoteNote:
+      "Preventivo indicativo: non è una prenotazione e non ti impegna. Il prezzo definitivo è quello della nostra email di conferma.",
+    messageLabel: "Messaggio",
+    optionalLabel: "facoltativo",
+    submitButton: "Invia richiesta",
+    sendingLabel: "Invio…",
     errors: {
       validation_error: "Dati non validi. Controlla i campi e riprova.",
       invalid_dates: "Le date inserite non sono valide.",
@@ -296,9 +440,9 @@ export const it: Dictionary = {
     },
   },
   bookingConfirmation: {
-    title: "Richiesta ricevuta!",
+    title: "Richiesta ricevuta",
     subtitle:
-      "La tua carta è stata autorizzata (non ancora addebitata). L'host confermerà la prenotazione entro un paio di giorni; riceverai un'email non appena lo farà.",
+      "Grazie! Ti abbiamo mandato una email di riepilogo. Ti rispondiamo di solito entro un paio di giorni: finché non ricevi la nostra conferma scritta, le date non sono ancora riservate.",
   },
   contact: {
     title: "Contatti",
@@ -318,7 +462,7 @@ export const it: Dictionary = {
   checkin: {
     title: "Check-in online",
     subtitle:
-      "Inserisci i dati di ogni ospite prima dell'arrivo: ci consente di adempiere alla comunicazione obbligatoria dei flussi turistici regionali.",
+      "Inserisci i dati di ogni ospite prima dell'arrivo: la legge ci obbliga a comunicarli, e farlo da qui ti evita di doverlo fare all'arrivo.",
     arrivalDate: "Data di arrivo",
     nights: "Numero di notti",
     guest: "Ospite",
@@ -400,8 +544,8 @@ export const it: Dictionary = {
       { code: "Non Specificato", label: "Non specificato" },
     ],
     addGuest: "Aggiungi ospite",
-    consent:
-      "Acconsento al trattamento dei miei dati personali ai fini della comunicazione statistica obbligatoria ai flussi turistici regionali (Ross1000). I dati vengono inviati via email all'host e non sono conservati sul server del sito.",
+    privacyNotice:
+      "Questi dati ci servono per due comunicazioni che la legge ci impone: quella alla Questura tramite il portale Alloggiati Web (art. 109 T.U.L.P.S.) e la rilevazione statistica del movimento turistico verso la Regione del Veneto (Ross1000). Non è un consenso facoltativo: senza questi dati non possiamo ospitarti. I dati vengono trasmessi via email all'host e non restano sul server del sito.",
     submit: "Invia check-in",
     sending: "Invio…",
     sentTitle: "Check-in inviato",
@@ -417,10 +561,78 @@ export const it: Dictionary = {
 export const en: Dictionary = {
   meta: {
     title: "Campo Marzio 47 — Short-term rental home in Marostica (VI), Italy",
+    // Max ~160 caratteri: oltre, Google taglia il testo nei risultati.
     description:
-      "Campo Marzio 47: a townhouse for short-term rental in the centre of Marostica (VI), Italy, 120 sqm, up to 4 guests. Book directly online or via Airbnb/Booking.com, digital check-in included.",
+      "Campo Marzio 47: townhouse for short-term rental in central Marostica, Italy. 120 sqm, up to 4 guests, private garden. Request your dates, no middlemen.",
+    pages: {
+      booking: {
+        description:
+          "Request your dates at Campo Marzio 47 in Marostica (VI), Italy: check availability and send a request with no middlemen. We reply by email.",
+      },
+      checkin: {
+        description:
+          "Online check-in for guests of Campo Marzio 47: submit your ID details before arrival and skip the paperwork once you get to the house.",
+      },
+      contact: {
+        description:
+          "Get in touch with Francesco, host of Campo Marzio 47 in Marostica (VI), Italy: phone, email and a form for questions about availability, rates and your stay.",
+      },
+      privacy: {
+        description:
+          "How Campo Marzio 47 handles the personal data collected through this site: purposes, legal bases, recipients, retention and how to exercise your rights.",
+      },
+      cookies: {
+        description:
+          "This website uses a single technical cookie, to remember your language. No analytics, no advertising, no third-party cookies.",
+      },
+      terms: {
+        description:
+          "Terms of stay at Campo Marzio 47: how a booking is formed, price, payment, cancellation and the obligations of guest and host.",
+      },
+    },
   },
   languageSwitcher: { label: "Language" },
+  a11y: {
+    skipToContent: "Skip to content",
+    openMenu: "Open the menu",
+    closeMenu: "Close the menu",
+    mainNavigation: "Main navigation",
+    selectArrival: "Choose the arrival date",
+    selectDeparture: "Choose the departure date",
+    ratingOutOfFive: "Rated {rating} out of 5",
+    photoDialog: "Enlarged photo",
+    datesDialog: "Date selection",
+    suggestions: "Suggestions",
+  },
+  footer: {
+    legalHeading: "Business details",
+    contactHeading: "Contact",
+    cinLabel: "CIN",
+    cirLabel: "CIR",
+    vatLabel: "VAT no.",
+    taxCodeLabel: "Tax code",
+    reaLabel: "Companies Register",
+    privacyLink: "Privacy",
+    cookiesLink: "Cookies",
+    termsLink: "Terms and conditions",
+  },
+  privacyAck: {
+    label: "I have read the {link} and understand how my data is handled.",
+    linkText: "privacy notice",
+  },
+  privacy: {
+    title: "Privacy notice",
+    subtitle: "What we collect, why, and what you can ask us.",
+  },
+  cookies: {
+    title: "Cookies",
+    subtitle: "One, technical. No tracking.",
+  },
+  terms: {
+    title: "Terms and conditions",
+    subtitle: "The rules of your stay, in plain words.",
+  },
+  legalPage: { lastUpdated: "Last updated: {date}" },
   nav: {
     home: "The House",
     contact: "Contact",
@@ -430,6 +642,8 @@ export const en: Dictionary = {
   hero: {
     tagline: "A modern townhouse in the heart of Marostica",
     description: `Recently renovated, the house is ideal for families, couples or groups of friends looking for a quiet stay close to the centre of Marostica: bright, thoughtfully furnished, with a private garden and a green area with a playground right in front.`,
+    imageAlt:
+      "The front of Campo Marzio 47 seen from the garden, with the green area facing the house",
     facts: {
       surface: "120 sqm",
       bedrooms: "2 bedrooms",
@@ -481,7 +695,7 @@ export const en: Dictionary = {
         icon: "Wifi",
         category: "Connectivity",
         title: "Free WiFi",
-        description: "High-speed connection throughout the house.",
+        description: "Wi-Fi throughout the house, included in the price.",
       },
       {
         icon: "Car",
@@ -523,7 +737,7 @@ export const en: Dictionary = {
         icon: "DoorOpen",
         category: "Access",
         title: "Independent entrance",
-        description: "Soundproofing and board games (chess) included.",
+        description: "Private access and board games (chess) included.",
       },
     ],
   },
@@ -532,6 +746,8 @@ export const en: Dictionary = {
     subtitle: "What guests say.",
     allOnAirbnb: "All reviews on Airbnb",
     allOnBooking: "All reviews on Booking.com",
+    provenance:
+      "The reviews above were written by guests who actually stayed at the house and are published on Airbnb and Booking.com, where each platform verifies that the author really booked. We quote them in their original language, unedited. We never offer anything in exchange for a review.",
   },
   availability: {
     loading: "Loading calendar…",
@@ -542,7 +758,7 @@ export const en: Dictionary = {
   booking: {
     title: "Book now",
     subtitle:
-      "Pick your dates, pay by card, and get confirmation from the host within a couple of days. Your card is only authorised: it will be charged only if the booking is confirmed.",
+      "Pick your dates and send us a request: no payment and no card details. We reply by email, usually within a couple of days.",
     guestsLabel: "Number of guests",
     nameLabel: "Full name",
     emailLabel: "Email",
@@ -550,10 +766,14 @@ export const en: Dictionary = {
     nightsLabel: "Nights",
     pricePerNightLabel: "Price per night",
     cleaningFeeLabel: "Cleaning fee",
-    totalLabel: "Total",
+    totalLabel: "Indicative total",
     minNightsWarning: "Minimum stay {min} nights.",
-    continueButton: "Continue to payment",
-    sendingLabel: "Please wait…",
+    quoteNote:
+      "Indicative quote: this is not a booking and does not commit you. The price that counts is the one in our confirmation email.",
+    messageLabel: "Message",
+    optionalLabel: "optional",
+    submitButton: "Send request",
+    sendingLabel: "Sending…",
     errors: {
       validation_error: "Invalid data. Please check the fields and try again.",
       invalid_dates: "The selected dates aren't valid.",
@@ -564,9 +784,9 @@ export const en: Dictionary = {
     },
   },
   bookingConfirmation: {
-    title: "Request received!",
+    title: "Request received",
     subtitle:
-      "Your card has been authorised (not charged yet). The host will confirm the booking within a couple of days; you'll get an email as soon as they do.",
+      "Thank you! We've sent you a summary by email. We usually reply within a couple of days: until you get our written confirmation, the dates are not reserved yet.",
   },
   contact: {
     title: "Contact",
@@ -586,7 +806,7 @@ export const en: Dictionary = {
   checkin: {
     title: "Online check-in",
     subtitle:
-      "Enter each guest's details before arrival: it lets us fulfil the mandatory regional tourism-flow reporting requirement.",
+      "Enter each guest's details before arrival: the law requires us to report them, and doing it here saves you the paperwork on arrival.",
     arrivalDate: "Arrival date",
     nights: "Number of nights",
     guest: "Guest",
@@ -668,8 +888,8 @@ export const en: Dictionary = {
       { code: "Non Specificato", label: "Not specified" },
     ],
     addGuest: "Add guest",
-    consent:
-      "I consent to the processing of my personal data for the mandatory regional tourism-flow statistical reporting (Ross1000). Data is sent by email to the host and is not stored on the site's server.",
+    privacyNotice:
+      "We need these details for two reports the law requires of us: the one to the police headquarters through the Alloggiati Web portal (Art. 109 of the Italian Public Security Act) and the tourist-movement statistics for the Veneto Region (Ross1000). This is not an optional consent: without these details we cannot host you. The data is emailed to the host and is not kept on the website's server.",
     submit: "Submit check-in",
     sending: "Sending…",
     sentTitle: "Check-in submitted",
