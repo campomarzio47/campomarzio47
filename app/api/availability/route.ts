@@ -2,7 +2,13 @@ import { NextResponse } from "next/server";
 import { getBusyRanges, isIcalConfigured } from "@/lib/ical";
 import { leadTimeBusyRange } from "@/lib/pricing";
 
-export const revalidate = 3600;
+// Dinamica, non `revalidate`: su Cloudflare (OpenNext con cache di sola
+// lettura, vedi open-next.config.ts) una route con revalidate verrebbe
+// congelata alla build — spesso senza nemmeno gli URL iCal, che lì non
+// sono variabili di build — e il calendario non mostrerebbe più nessuna
+// data occupata. La cache di un'ora resta sulla fetch in lib/ical.ts, dove
+// la piattaforma la supporta.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const configured = isIcalConfigured();

@@ -7,6 +7,7 @@ import Amenities from "@/components/Amenities";
 import ReviewsSection from "@/components/ReviewsSection";
 import Reveal from "@/components/Reveal";
 import { useLocale } from "@/components/LocaleProvider";
+import { property } from "@/content/property";
 
 export default function Home() {
   const { dict } = useLocale();
@@ -44,18 +45,23 @@ export default function Home() {
         </Reveal>
       </section>
 
-      <section
-        id="recensioni"
-        className="border-t border-divider px-6 pt-14 pb-32 md:px-10 md:pt-16 md:pb-40"
-      >
-        <Reveal className="mx-auto max-w-4xl">
-          <h2 className="font-display text-2xl md:text-3xl">{dict.reviews.title}</h2>
-          <p className="mt-1 text-sm text-mid">{dict.reviews.subtitle}</p>
-          <div className="mt-6">
-            <ReviewsSection />
-          </div>
-        </Reveal>
-      </section>
+      {/* Senza recensioni (struttura nuova) la sezione non c'è: un titolo
+          "Recensioni" sopra il vuoto dice il contrario di quello che
+          vorrebbe. Il redirect da /recensioni porta comunque in home. */}
+      {property.reviews.length > 0 && (
+        <section
+          id="recensioni"
+          className="border-t border-divider px-6 pt-14 pb-32 md:px-10 md:pt-16 md:pb-40"
+        >
+          <Reveal className="mx-auto max-w-4xl">
+            <h2 className="font-display text-2xl md:text-3xl">{dict.reviews.title}</h2>
+            <p className="mt-1 text-sm text-mid">{dict.reviews.subtitle}</p>
+            <div className="mt-6">
+              <ReviewsSection />
+            </div>
+          </Reveal>
+        </section>
+      )}
 
       <AvailabilityBar />
     </>

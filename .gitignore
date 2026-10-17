@@ -37,9 +37,20 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare (adapter OpenNext + wrangler)
+/.open-next/
+/.wrangler/
+.dev.vars*
+
+# messaggi salvati da scripts/smtp-sink.mjs durante le prove
+/.smtp-sink/
+
 # cartella con le foto sorgente originali (in public/photos ci sono quelle usate dal sito)
 /foto_campomarzio
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# lavoro temporaneo di scripts/new-site.mjs (impronte del modello, anteprime foto)
+/.new-site/

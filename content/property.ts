@@ -1,3 +1,13 @@
+/** Una recensione citata dalle piattaforme (vedi `reviews` più sotto). */
+export type Review = {
+  name: string;
+  group: string;
+  date: string;
+  /** Voto su 10, come lo riportano Airbnb e Booking. */
+  rating: number;
+  text: string;
+};
+
 export const property = {
   name: "Campo Marzio 47",
   // Parte del nome da evidenziare in bordeaux nel logo (sidebar). Deve
@@ -75,7 +85,10 @@ export const property = {
       rating: 10,
       text: "L'appartamento è molto accogliente, luminoso e ben arredato. La cura di ogni dettaglio è evidente. La posizione è centrale ma tranquilla. Speriamo di tornare presto.",
     },
-  ],
+    // Il tipo esplicito serve a una struttura nuova senza recensioni:
+    // `reviews: []` sotto `as const` diventerebbe di tipo `never` e la
+    // build si fermerebbe. Con l'elenco vuoto la sezione non compare.
+  ] as readonly Review[],
   // Foto grande in cima alla home page.
   heroImage: "/photos/copertina.jpg",
   gallery: [

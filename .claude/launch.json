@@ -4,16 +4,33 @@
     {
       "name": "campomarzio-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000,
       "autoPort": true
     },
     {
       "name": "campomarzio-prod",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start"],
+      "runtimeArgs": [
+        "run",
+        "start"
+      ],
       "port": 3001,
       "autoPort": true
+    },
+    {
+      "name": "campomarzio-cloudflare",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "opennextjs-cloudflare",
+        "preview",
+        "--port",
+        "8787"
+      ],
+      "port": 8787
     }
   ]
 }

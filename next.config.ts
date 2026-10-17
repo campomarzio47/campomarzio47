@@ -6,10 +6,17 @@ import type { NextConfig } from "next";
 // lo stesso indirizzo, altrimenti si contraddicono a vicenda.
 const CANONICAL_HOST = "campomarzio47.it";
 
-// Sottodominio Vercel assegnato al progetto. Serve solo internamente:
-// lasciarlo raggiungibile significa avere due copie identiche del sito a
-// due indirizzi diversi, e Google ne sceglie una da solo.
-const VERCEL_HOST = "campomarzio47.vercel.app";
+// Altri indirizzi da cui il sito risponde e che devono rimandare (308) al
+// dominio ufficiale: il sottodominio tecnico della piattaforma
+// (<progetto>.vercel.app su Vercel, <worker>.<sottodominio>.workers.dev su
+// Cloudflare) ed eventualmente il www. Servono solo internamente:
+// lasciarli raggiungibili significa avere copie identiche del sito a più
+// indirizzi, e Google ne sceglie una da solo.
+//
+// Vanno aggiunti SOLO quando il dominio ufficiale risponde davvero:
+// finché CANONICAL_HOST non è collegato, il redirect porterebbe gli ospiti
+// su un indirizzo che non esiste.
+const ALIAS_HOSTS = ["campomarzio47.vercel.app"];
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -19,18 +26,16 @@ const nextConfig: NextConfig = {
     qualities: [75, 90],
   },
   async redirects() {
-    return [
-      {
-        // Corrispondenza esatta sull'host di produzione, NON su tutto
-        // *.vercel.app: le anteprime dei branch hanno host del tipo
-        // campomarzio47-git-<branch>-<utente>.vercel.app e devono restare
-        // raggiungibili per poterle controllare prima del deploy.
-        source: "/:path*",
-        has: [{ type: "host", value: VERCEL_HOST }],
-        destination: `https://${CANONICAL_HOST}/:path*`,
-        permanent: true,
-      },
-    ];
+    // Corrispondenza esatta su ciascun host, NON su tutto *.vercel.app o
+    // *.workers.dev: le anteprime dei branch (Vercel) e delle versioni
+    // (Cloudflare) hanno host diversi e devono restare raggiungibili per
+    // poterle controllare prima di pubblicarle.
+    return ALIAS_HOSTS.map((host) => ({
+      source: "/:path*",
+      has: [{ type: "host" as const, value: host }],
+      destination: `https://${CANONICAL_HOST}/:path*`,
+      permanent: true,
+    }));
   },
 };
 

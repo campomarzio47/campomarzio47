@@ -2,9 +2,7 @@
 
 import { Star, Quote } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
-import type { property } from "@/content/property";
-
-type Review = (typeof property.reviews)[number];
+import type { Review } from "@/content/property";
 
 const MAX_STARS = 5;
 

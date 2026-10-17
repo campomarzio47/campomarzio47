@@ -8,11 +8,15 @@ Progettato per essere anche un **modello riusabile** per altri host: vedi
 ## Stack
 
 Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + React 19.
-Deploy su Vercel, auto-deploy da GitHub (repo `campomarzio47/campomarzio47`,
-branch `main`). Nessun database, nessun ORM.
+Campo Marzio 47 è su Vercel, con auto-deploy da GitHub (repo
+`campomarzio47/campomarzio47`, branch `main`). Lo stesso codice si
+pubblica anche su **Cloudflare Workers** tramite l'adapter OpenNext: è la
+piattaforma dei nuovi siti creati dal modello (vedi "Hosting su
+Cloudflare"). Nessun database, nessun ORM.
 
-Comandi: `npm run dev`, `npm run build`, `npm run lint`. Nessuna suite di
-test.
+Comandi: `npm run dev`, `npm run build`, `npm run lint`; `npm run preview`
+(build OpenNext + anteprima sul runtime Workers, porta 8787). Nessuna
+suite di test.
 
 `npm run lint` riporta migliaia di problemi provenienti da
 `.claude/worktrees/`, un vecchio worktree con dentro il proprio `.next`:
@@ -278,7 +282,42 @@ Punti da ricordare:
 - **Il piano Hobby di Vercel vieta l'uso commerciale** e la loro
   definizione include «pubblicizzare un prodotto o servizio a pagamento»:
   togliere Stripe ha ridotto il rischio, non l'ha eliminato. Punto aperto
-  documentato in `LEGALE.md` §6.
+  documentato in `LEGALE.md` §6; Cloudflare non ha questo limite.
+
+## Hosting su Cloudflare
+
+Configurazione: `wrangler.jsonc`, `open-next.config.ts`,
+`public/_headers` (Vercel li ignora). Collaudata sul runtime Workers con
+build, pagine, `next/image` (binding `IMAGES`), iCal, check-in con i tre
+allegati, ZIP AES e SMTP TLS verso Brevo/Mailjet (465 e 587). Cose da
+sapere:
+
+- **Next e `@opennextjs/cloudflare` sono fissati a versioni esatte e si
+  aggiornano insieme**: ogni versione dell'adapter dichiara le versioni di
+  Next che accetta (peer dependency), e npm rifiuta l'installazione se non
+  combaciano. Le Next 16.0–16.3.7 hanno advisory critici: non scendere
+  sotto la 16.3.8.
+- **I file `.env` finiscono nel Worker**: OpenNext ne copia i valori nel
+  bundle come ripiego per le variabili mancanti. Il deploy si fa da
+  GitHub (Workers Builds), dove quei file non esistono;
+  `scripts/cf-deploy-guard.mjs` blocca `npm run deploy` dal PC se trova
+  valori non `NEXT_PUBLIC_*`. Anche `.open-next/` contiene quei valori in
+  chiaro: è gitignorata, ma va cancellata dopo le prove.
+- **Niente `export const revalidate`**: la cache configurata è di sola
+  lettura (nessuna risorsa R2/KV/D1 da creare per sito), quindi una route
+  con revalidate resterebbe congelata alla build. `/api/availability` è
+  `force-dynamic` per questo.
+- **Piano Free: 10 ms di CPU per richiesta.** Le pagine renderizzate dal
+  server e il check-in (PDF + XML + ZIP) rischiano l'errore 1102: per i
+  siti veri si consiglia Workers Paid.
+- Il nome in `wrangler.jsonc` deve coincidere con quello del Worker
+  collegato al repo, o la build di Workers Builds fallisce. `keep_vars`
+  evita che un deploy cancelli le variabili impostate in dashboard.
+- OpenNext su Windows avvisa di non essere supportato: per le prove in
+  locale funziona, le build di produzione le fa Workers Builds su Linux.
+- Per provare le email senza SMTP vero: `scripts/smtp-sink.mjs` salva i
+  messaggi come `.eml`, e un `.env.production.local` temporaneo, che vince
+  su `.env.local`, ci punta (`TEMPLATE-SETUP.md` §8).
 
 ## SEO
 
@@ -287,8 +326,9 @@ Punti da ricordare:
   costruiscono i metadati delle pagine interne con `pageMetadata()`.
 - **Il dominio ufficiale è `campomarzio47.it`** (apex, senza www) e deve
   combaciare in tre posti: `NEXT_PUBLIC_SITE_URL` nelle env var di
-  Vercel, `CANONICAL_HOST` in `next.config.ts` (da cui nasce il redirect
-  308 da `campomarzio47.vercel.app`) e il dominio primario impostato su
+  Vercel, `CANONICAL_HOST` in `next.config.ts` (da cui nascono i redirect
+  308 dagli host elencati in `ALIAS_HOSTS`, oggi
+  `campomarzio47.vercel.app`) e il dominio primario impostato su
   Vercel. Se divergono, il sito funziona lo stesso ma dichiara col
   canonical un indirizzo diverso da quello che serve le pagine, e Google
   indicizza quello sbagliato: è già successo con il sottodominio
@@ -337,14 +377,30 @@ Punti da ricordare:
 
 Il progetto è pensato per essere clonato per altri host/immobili senza
 toccare il codice, solo `content/`:
+- **skill `/nuovo-sito`** (`~/.claude/skills/nuovo-sito/SKILL.md`, fuori
+  dal repo) — dalle foto e dalle informazioni del cliente al sito
+  pubblicato su Cloudflare. È un rimando a `TEMPLATE-NUOVO-SITO.md`.
+- `TEMPLATE-NUOVO-SITO.md` — la procedura completa, fase per fase, con le
+  regole (una sola tornata di domande, mai dati inventati, niente azioni
+  esterne senza un sì).
 - `TEMPLATE-BRIEF.md` — questionario da far compilare a un nuovo cliente.
 - `TEMPLATE-SETUP.md` — passaggi tecnici per adattare il codice a un
   brief compilato.
 - `LEGALE.md` — cosa il cliente deve compilare e decidere perché il sito
   sia in regola, e cosa resta in capo a lui e non al codice.
+- `scripts/new-site.mjs` — `init` (foto, og-image, nomi, impronte del
+  modello) e `check` (residui di Campo Marzio 47, CIN, foto mancanti).
+  `scripts/smtp-sink.mjs` — SMTP finto per collaudare le email.
+
+Il modello deve reggere anche gli immobili senza recensioni o presenti su
+una sola piattaforma: `reviews: []` nasconde la sezione (il tipo `Review`
+esplicito in `property.ts` serve proprio a far compilare l'elenco vuoto),
+un URL Airbnb/Booking vuoto toglie il link.
 
 **Regola permanente**: ogni volta che si aggiunge una funzionalità o si
 introduce una nuova variabile/passaggio di setup, aggiornare anche questi
-file, non solo il codice. Per un nuovo immobile, `LEGALE.md` va rifatto
+file, non solo il codice — `TEMPLATE-NUOVO-SITO.md` compreso, che è ciò
+che la skill esegue. Un nuovo sito copia l'ultimo **commit** di `main`
+(`git archive`): le modifiche non committate qui non arrivano. Per un nuovo immobile, `LEGALE.md` va rifatto
 da capo: CIN, P.IVA e condizioni di soggiorno sono diversi per ciascuno,
 e un CIN sbagliato è peggio di un CIN assente.

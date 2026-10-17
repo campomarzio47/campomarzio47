@@ -95,7 +95,7 @@ function structuredData() {
     },
     // Collega questa pagina alle inserzioni sulle piattaforme: aiuta i
     // motori a capire che sono la stessa struttura.
-    sameAs: [property.booking.airbnbUrl, property.booking.bookingUrl],
+    sameAs: [property.booking.airbnbUrl, property.booking.bookingUrl].filter(Boolean),
     numberOfRooms: property.facts.bedrooms,
     priceRange: `€${property.pricing.pricePerNight}`,
     currenciesAccepted: property.pricing.currency,

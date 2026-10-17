@@ -1,0 +1,40 @@
+{
+  // Configurazione del Worker Cloudflare (hosting via adapter OpenNext).
+  // Vercel la ignora: lo stesso repo si pubblica su entrambi.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // Nome del Worker. Deve coincidere con il nome scelto in Workers Builds
+  // quando si collega il repo GitHub, altrimenti la build fallisce. Compare
+  // anche nell'indirizzo tecnico <name>.<sottodominio>.workers.dev.
+  "name": "campomarzio47",
+
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  // nodejs_compat serve a nodemailer (socket TCP/TLS verso l'SMTP),
+  // archiver e al resto del codice Node. global_fetch_strictly_public è
+  // nella configurazione raccomandata da OpenNext: impedisce che una fetch
+  // verso il dominio del sito rientri nel Worker stesso.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // Ottimizzazione di next/image tramite Cloudflare Images. Il piano Free
+  // include 5.000 trasformazioni uniche al mese: per una galleria di una
+  // decina di foto se ne usano poche centinaia.
+  "images": {
+    "binding": "IMAGES"
+  },
+
+  // Senza questo, ogni deploy cancellerebbe le variabili impostate a mano
+  // nella dashboard (Settings → Variables and Secrets). I secret non
+  // vengono mai toccati dal deploy, le variabili in chiaro sì.
+  "keep_vars": true,
+
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true
+}

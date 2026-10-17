@@ -119,6 +119,10 @@ Senza questi il sito non può essere pubblicato. Dettagli in `LEGALE.md`.
   per un hero a piena larghezza; meglio l'originale del fotografo/host).
 - 4-6 foto per la galleria (interni, esterni, camere, bagno), stesso
   requisito di risoluzione dove possibile.
+- Per ogni foto, se possibile, una riga che dica cosa mostra (diventa il
+  testo alternativo per chi usa uno screen reader e la didascalia). Nomi
+  file descrittivi (`soggiorno-tavolo.jpg`) aiutano già molto.
+- Formato JPEG o PNG: le foto HEIC degli iPhone vanno esportate prima.
 
 ## 8. Email (per invio check-in e richieste di prenotazione)
 
@@ -164,12 +168,25 @@ localmente (non riusare Ross1000 automaticamente) — vedi
 ## 11. Dominio
 
 - Dominio personalizzato da collegare (se già acquistato), oppure va bene
-  il sottodominio gratuito `<nome-progetto>.vercel.app`?
+  il sottodominio gratuito `<nome-progetto>.<account>.workers.dev`?
+- Se c'è un dominio: chi ha accesso al pannello del registrar? Per
+  collegarlo al sito il dominio va gestito da Cloudflare (si cambiano i
+  nameserver, il dominio resta dove è registrato).
 - Se l'obiettivo dell'host è **essere trovato su Google**, spiegargli che
   il dominio proprio non è un vezzo estetico: un sottodominio
-  `*.vercel.app` non è collegabile a una scheda Google Business Profile,
+  `*.workers.dev` non è collegabile a una scheda Google Business Profile,
   non può essere verificato in Search Console come proprietà di dominio e
   parte svantaggiato nelle ricerche locali. Costo tipico 10-15 €/anno.
+
+## 11-bis. Hosting (Cloudflare)
+
+- Su quale account Cloudflare va il sito: **uno dell'host** (consigliato:
+  il contratto con Cloudflare è suo, e chi gestisce il sito non diventa
+  responsabile del trattamento) o quello di chi gestisce il sito (serve
+  allora un accordo art. 28 GDPR con l'host, vedi `LEGALE.md`)?
+- Piano: **Workers Paid** (5 $/mese per account) consigliato, perché il
+  piano gratuito concede 10 ms di CPU per richiesta e il check-in rischia
+  di superarli. Va bene?
 
 ## 11a. Visibilità su Google (da concordare con l'host)
 
@@ -192,8 +209,8 @@ script *prima* dell'accettazione (Linee guida cookie del Garante). Senza
 di lui il sito usa solo un cookie tecnico ed è esente dal banner.
 
 - L'host vuole comunque delle statistiche? In tal caso proporre uno
-  strumento **senza cookie e senza profilazione** (Vercel Web Analytics,
-  incluso nel piano Pro, oppure Plausible): nessun banner necessario.
+  strumento **senza cookie e senza profilazione** (Cloudflare Web
+  Analytics, gratuito, oppure Plausible): nessun banner necessario.
 - Se l'host insiste per Google Analytics, va messo in conto il lavoro
   aggiuntivo: banner di consenso con rifiuto allo stesso livello
   dell'accettazione, blocco dello script fino al consenso, riscrittura

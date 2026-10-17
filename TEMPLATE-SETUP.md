@@ -6,14 +6,31 @@ specifico dell'immobile vive in `content/`. Per generare un nuovo sito a
 partire da un brief compilato con `TEMPLATE-BRIEF.md`, seguire questi
 passaggi in ordine.
 
-## 1. Clonare il progetto
+> **Il modo più rapido è la skill `/nuovo-sito`** di Claude Code, che
+> segue `TEMPLATE-NUOVO-SITO.md`: dalle foto e dalle informazioni del
+> cliente fino al sito pubblicato su Cloudflare. Questo file resta il
+> riferimento tecnico di ogni passaggio.
 
-Copiare l'intera cartella (o `git clone` di questo repo) in una nuova
-cartella/repo per il nuovo cliente. Non riusare lo stesso repo Vercel/
-GitHub del cliente precedente. Rinominare anche il campo `name` in
-`package.json` (di default `"campomarzio47"`) con un nome coerente col
-nuovo progetto — non è visibile agli utenti ma compare nei log di build
-e in eventuali `npm ls`.
+## 1. Creare il progetto
+
+Nella cartella del nuovo cliente, copiare l'ultimo commit del modello con
+`git archive` invece di clonarlo:
+
+```bash
+git -C "C:/Users/fv28/campomarzio_website" archive --format=tar main | tar -xf - -C .
+git init -b main
+npm ci
+```
+
+Rispetto a una copia della cartella non porta `node_modules`, `.next`,
+`.env.local` né le foto originali; rispetto a `git clone` non porta la
+storia di Campo Marzio 47 e soprattutto **nessun remote**. Il repo di
+Campo Marzio ha l'auto-deploy: con un clone, un push distratto
+pubblicherebbe il sito di un host sopra quello di un altro.
+
+Poi `scripts/new-site.mjs init` (§4) imposta il nome del progetto in
+`package.json` e in `wrangler.jsonc`, dove è anche il nome del Worker
+Cloudflare. Non riusare repo GitHub o Worker di un cliente precedente.
 
 ## 2. `content/property.ts`
 
@@ -92,17 +109,28 @@ un B&B di montagna. Punti da toccare:
 
 ## 4. Foto
 
-Sostituire i file in `public/photos/` con quelli del nuovo immobile,
-mantenendo `heroImage` e `gallery` in `property.ts` allineati ai nomi
-file effettivi. Preferire sempre foto ad alta risoluzione per l'hero (le
-foto scaricate direttamente da Airbnb/Booking sono spesso troppo
-compresse per un'immagine a piena larghezza).
+```bash
+node scripts/new-site.mjs init --foto materiale/foto --copertina <file> --nome <slug>
+```
 
-Alta risoluzione sì, ma **non il file originale della fotocamera**:
-ridimensionare a max ~2560px di lato lungo prima di committare (vedi
-§7b). Tenere gli originali fuori dal repo, in `foto_campomarzio/`, che è
-gitignorata apposta. Dopo aver cambiato la foto di copertina va
-rigenerata anche `public/og-image.jpg` (§7b).
+Lo script svuota `public/photos/` e ci mette le foto nuove già pronte:
+ruotate secondo l'EXIF, ridimensionate a max 2560 px di lato lungo, in
+JPEG e **senza metadati** (le foto da telefono contengono le coordinate
+GPS della casa). Rigenera `public/og-image.jpg` dalla copertina, crea
+anteprime da 800 px in `.new-site/anteprime/` e stampa l'elenco
+`heroImage`/`gallery` da incollare in `property.ts`. Segnala le foto
+troppo piccole per un'immagine a piena larghezza: quelle scaricate da
+Airbnb/Booking sono spesso troppo compresse, meglio gli originali del
+fotografo o dell'host. HEIC non è supportato: esportare prima in JPEG.
+
+Gli originali restano fuori dal repo (`materiale/`, gitignorata).
+`photos.items` in `dictionaries.ts` (alt e didascalie) è abbinato a
+`gallery` **per posizione**: stesso ordine, stesso numero di voci.
+
+Lo stesso script, con `check`, cerca nel progetto i residui
+dell'immobile del modello (nome, indirizzo, telefono, email, URL,
+dominio, salvati da `init` prima di qualunque modifica) e i bloccanti
+come il CIN vuoto. Va lanciato prima di considerare finito il sito.
 
 ## 4bis. Icone dei servizi
 
@@ -116,11 +144,25 @@ dizionario — altrimenti va in fallback su `Wifi`.
 
 ## 5. Variabili d'ambiente
 
-Copiare `.env.local.example` in `.env.local` e compilare con i dati del
-brief (credenziali SMTP e mittente, indirizzo destinatario, URL iCal se
-disponibili, codice struttura Ross1000 se in Veneto). Impostare le
-stesse variabili nelle Environment Variables del progetto Vercel prima
-del primo deploy.
+Copiare `.env.local.example` in `.env.local` per lo sviluppo in locale.
+In produzione le variabili stanno **su Cloudflare**, in due posti
+diversi:
+
+- **Build variables** (Worker → Settings → Builds): solo
+  `NEXT_PUBLIC_SITE_URL` e `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`, lette
+  alla build e scritte nel codice;
+- **Variables and Secrets** (Worker → Settings): tutte le altre, lette a
+  runtime. Come *Secret* le credenziali (`SMTP_USER`, `SMTP_PASSWORD`,
+  `CHECKIN_ZIP_PASSWORD`) e gli URL iCal, che contengono un token; come
+  *Text* le altre. `keep_vars` in `wrangler.jsonc` evita che un deploy
+  cancelli quelle impostate a mano.
+
+**I file `.env` non vanno mai in un deploy fatto dal PC**: l'adapter
+OpenNext ne copia i valori dentro il bundle del Worker, come ripiego per
+le variabili mancanti. Per questo il deploy passa da Workers Builds, dove
+quei file non esistono, e `npm run deploy` è preceduto da
+`scripts/cf-deploy-guard.mjs`, che si ferma se trova valori non
+`NEXT_PUBLIC_*`.
 
 L'invio usa **SMTP generico**, non Gmail: le email portano dati personali
 degli ospiti fino agli estremi del documento, e serve un fornitore con
@@ -198,18 +240,58 @@ Infine rileggere `content/legal-texts.ts` **insieme al cliente**:
 descrivono come lavora lui (quando incassa, come cancella, quanti ospiti
 accetta), e se non corrispondono il problema non è il testo.
 
-## 7. Dominio e deploy
+## 7. Hosting su Cloudflare e dominio
 
-Creare un nuovo repo GitHub dedicato, importarlo su Vercel come nuovo
-progetto (non riusare il progetto Vercel del cliente precedente),
-collegare il dominio del brief o lasciare il sottodominio
-`<nome-progetto>.vercel.app`.
+I nuovi siti si pubblicano su **Cloudflare Workers**, tramite l'adapter
+OpenNext (`@opennextjs/cloudflare`): esegue la build vera di Next, quindi
+il codice è lo stesso che gira su Vercel, dove resta Campo Marzio 47.
+Il piano gratuito di Cloudflare ammette l'uso commerciale (quello di
+Vercel no, vedi `LEGALE.md` §6) e il contratto self-serve incorpora il
+DPA art. 28 GDPR.
+
+Cosa è già predisposto nel modello: `wrangler.jsonc` (nome del Worker,
+`nodejs_compat` per nodemailer e archiver, binding `IMAGES` per
+`next/image`, `keep_vars`), `open-next.config.ts` (cache di sola lettura
+sugli asset statici: niente R2/KV/D1 da creare), `public/_headers`, e gli
+script `npm run preview` (anteprima in locale sul runtime Workers) e
+`npm run deploy` (protetto, vedi §5).
+
+Passaggi:
+
+1. Repo GitHub privato dedicato, con push del primo commit.
+2. **Piano**: con Workers Free ogni richiesta ha 10 ms di CPU, pochi per
+   una pagina Next renderizzata dal server e per il check-in (PDF + XML
+   + ZIP), che rischiano l'errore 1102. **Workers Paid** costa 5 $/mese
+   per account e copre tutti i Worker dell'account.
+3. Workers & Pages → Create → **Import a repository**. Il nome del Worker
+   deve coincidere con `name` in `wrangler.jsonc`, altrimenti la build
+   fallisce. Build command `npx opennextjs-cloudflare build`, deploy
+   command `npx opennextjs-cloudflare deploy`, build variables come al §5.
+   Da qui ogni push su `main` ripubblica il sito, come faceva Vercel.
+4. Variabili di runtime come al §5.
+5. **Dominio**: va aggiunto a Cloudflare come zona (piano Free, cambio dei
+   nameserver presso il registrar). Poi Worker → Domains → due Custom
+   Domain, l'apex e il `www`: Cloudflare crea DNS e certificati da sé.
+   Già che il DNS è su Cloudflare, aggiungere lì i record di
+   autenticazione richiesti dal fornitore SMTP (SPF/DKIM), o le email
+   del sito finiscono in spam. Senza dominio il sito resta su
+   `<nome>.<sottodominio>.workers.dev`.
+
+Due avvertenze:
+
+- **Niente `export const revalidate`** nelle route: con la cache di sola
+  lettura la risposta resterebbe congelata alla build. Per questo
+  `/api/availability` è `force-dynamic`. Se un giorno servisse l'ISR, va
+  configurata una cache R2 (vedi la documentazione OpenNext).
+- **OpenNext su Windows funziona ma non è supportato ufficialmente**:
+  `npm run preview` va bene per le prove, ma le build di produzione le fa
+  Workers Builds su Linux.
 
 ## 7b. SEO
 
-`NEXT_PUBLIC_SITE_URL` (env var) va impostato al dominio reale scelto al
-punto 7 **prima** del lancio — è usato per `sitemap.xml`, `robots.txt`,
-il tag `canonical` e Open Graph (`app/layout.tsx`).
+`NEXT_PUBLIC_SITE_URL` (build variable) va impostato al dominio reale
+scelto al punto 7 **prima** del lancio — è usato per `sitemap.xml`,
+`robots.txt`, il tag `canonical` e Open Graph (`app/layout.tsx`).
 
 **È l'errore che costa di più**, perché non rompe niente e quindi non si
 nota: il sito sul dominio nuovo continua a funzionare, ma ogni pagina
@@ -217,18 +299,19 @@ dichiara col canonical che l'originale sta sul vecchio indirizzo, e
 Google mostra quello nei risultati. Tre cose devono dire lo stesso
 indirizzo, o si contraddicono:
 
-1. `NEXT_PUBLIC_SITE_URL` nelle env var di Vercel (ambiente Production);
-2. `CANONICAL_HOST` in `next.config.ts`, da cui nasce il redirect
-   permanente dal sottodominio `<progetto>.vercel.app` al dominio vero —
-   senza, resta in giro una copia identica del sito a un secondo
-   indirizzo, e i motori ne scelgono una a caso;
-3. il **dominio primario** impostato su Vercel (Settings → Domains).
+1. `NEXT_PUBLIC_SITE_URL` nelle build variables (Cloudflare) o nelle env
+   var di produzione (Vercel);
+2. `CANONICAL_HOST` in `next.config.ts`;
+3. `ALIAS_HOSTS` in `next.config.ts`: gli altri indirizzi da cui il sito
+   risponde (`<nome>.<sottodominio>.workers.dev`, `www.<dominio>`; su
+   Vercel `<progetto>.vercel.app`), rediretti con 308 al dominio vero.
+   Senza, restano in giro copie identiche del sito e i motori ne scelgono
+   una a caso. Vanno aggiunti **solo quando il dominio risponde
+   davvero**: prima, il redirect manderebbe gli ospiti su un indirizzo
+   che non esiste.
 
-Sul punto 3: se Vercel ha come primario `www.tuosito.it`, l'apex
-`tuosito.it` risponde 308 verso il www. Mettere l'apex in
-`NEXT_PUBLIC_SITE_URL` significherebbe allora far puntare il canonical a
-un URL che rimbalza. Decidere quale dei due si vuole vedere nei
-risultati e allineare tutti e tre.
+Decidere se si vuole vedere nei risultati l'apex o il www, e allineare
+tutti e tre: un canonical che punta a un URL che rimbalza viene ignorato.
 
 `meta.title`/`meta.description` in `content/dictionaries.ts` (sezione
 `it`) vanno riscritti per includere naturalmente termini che un host
@@ -326,14 +409,15 @@ tempi realistici): è pensato per essere consegnato direttamente
 all'host. Per un nuovo progetto va adattato ai riferimenti locali del
 suo territorio (comune, pro loco, IAT, eventi).
 
-**Dominio proprio, non `*.vercel.app`.** Un sottodominio Vercel è
-indicizzabile, ma per ricerche locali competitive parte in forte
-svantaggio: non trasmette il brand, non è collegabile a un Google
-Business Profile e non può essere verificato in Search Console come
-proprietà di dominio (`vercel.app` è nella Public Suffix List, quindi
-si può usare solo una proprietà "Prefisso URL"). Se l'host vuole
-davvero essere trovato su Google, il dominio proprio è il primo
-investimento, prima di qualunque altra ottimizzazione.
+**Dominio proprio, non `*.workers.dev` (o `*.vercel.app`).** Un
+sottodominio della piattaforma è indicizzabile, ma per ricerche locali
+competitive parte in forte svantaggio: non trasmette il brand, non è
+collegabile a un Google Business Profile e non può essere verificato in
+Search Console come proprietà di dominio (`workers.dev` e `vercel.app`
+sono nella Public Suffix List, quindi si può usare solo una proprietà
+"Prefisso URL"). Se l'host vuole davvero essere trovato su Google, il
+dominio proprio è il primo investimento, prima di qualunque altra
+ottimizzazione.
 
 ## 7c. Google Search Console (da fare a ogni nuovo sito)
 
@@ -343,14 +427,16 @@ Richiede l'account Google dell'host: non è automatizzabile dal codice.
 1. [search.google.com/search-console](https://search.google.com/search-console)
    → "Aggiungi proprietà" → **Prefisso URL** → l'URL completo del sito
    (con `https://`). Con un dominio proprio si può usare anche
-   "Dominio"; con un sottodominio `*.vercel.app` solo "Prefisso URL".
+   "Dominio"; con un sottodominio `*.workers.dev` o `*.vercel.app` solo
+   "Prefisso URL".
 2. Metodo di verifica **Tag HTML**: Google mostra
    `<meta name="google-site-verification" content="ABC123..." />`.
-   Copiare **solo** il valore di `content`.
-3. Incollarlo in `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` nelle
-   Environment Variables di Vercel (ambiente Production) e fare un nuovo
-   deploy — la variabile è letta a build time, senza deploy il tag non
-   compare.
+   Copiare **solo** il valore di `content`. (Con la proprietà "Dominio" e
+   il DNS su Cloudflare, la verifica via record TXT è ancora più rapida.)
+3. Incollarlo in `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` nelle build
+   variables di Cloudflare (su Vercel: Environment Variables, ambiente
+   Production) e fare un nuovo deploy — la variabile è letta a build
+   time, senza deploy il tag non compare.
 4. Tornare su Search Console e premere "Verifica".
 5. Menu **Sitemap** → inserire `sitemap.xml` → Invia.
 6. Menu **Controllo URL** → incollare l'URL della home → "Richiedi
@@ -371,8 +457,10 @@ cookie tecnico della lingua, esente da consenso, e la cookie policy può
 dire con verità che il sito non traccia nessuno.
 
 Se il cliente vuole delle statistiche, proporre uno strumento **senza
-cookie**: Vercel Web Analytics (incluso nel piano Pro) o Plausible.
-Nessun banner, nessuna modifica ai testi legali.
+cookie**: su Cloudflare c'è Web Analytics, gratuito (Vercel Web Analytics
+su Vercel Pro, oppure Plausible). Nessun banner; va però aggiunta una riga
+all'informativa privacy, perché lo script di Cloudflare Web Analytics è
+una richiesta a un dominio esterno (`static.cloudflareinsights.com`).
 
 Reintrodurre GA non è "rimettere una variabile d'ambiente": servono un
 banner che blocchi lo script fino al consenso, con rifiuto allo stesso
@@ -381,7 +469,17 @@ riscrittura della cookie policy (che oggi afferma il contrario).
 
 ## 8. Verifica finale
 
+- `node scripts/new-site.mjs check` senza residui né bloccanti.
 - `npm run build` senza errori.
+- Prova sul runtime Cloudflare **prima** del deploy: un
+  `.env.production.local` che punta a `scripts/smtp-sink.mjs`
+  (`SMTP_HOST=127.0.0.1`, `SMTP_PORT=2525`, utente e password qualsiasi,
+  indirizzi `@example.test`), poi `npx opennextjs-cloudflare build` e
+  l'anteprima su `localhost:8787`. Le email del sito finiscono come file
+  `.eml` in `.smtp-sink/`, allegati compresi, senza un account SMTP vero
+  e senza scrivere a nessuno. Alla fine cancellare
+  `.env.production.local`, `.smtp-sink/` e `.open-next/` (che contiene
+  in chiaro i valori dei file `.env`).
 - Controllo visivo di ogni pagina in locale (home — incluse le sezioni
   Foto/Servizi/Recensioni —, prenota, check-in, contatti), sia IT che EN,
   sia con lo stile scelto (§3ter) verificato in chiaro che tutti i testi

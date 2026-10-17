@@ -163,8 +163,14 @@ sarebbe la **sospensione del progetto**, non una sanzione. Due uscite:
 
 - **Vercel Pro**, ~20 $/mese — include anche le Web Analytics senza cookie,
   se un giorno rivuoi le statistiche;
-- **un host il cui piano gratuito ammette l'uso commerciale** (Cloudflare
-  Pages, Netlify) — costo zero, una migrazione da fare.
+- **Cloudflare Workers**, dove il modello ora si pubblica già (è la
+  piattaforma dei nuovi siti, vedi `TEMPLATE-SETUP.md` §7). Il piano
+  gratuito ammette l'uso commerciale e il contratto self-serve incorpora
+  l'accordo art. 28 GDPR. Il codice non va toccato: si crea il Worker, si
+  collega il repo, si copiano le variabili e si sposta la gestione DNS di
+  `campomarzio47.it` su Cloudflare. Il piano Workers Paid (5 $/mese) è
+  consigliato: quello gratuito concede 10 ms di CPU per richiesta, stretti
+  per il check-in.
 
 Non ho preso questa decisione al posto tuo.
 

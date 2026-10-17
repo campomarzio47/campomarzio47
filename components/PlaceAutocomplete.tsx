@@ -106,7 +106,7 @@ export default function PlaceAutocomplete({
         if (q.length >= 2) {
           // L'utente ha scritto il nome ma non ha scelto un suggerimento:
           // se il testo identifica in modo univoco un'opzione, la
-          // selezioniamo comunque (es. "marostica" -> "MAROSTICA (VI)").
+          // selezioniamo comunque (es. "comacchio" -> "COMACCHIO (FE)").
           const matches = options.filter((o) => o.label.toLowerCase().includes(q));
           if (matches.length === 1) {
             selectOption(matches[0]);
