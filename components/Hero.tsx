@@ -63,7 +63,10 @@ export default function Hero() {
           priority
           quality={85}
           sizes="100vw"
-          className="hero-settle object-cover object-[50%_60%]"
+          // Su telefono la foto orizzontale si vede per un terzo: centrata
+          // mostrava sedie e condizionatore. Spostata a sinistra, al centro
+          // c'è la scacchiera sul tavolo, che è la firma della casa.
+          className="hero-settle object-cover object-[20%_60%] md:object-[50%_60%]"
         />
       </div>
       {/* Due sfumature: in alto per leggere l'intestazione, in basso per il
