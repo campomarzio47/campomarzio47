@@ -3,7 +3,7 @@
 import PageHeader from "@/components/PageHeader";
 import { useLocale } from "@/components/LocaleProvider";
 import { legal } from "@/content/legal";
-import { legalTexts, type SiteFeatures } from "@/content/legal-texts";
+import { legalTexts } from "@/content/legal-texts";
 import { fill } from "@/content/dictionaries";
 
 /**
@@ -17,14 +17,11 @@ import { fill } from "@/content/dictionaries";
  */
 export default function LegalPage({
   doc,
-  features,
 }: {
   doc: "privacy" | "cookies" | "terms";
-  /** Cosa è attivo sul sito: i testi descrivono solo quello (vedi lib/features.ts). */
-  features: SiteFeatures;
 }) {
   const { dict, locale } = useLocale();
-  const document = legalTexts(locale, features)[doc];
+  const document = legalTexts[locale][doc];
   const lastUpdated = fill(dict.legalPage.lastUpdated, { date: legal.privacy.lastUpdated });
 
   return (

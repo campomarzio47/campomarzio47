@@ -1,24 +1,19 @@
 # Campo Marzio 47 — sito per affitto breve
 
 Sito Next.js per la presentazione di un immobile in affitto breve
-(Marostica, VI), con check-in online, prenotazione diretta (pagata con
-Stripe, o semplice richiesta via email) e offerte via email per chi le
-sceglie.
+(Marostica, VI), con check-in online e richiesta di prenotazione diretta
+via email.
 Progettato per essere anche un **modello riusabile** per altri host: vedi
 "Riuso come modello" in fondo a questo file.
 
 ## Stack
 
 Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + React 19.
-Campo Marzio 47 era su Vercel, con auto-deploy da GitHub (repo
-`campomarzio47/campomarzio47`, branch `main`), e **si sposta su
-Cloudflare Workers** (deciso il 18 ottobre 2026, per rimettere i
-pagamenti: il piano Hobby di Vercel vieta l'uso commerciale), su un
-account Cloudflare intestato a Campo Marzio 47. Finché il dominio non è
-passato, `main` si pubblica su entrambi. Cloudflare, tramite l'adapter
-OpenNext, è anche la piattaforma dei nuovi siti creati dal modello (vedi
-"Hosting su Cloudflare"). Un solo database, D1, per l'elenco delle
-offerte via email; niente ORM.
+Campo Marzio 47 è su Vercel, con auto-deploy da GitHub (repo
+`campomarzio47/campomarzio47`, branch `main`). Lo stesso codice si
+pubblica anche su **Cloudflare Workers** tramite l'adapter OpenNext: è la
+piattaforma dei nuovi siti creati dal modello (vedi "Hosting su
+Cloudflare"). Nessun database, nessun ORM.
 
 Comandi: `npm run dev`, `npm run build`, `npm run lint`; `npm run preview`
 (build OpenNext + anteprima sul runtime Workers, porta 8787). Nessuna
@@ -252,8 +247,7 @@ persone davvero. Cose da non rompere:
   valida viene riscritta per esteso con l'età per far notare i refusi.
   All'ospite principale si chiede anche il **CAP** (obbligatorio se
   risiede in Italia): con via, comune e stato fa l'indirizzo della
-  fattura. All'ultimo passo, se c'è il database, una casella facoltativa
-  e mai spuntata in partenza per le offerte via email (vedi sotto). Motivo
+  fattura. Motivo
   del viaggio e mezzo di trasporto si chiedono una volta e si applicano a
   tutti gli ospiti. Gli errori mostrati all'ospite sono quelli del
   dizionario, mai il testo del server (che è in italiano). Genera e invia
@@ -298,55 +292,36 @@ persone davvero. Cose da non rompere:
 - `/contatti` — form di contatto (`app/api/contatti`).
 - `/privacy`, `/cookie-policy`, `/termini` — pagine legali, vedi sotto.
 
-## Prenotazione diretta: con Stripe o richiesta via email
+## Prenotazione diretta: richiesta via email, nessun pagamento
 
-Storia: Stripe c'era, è stato tolto a settembre 2026 (nessuna
-prenotazione diretta in due anni, e Vercel Hobby vieta l'uso
-commerciale) ed è tornato a ottobre 2026 su richiesta dell'utente,
-insieme al trasloco su Cloudflare. Il sito ora sa fare **entrambe le
-cose** e sceglie da solo: `paymentsEnabled()` (`lib/stripe.ts`) è vero
-solo con `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` e
-`BOOKING_TOKEN_SECRET` tutte impostate. `lib/features.ts` lo passa a
-pagine e testi legali, che si adeguano: il sito non descrive mai un
-pagamento che non fa (e su Vercel, senza chiavi, resta una richiesta).
+**Stripe è stato rimosso** (settembre 2026). In due anni non è mai
+arrivata una prenotazione diretta dal sito, che di fatto è usato dagli
+ospiti già in arrivo per il check-in: il pagamento online portava con sé
+obblighi (PSD2, rimborsi, contestazioni) che quel volume non giustifica.
+Non reintrodurlo senza una ragione nuova — e, se lo fai, rileggi prima
+`/termini`, che oggi dichiara esplicitamente che il sito non raccoglie
+dati di pagamento.
 
-**Con Stripe** — addebito alla conferma, non subito (scelta dell'utente):
+A ottobre 2026 l'utente ha chiesto di rimetterli con un trasloco su
+Cloudflare (più offerte via email su D1): il lavoro è stato fatto e
+collaudato (commit 42c29ec) e poi **annullato**, perché recuperare da
+Vercel i valori delle variabili era troppo complicato. Se tornasse la
+richiesta, si parte da quel commit. Su Vercel restano le vecchie
+variabili `STRIPE_*`/`BOOKING_TOKEN_SECRET` (chiavi live): il codice non
+le legge, ma andrebbero cancellate.
 
-1. `POST /api/booking/create` crea una sessione Stripe Checkout con
-   `capture_method: "manual"`: la carta viene **autorizzata**, non
-   addebitata. I dati della prenotazione stanno nei metadata del
-   PaymentIntent (`lib/booking-metadata.ts`): sono l'unico archivio,
-   insieme alla dashboard Stripe. Il messaggio dell'ospite è limitato a
-   500 caratteri per questo.
-2. Il webhook (`/api/stripe/webhook`, eventi
-   `checkout.session.completed` e `payment_intent.canceled`) manda
-   all'host il link firmato (`lib/booking-tokens.ts`, HMAC, 7 giorni) a
-   `/host/prenotazioni/azione` e all'ospite la ricevuta della richiesta.
-   Stripe ripete gli eventi: `metadata.notified` evita le email doppie.
-3. L'host apre la pagina (che ricontrolla l'iCal e avvisa se le date
-   risultano prese) e preme Conferma (cattura → email di conferma) o
-   Rifiuta (annulla → nessun addebito). Se non fa nulla prima di
-   `capture_before` l'autorizzazione scade e il webhook avvisa entrambi.
-4. Cancellazione gratuita fino a `legal.stay.freeCancellationDays` (7)
-   giorni prima dell'arrivo; i rimborsi l'host li fa dalla dashboard
-   Stripe. Le email all'ospite hanno `replyTo` = `HOST_EMAIL`, perché
-   lo invitano a rispondere.
+Resta la scelta deliberata di **non avere un database**: la richiesta
+viene inoltrata via email e non è archiviata da nessuna parte.
 
-Il client Stripe usa `createFetchHttpClient` e la verifica del webhook
-`createSubtleCryptoProvider`: girano uguali in Node e su Workers
-(collaudato sul runtime Workers). `stripe` è fissato a una versione
-esatta.
-
-**Senza Stripe** — `sendBookingRequestEmails`
-(`lib/booking-notifications.ts`): email all'host con `replyTo`
-dell'ospite e presa in carico all'ospite nella sua lingua. Le email
-dicono che **la richiesta non è una prenotazione** finché l'host non
-conferma per iscritto.
-
-In entrambi i casi:
-
-- Dopo una conferma l'host deve bloccare le date su Airbnb e Booking a
-  mano: il sito non scrive nei loro calendari.
+- `POST /api/booking/create` valida (date, preavviso, notti minime,
+  sovrapposizione con l'iCal) e chiama `sendBookingRequestEmails`
+  (`lib/booking-notifications.ts`): email all'host con `replyTo`
+  dell'ospite, più una presa in carico all'ospite nella sua lingua
+  (it/en/de).
+- Le email dicono a chiare lettere che **la richiesta non è una
+  prenotazione** finché l'host non conferma per iscritto. Non è una
+  formalità: senza pagamento né calendario condiviso, l'unica difesa
+  contro il doppio impegno è che l'ospite non dia per scontato nulla.
 - Il calendario di `/prenota` mostra occupate solo le date bloccate su
   Airbnb/Booking (iCal) — non le altre richieste dirette in attesa di
   conferma. Compromesso consapevole, non un bug.
@@ -368,10 +343,7 @@ modifica dovrebbe sapere quale.
   quando non lo è, ed è per questo che esiste `LEGALE.md`.
 - `content/legal-texts.ts` — prosa di privacy, cookie e termini
   (it/en/de; il tedesco dichiara che in caso di dubbio fa fede l'italiano),
-  resa da `components/LegalPage.tsx`. `legalTexts(locale, features)` è
-  una funzione: Termini con o senza pagamento Stripe, informativa con o
-  senza la sezione sulle offerte, a seconda di cosa è attivo
-  (`lib/features.ts`, deciso dalla pagina server a ogni richiesta). Sta fuori da `dictionaries.ts`, che
+  resa da `components/LegalPage.tsx`. Sta fuori da `dictionaries.ts`, che
   resta per le stringhe di UI. I valori variabili sono interpolati da
   `legal.ts`, **incluso il nome del cookie** letto da `lib/locale.ts`:
   una cookie policy che nomina un cookie diverso da quello reale è essa
@@ -434,12 +406,10 @@ Punti da ricordare:
   futuro usato per costruire richieste di rete.
 - `HOST_EMAIL` non è un dettaglio operativo: è la casella che riceve i
   documenti d'identità degli ospiti. Vedi `LEGALE.md` §5.1.
-- **Il piano Hobby di Vercel vieta l'uso commerciale**: è il motivo del
-  trasloco su Cloudflare (`LEGALE.md` §6), che non ha questo limite.
-- `.env.local` dell'utente contiene ancora una chiave Stripe **live**:
-  in `next dev` i pagamenti risultano attivi con quella. Per provare
-  /prenota in locale serve un `.env.development.local` che la
-  sostituisca con una di test (o finta, senza inviare).
+- **Il piano Hobby di Vercel vieta l'uso commerciale** e la loro
+  definizione include «pubblicizzare un prodotto o servizio a pagamento»:
+  togliere Stripe ha ridotto il rischio, non l'ha eliminato. Punto aperto
+  documentato in `LEGALE.md` §6; Cloudflare non ha questo limite.
 
 ## Hosting su Cloudflare
 
@@ -461,17 +431,9 @@ sapere:
   valori non `NEXT_PUBLIC_*`. Anche `.open-next/` contiene quei valori in
   chiaro: è gitignorata, ma va cancellata dopo le prove.
 - **Niente `export const revalidate`**: la cache configurata è di sola
-  lettura (nessuna risorsa R2/KV da creare per sito), quindi una route
+  lettura (nessuna risorsa R2/KV/D1 da creare per sito), quindi una route
   con revalidate resterebbe congelata alla build. `/api/availability` è
   `force-dynamic` per questo.
-- **D1** (binding `DB`, `database_name` senza ID in `wrangler.jsonc`):
-  Cloudflare lo crea e lo collega al primo deploy (provisioning
-  automatico). `getDb()` (`lib/db.ts`) usa `getCloudflareContext` in
-  modalità **sincrona**: quella asincrona fuori da Workers avvierebbe
-  wrangler, su Vercel a ogni richiesta. Senza binding restituisce null e
-  le offerte si spengono. In `next dev` i binding arrivano da
-  `initOpenNextCloudflareForDev()` in `next.config.ts` (copia locale
-  in `.wrangler/`); `wrangler d1 execute campomarzio47 --local` la legge.
 - **Piano Free: 10 ms di CPU per richiesta.** Le pagine renderizzate dal
   server e il check-in (PDF + XML + ZIP) rischiano l'errore 1102: per i
   siti veri si consiglia Workers Paid.
@@ -483,28 +445,6 @@ sapere:
 - Per provare le email senza SMTP vero: `scripts/smtp-sink.mjs` salva i
   messaggi come `.eml`, e un `.env.production.local` temporaneo, che vince
   su `.env.local`, ci punta (`TEMPLATE-SETUP.md` §8).
-
-## Offerte via email (D1)
-
-L'utente vuole poter mandare 2-3 volte l'anno delle offerte a chi le ha
-scelte. Regole, tutte promesse nell'informativa:
-
-- **Solo con consenso esplicito** (art. 6.1.a GDPR): casella all'ultimo
-  passo del check-in, separata dalla presa visione della privacy e mai
-  spuntata in partenza. Il check-in funziona identico senza.
-- `lib/newsletter.ts` salva email, nome, lingua, data del soggiorno,
-  **testo esatto del consenso** (dal dizionario, non dal browser) con la
-  data, e un token casuale. La tabella si crea da sola.
-- Disiscrizione: link in ogni email a `/offerte/disiscrizione`, che
-  chiede un clic su un bottone (gli antispam aprono i link: un GET che
-  cancella toglierebbe chi non l'ha chiesto), più `List-Unsubscribe` e
-  `List-Unsubscribe-Post` (RFC 8058) verso `/api/newsletter/unsubscribe`.
-  Disiscriversi **cancella** la riga.
-- Invio: `node scripts/offerte.mjs <file>` dal PC (anteprima, `--prova`,
-  `--invia`; wrangler lanciato senza shell). Cancella gli iscritti con
-  l'ultimo soggiorno oltre 24 mesi e rifiuta il quarto invio in dodici
-  mesi (tabella `campaigns`). Collaudato sul database locale con
-  `--locale` e `scripts/smtp-sink.mjs`.
 
 ## SEO
 
@@ -537,8 +477,6 @@ scelte. Regole, tutte promesse nell'informativa:
 - Le vecchie route `/foto`, `/servizi`, `/recensioni` usano
   `permanentRedirect` (308, non 307): sono redirect definitivi e il 307
   lascerebbe il vecchio URL nell'indice.
-- `robots.ts` esclude `/api/`, `/host/` (Conferma/Rifiuta),
-  `/prenota/conferma` e `/offerte/` (disiscrizione), tutte noindex.
 - `public/og-image.jpg` è 1200x630 e va tenuta leggera. Non puntare
   l'Open Graph alla foto di copertina originale: i crawler social
   scaricano il file grezzo senza passare da `next/image` e oltre ~5 MB
@@ -580,7 +518,6 @@ toccare il codice, solo `content/`:
 - `scripts/new-site.mjs` — `init` (foto, og-image, nomi, impronte del
   modello) e `check` (residui di Campo Marzio 47, CIN, foto mancanti;
   segnala anche l'intestazione del PDF finché non è ridisegnata).
-  `scripts/offerte.mjs` — invio delle offerte via email.
   `scripts/smtp-sink.mjs` — SMTP finto per collaudare le email.
 
 Il modello deve reggere anche gli immobili senza recensioni o presenti su

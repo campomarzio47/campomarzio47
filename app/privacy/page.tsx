@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
 import { pageMetadata } from "@/lib/seo";
-import { siteFeatures } from "@/lib/features";
 
 export const metadata: Metadata = pageMetadata("privacy", "/privacy");
 
 export default function PrivacyPage() {
-  return <LegalPage doc="privacy" features={siteFeatures()} />;
+  return <LegalPage doc="privacy" />;
 }

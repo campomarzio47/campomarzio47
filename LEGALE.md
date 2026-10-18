@@ -66,7 +66,6 @@ cambia il contratto che proponi agli ospiti. Leggili prima di pubblicare.
 |---|---|---|
 | `paymentDueHoursBeforeArrival` | `24` | Ore entro cui deve arrivare il saldo, cioè quando generi il codice d'accesso |
 | `paymentMethods` | vuoto | Es. `"bonifico bancario"`. Se resta vuoto i Termini dicono che li comunichi nell'email di conferma |
-| `freeCancellationDays` | `7` | Solo con i pagamenti Stripe attivi: fino a quanti giorni prima dell'arrivo l'ospite cancella con rimborso totale (deciso il 18 ottobre 2026). Dopo, nessun rimborso |
 | `checkInFrom` / `checkOutBy` | vuoti | Orari, se vuoi dichiararli |
 | `touristTax.applies` | `null` | **Da verificare in Comune.** Vedi sotto |
 
@@ -88,16 +87,8 @@ tributi del Comune di Marostica e poi imposta:
 Vedi [`.env.local.example`](.env.local.example) per i commenti completi.
 Rispetto a prima:
 
-**Tornate (ottobre 2026), per i pagamenti** — `STRIPE_SECRET_KEY`,
-`STRIPE_WEBHOOK_SECRET`, `BOOKING_TOKEN_SECRET`. Finché non sono tutte e
-tre impostate sul sito pubblicato, /prenota resta una semplice richiesta
-via email, e Termini e informativa lo dicono. **Rimossa** —
-`NEXT_PUBLIC_GA_ID`.
-
-> Nel tuo `.env.local` c'è ancora una chiave Stripe **live** di prima. In
-> locale, con quella, una prova su /prenota creerebbe pagamenti veri:
-> sostituiscila con la chiave di test (`sk_test_...`) e tieni la live solo
-> su Cloudflare.
+**Rimosse** — `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+`BOOKING_TOKEN_SECRET`, `NEXT_PUBLIC_GA_ID`.
 
 **Sostituite** — `GMAIL_USER` e `GMAIL_APP_PASSWORD` diventano
 `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`.
@@ -159,61 +150,29 @@ commercialista sugli adempimenti fiscali.
 
 ---
 
-## 6. Da Vercel a Cloudflare (deciso il 18 ottobre 2026)
+## 6. Vercel: punto aperto
 
-Il piano **Hobby (gratuito) di Vercel vieta l'uso commerciale**, a maggior
-ragione con un sito che incassa. Per rimettere i pagamenti il sito si
-sposta su **Cloudflare Workers**, su un account Cloudflare intestato a
-Campo Marzio 47: il piano gratuito ammette l'uso commerciale e il
-contratto self-serve incorpora l'accordo art. 28 GDPR (Cloudflare è già
-indicata come fornitore di hosting nell'informativa). Il piano Workers
-Paid (5 $/mese) è consigliato: quello gratuito concede 10 ms di CPU per
-richiesta, stretti per il check-in.
+Il piano **Hobby (gratuito) di Vercel vieta l'uso commerciale**, e la loro
+definizione comprende esplicitamente «pubblicizzare un prodotto o servizio
+a pagamento». Togliere Stripe ha ridotto il rischio ma non l'ha eliminato:
+un sito che promuove una casa in affitto resta commerciale anche se non
+incassa nulla.
 
-Ordine dei passaggi (dettagli tecnici in `TEMPLATE-SETUP.md` §7):
+Il controllo è sostanzialmente auto-dichiarato e la conseguenza concreta
+sarebbe la **sospensione del progetto**, non una sanzione. Due uscite:
 
-1. Worker collegato al repo GitHub con Workers Builds, variabili e secret
-   copiati da Vercel (più le tre di Stripe).
-2. Prova completa sull'indirizzo `.workers.dev` con le chiavi Stripe **di
-   test**: prenotazione, conferma, rifiuto, check-in, offerte.
-3. `campomarzio47.it` su Cloudflare (cambio dei nameserver dal registrar),
-   Custom Domain sul Worker, webhook Stripe sul dominio, chiavi live.
-4. Solo allora si cancella il progetto Vercel e si toglie
-   `campomarzio47.vercel.app` da `ALIAS_HOSTS` in `next.config.ts`.
+- **Vercel Pro**, ~20 $/mese — include anche le Web Analytics senza cookie,
+  se un giorno rivuoi le statistiche;
+- **Cloudflare Workers**, dove il modello ora si pubblica già (è la
+  piattaforma dei nuovi siti, vedi `TEMPLATE-SETUP.md` §7). Il piano
+  gratuito ammette l'uso commerciale e il contratto self-serve incorpora
+  l'accordo art. 28 GDPR. Il codice non va toccato: si crea il Worker, si
+  collega il repo, si copiano le variabili e si sposta la gestione DNS di
+  `campomarzio47.it` su Cloudflare. Il piano Workers Paid (5 $/mese) è
+  consigliato: quello gratuito concede 10 ms di CPU per richiesta, stretti
+  per il check-in.
 
-## 6b. Pagamenti con Stripe: cosa resta a te
-
-- **L'account Stripe è tuo** e va verificato a tuo nome (o dell'impresa):
-  i soldi arrivano lì, e da lì fai i rimborsi (Pagamenti → Rimborsa).
-- **Il sito non emette ricevute né fatture**: la ricevuta di Stripe non è
-  un documento fiscale. Ricevuta o fattura le fai tu, come per le altre
-  prenotazioni; il PDF del check-in ha l'indirizzo completo apposta.
-- **Conferma entro la scadenza**: la carta è solo autorizzata. Se non
-  confermi in tempo (la data è nell'email), l'autorizzazione decade e
-  l'ospite viene avvisato.
-- **Blocca le date su Airbnb e Booking dopo ogni conferma**: il sito non
-  scrive nei loro calendari, e finché non lo fai le piattaforme le
-  vendono ancora.
-- **Contestazioni (chargeback)**: le gestisce Stripe con te; tieni le
-  email di conferma, sono la prova del contratto.
-- **Commissioni**: Stripe trattiene una percentuale su ogni incasso; vale
-  la pena tenerne conto nel prezzo diretto.
-
-## 6c. Offerte via email: le regole che il sito promette
-
-Chi lo sceglie alla fine del check-in (casella facoltativa, mai spuntata
-in partenza) riceve **al massimo tre email l'anno**. L'informativa lo
-promette, e `scripts/offerte.mjs` rifiuta il quarto invio in dodici mesi.
-
-- Il consenso si può revocare con un clic dal link in fondo a ogni
-  email: la revoca cancella l'indirizzo. Se qualcuno te lo chiede per
-  email, cancellalo tu (o scrivimi).
-- Gli indirizzi si cancellano da soli 24 mesi dopo l'ultimo soggiorno.
-- **Solo offerte per tornare a Campo Marzio 47**: niente terzi, niente
-  liste comprate, niente indirizzi di chi non ha spuntato la casella
-  (neppure quelli delle prenotazioni o dei contatti).
-- Verifica che il fornitore SMTP consenta email promozionali e quanti
-  invii al giorno permette il tuo piano.
+Non ho preso questa decisione al posto tuo.
 
 ---
 
@@ -238,7 +197,6 @@ Per non riaprire discussioni chiuse:
 - **Nessun riferimento alla piattaforma ODR europea**, dismessa il 20
   luglio 2025 con il relativo obbligo di link. Quasi tutti i template
   italiani la citano ancora: sarebbe un'informazione falsa.
-- **Pagamenti.** I dati della carta li tratta solo Stripe, sulla sua
-  pagina: il sito non li vede mai. L'autenticazione forte richiesta dalla
-  PSD2 (3-D Secure) la fa Stripe Checkout. Senza le chiavi Stripe il sito
-  torna da solo alla semplice richiesta, e i Termini cambiano con lui.
+- **Pagamenti.** Il sito non raccoglie più dati di pagamento di nessun
+  tipo, quindi non ti riguardano gli obblighi PSD2 né la gestione dei
+  rimborsi online.

@@ -75,24 +75,11 @@ export type Dictionary = {
   privacyAck: {
     label: string;
     linkText: string;
-    /** Con i pagamenti: si accettano anche i Termini (è un contratto). */
-    withTerms: string;
-    termsLinkText: string;
   };
   privacy: { eyebrow: string; title: string; subtitle: string };
   cookies: { eyebrow: string; title: string; subtitle: string };
   terms: { eyebrow: string; title: string; subtitle: string };
   legalPage: { lastUpdated: string };
-  // Pagina di disiscrizione dalle offerte via email (link in ogni email).
-  offers: {
-    eyebrow: string;
-    title: string;
-    question: string;
-    confirm: string;
-    done: string;
-    notFound: string;
-    back: string;
-  };
   nav: {
     home: string;
     contact: string;
@@ -213,20 +200,6 @@ export type Dictionary = {
     optionalLabel: string;
     submitButton: string;
     sendingLabel: string;
-    /** Imposta di soggiorno, quando non è certo che sia zero (vedi legal.ts). */
-    touristTaxNote: string;
-    // Testi della prenotazione con pagamento (chiavi Stripe impostate): la
-    // carta viene autorizzata, l'addebito parte con la conferma dell'host.
-    pay: {
-      subtitle: string;
-      /** {days}: giorni di cancellazione gratuita. */
-      promises: string[];
-      totalLabel: string;
-      note: string;
-      submit: string;
-      redirecting: string;
-      canceled: string;
-    };
     errors: {
       validation_error: string;
       invalid_dates: string;
@@ -239,8 +212,6 @@ export type Dictionary = {
   bookingConfirmation: {
     title: string;
     subtitle: string;
-    payTitle: string;
-    paySubtitle: string;
     back: string;
   };
   contact: {
@@ -323,9 +294,6 @@ export type Dictionary = {
     residenceAddressPlaceholder: string;
     postalCode: string;
     postalCodeHint: string;
-    /** {name}: nome della casa. Il testo esatto viene salvato come prova del consenso. */
-    newsletterLabel: string;
-    newsletterHint: string;
     birthState: string;
     birthStatePlaceholder: string;
     birthPlace: string;
@@ -436,8 +404,6 @@ export const it: Dictionary = {
   privacyAck: {
     label: "Ho letto l'{link} e so come vengono trattati i miei dati.",
     linkText: "informativa privacy",
-    withTerms: "Accetto le {terms} e ho letto l'{link}.",
-    termsLinkText: "condizioni di prenotazione",
   },
   privacy: {
     eyebrow: "Note legali",
@@ -455,15 +421,6 @@ export const it: Dictionary = {
     subtitle: "Le regole del soggiorno, in chiaro.",
   },
   legalPage: { lastUpdated: "Ultimo aggiornamento: {date}" },
-  offers: {
-    eyebrow: "Offerte via email",
-    title: "Basta *offerte*?",
-    question: "Vuoi smettere di ricevere le nostre offerte all'indirizzo {email}?",
-    confirm: "Sì, toglimi dall'elenco",
-    done: "Fatto: il tuo indirizzo è stato cancellato dall'elenco e non riceverai altre offerte.",
-    notFound: "Questo indirizzo non è nell'elenco delle offerte: forse ti sei già disiscritto.",
-    back: "Torna alla casa",
-  },
   nav: {
     home: "La Casa",
     contact: "Contatti",
@@ -660,17 +617,6 @@ export const it: Dictionary = {
     optionalLabel: "facoltativo",
     submitButton: "Invia richiesta",
     sendingLabel: "Invio…",
-    touristTaxNote: "Eventuale imposta di soggiorno esclusa: si paga sul posto.",
-    pay: {
-      subtitle:
-        "Scegli le date e prenota con la carta: viene solo autorizzata, e l'addebito parte quando confermiamo, di solito entro un giorno.",
-      promises: ["Pagamento sicuro con Stripe", "Addebito solo alla conferma", "Cancellazione gratuita fino a {days} giorni prima"],
-      totalLabel: "Totale",
-      note: "Ora la carta viene solo autorizzata. L'addebito avviene quando confermiamo; se non possiamo ospitarti, l'autorizzazione si annulla e non paghi nulla.",
-      submit: "Vai al pagamento",
-      redirecting: "Ti portiamo su Stripe…",
-      canceled: "Pagamento annullato: non ti è stato addebitato nulla. Le date sono ancora qui, se vuoi riprovare.",
-    },
     errors: {
       validation_error: "Dati non validi. Controlla i campi e riprova.",
       invalid_dates: "Le date inserite non sono valide.",
@@ -684,9 +630,6 @@ export const it: Dictionary = {
     title: "Richiesta ricevuta",
     subtitle:
       "Grazie! Ti abbiamo mandato una email di riepilogo. Ti rispondiamo di solito entro un paio di giorni: finché non ricevi la nostra conferma scritta, le date non sono ancora riservate.",
-    payTitle: "Richiesta inviata",
-    paySubtitle:
-      "La carta è autorizzata, non addebitata. Ti confermiamo la prenotazione per email, di solito entro un giorno: solo allora parte l'addebito. Intanto ti abbiamo mandato un riepilogo.",
     back: "Torna alla casa",
   },
   contact: {
@@ -770,8 +713,6 @@ export const it: Dictionary = {
     residenceAddressPlaceholder: "Via e numero civico",
     postalCode: "CAP",
     postalCodeHint: "Il CAP italiano ha 5 cifre",
-    newsletterLabel: "Sì, scrivetemi al massimo tre volte l'anno con le offerte per tornare a {name}.",
-    newsletterHint: "Facoltativo: il check-in funziona uguale anche senza. In ogni email c'è il link per smettere con un clic.",
     birthState: "Stato di nascita",
     birthStatePlaceholder: "Cerca uno stato…",
     birthPlace: "Comune di nascita",
@@ -918,8 +859,6 @@ export const en: Dictionary = {
   privacyAck: {
     label: "I have read the {link} and understand how my data is handled.",
     linkText: "privacy notice",
-    withTerms: "I accept the {terms} and have read the {link}.",
-    termsLinkText: "booking terms",
   },
   privacy: {
     eyebrow: "Legal",
@@ -937,15 +876,6 @@ export const en: Dictionary = {
     subtitle: "The rules of your stay, in plain words.",
   },
   legalPage: { lastUpdated: "Last updated: {date}" },
-  offers: {
-    eyebrow: "Offers by email",
-    title: "No more *offers*?",
-    question: "Do you want to stop receiving our offers at {email}?",
-    confirm: "Yes, remove me from the list",
-    done: "Done: your address has been deleted from the list and you will not receive any more offers.",
-    notFound: "This address is not on the offers list: perhaps you have already unsubscribed.",
-    back: "Back to the house",
-  },
   nav: {
     home: "The House",
     contact: "Contact",
@@ -1142,17 +1072,6 @@ export const en: Dictionary = {
     optionalLabel: "optional",
     submitButton: "Send request",
     sendingLabel: "Sending…",
-    touristTaxNote: "Any tourist tax is not included and is paid on site.",
-    pay: {
-      subtitle:
-        "Pick your dates and book by card: it is only authorised, and the charge goes through when we confirm, usually within a day.",
-      promises: ["Secure payment with Stripe", "Charged only on confirmation", "Free cancellation up to {days} days before"],
-      totalLabel: "Total",
-      note: "For now your card is only authorised. The charge happens when we confirm; if we cannot host you, the authorisation is cancelled and you pay nothing.",
-      submit: "Go to payment",
-      redirecting: "Taking you to Stripe…",
-      canceled: "Payment cancelled: you have not been charged. Your dates are still here if you want to try again.",
-    },
     errors: {
       validation_error: "Invalid data. Please check the fields and try again.",
       invalid_dates: "The selected dates aren't valid.",
@@ -1166,9 +1085,6 @@ export const en: Dictionary = {
     title: "Request received",
     subtitle:
       "Thank you! We've sent you a summary by email. We usually reply within a couple of days: until you get our written confirmation, the dates are not reserved yet.",
-    payTitle: "Request sent",
-    paySubtitle:
-      "Your card is authorised, not charged. We will confirm your booking by email, usually within a day: only then is the amount charged. We have sent you a summary in the meantime.",
     back: "Back to the house",
   },
   contact: {
@@ -1252,8 +1168,6 @@ export const en: Dictionary = {
     residenceAddressPlaceholder: "Street and house number",
     postalCode: "Postcode",
     postalCodeHint: "Italian postcodes have 5 digits",
-    newsletterLabel: "Yes, email me at most three times a year with offers to come back to {name}.",
-    newsletterHint: "Optional: the check-in works the same without it. Every email has a one-click link to stop.",
     birthState: "Country of birth",
     birthStatePlaceholder: "Search a country…",
     birthPlace: "Town of birth (Italy)",
@@ -1400,8 +1314,6 @@ export const de: Dictionary = {
   privacyAck: {
     label: "Ich habe die {link} gelesen und weiß, wie meine Daten verarbeitet werden.",
     linkText: "Datenschutzerklärung",
-    withTerms: "Ich akzeptiere die {terms} und habe die {link} gelesen.",
-    termsLinkText: "Buchungsbedingungen",
   },
   privacy: {
     eyebrow: "Rechtliches",
@@ -1419,15 +1331,6 @@ export const de: Dictionary = {
     subtitle: "Die Regeln Ihres Aufenthalts, klar formuliert.",
   },
   legalPage: { lastUpdated: "Zuletzt aktualisiert: {date}" },
-  offers: {
-    eyebrow: "Angebote per E-Mail",
-    title: "Keine *Angebote* mehr?",
-    question: "Möchten Sie unter {email} keine Angebote mehr von uns erhalten?",
-    confirm: "Ja, von der Liste entfernen",
-    done: "Erledigt: Ihre Adresse wurde aus der Liste gelöscht, und Sie erhalten keine Angebote mehr.",
-    notFound: "Diese Adresse steht nicht auf der Angebotsliste: Vielleicht haben Sie sich bereits abgemeldet.",
-    back: "Zurück zum Haus",
-  },
   nav: {
     home: "Das Haus",
     contact: "Kontakt",
@@ -1624,17 +1527,6 @@ export const de: Dictionary = {
     optionalLabel: "optional",
     submitButton: "Anfrage senden",
     sendingLabel: "Wird gesendet…",
-    touristTaxNote: "Eine eventuelle Kurtaxe ist nicht enthalten und wird vor Ort bezahlt.",
-    pay: {
-      subtitle:
-        "Wählen Sie Ihre Termine und buchen Sie mit Karte: Sie wird nur autorisiert, abgebucht wird erst, wenn wir bestätigen, meist innerhalb eines Tages.",
-      promises: ["Sichere Zahlung mit Stripe", "Abbuchung erst bei Bestätigung", "Kostenlose Stornierung bis {days} Tage vorher"],
-      totalLabel: "Gesamtpreis",
-      note: "Ihre Karte wird jetzt nur autorisiert. Abgebucht wird, wenn wir bestätigen; können wir Sie nicht beherbergen, wird die Autorisierung aufgehoben und Sie zahlen nichts.",
-      submit: "Zur Zahlung",
-      redirecting: "Wir leiten Sie zu Stripe weiter…",
-      canceled: "Zahlung abgebrochen: Es wurde nichts abgebucht. Ihre Termine sind noch da, wenn Sie es erneut versuchen möchten.",
-    },
     errors: {
       validation_error: "Ungültige Angaben. Bitte prüfen Sie die Felder und versuchen Sie es erneut.",
       invalid_dates: "Die gewählten Termine sind ungültig.",
@@ -1648,9 +1540,6 @@ export const de: Dictionary = {
     title: "Anfrage erhalten",
     subtitle:
       "Vielen Dank! Wir haben Ihnen eine Zusammenfassung per E-Mail geschickt. Wir antworten meist innerhalb von ein bis zwei Tagen: Bis Sie unsere schriftliche Bestätigung erhalten, sind die Termine noch nicht reserviert.",
-    payTitle: "Anfrage gesendet",
-    paySubtitle:
-      "Ihre Karte ist autorisiert, nicht belastet. Wir bestätigen Ihre Buchung per E-Mail, meist innerhalb eines Tages: Erst dann wird abgebucht. Eine Zusammenfassung haben wir Ihnen bereits geschickt.",
     back: "Zurück zum Haus",
   },
   contact: {
@@ -1734,8 +1623,6 @@ export const de: Dictionary = {
     residenceAddressPlaceholder: "Straße und Hausnummer",
     postalCode: "PLZ",
     postalCodeHint: "Italienische Postleitzahlen haben 5 Ziffern",
-    newsletterLabel: "Ja, schreiben Sie mir höchstens dreimal im Jahr mit Angeboten für einen erneuten Aufenthalt in {name}.",
-    newsletterHint: "Freiwillig: Der Check-in funktioniert auch ohne. Jede E-Mail enthält einen Link zum Abmelden mit einem Klick.",
     birthState: "Geburtsland",
     birthStatePlaceholder: "Land suchen…",
     birthPlace: "Geburtsort (Italien)",

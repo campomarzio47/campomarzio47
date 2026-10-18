@@ -1,12 +1,5 @@
 import path from "node:path";
 import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-
-// In `next dev` rende disponibili i binding di wrangler.jsonc, compreso il
-// database D1 (in una copia locale dentro .wrangler/): senza, le offerte
-// via email non si potrebbero provare in locale. Solo in sviluppo: in
-// produzione i binding li dà il Worker, e su Vercel non esistono.
-if (process.env.NODE_ENV === "development") initOpenNextCloudflareForDev();
 
 // Dominio ufficiale del sito. Deve combaciare con NEXT_PUBLIC_SITE_URL
 // (vedi lib/seo.ts): il tag canonical e questo redirect devono indicare

@@ -76,21 +76,12 @@ lingua originale, non tradurre).
 - URL annuncio Booking.com:
 - Altri canali di prenotazione diretta da collegare?
 
-## 6b. Prenotazione diretta
+## 6b. Richiesta di prenotazione diretta
 
-Due possibilità, da scegliere con l'host:
-
-- **Richiesta via email** (default): l'ospite invia una richiesta, l'host
-  risponde e il pagamento avviene fuori dal sito.
-- **Pagamento con Stripe**: l'ospite autorizza la carta sul sito, l'host
-  conferma (e incassa) da un link via email. Serve un account Stripe a
-  nome dell'host, verificato, e una politica di cancellazione precisa.
-
-Vuole il pagamento con Stripe? (sì/no) Se sì, fino a quanti giorni prima
-dell'arrivo si cancella con rimborso totale?
-
-In entrambi i casi servono prezzi e condizioni, perché finiscono nel
-riepilogo del prezzo e nei Termini e condizioni.
+Il sito **non incassa pagamenti**: l'ospite invia una richiesta, l'host
+risponde via email e il pagamento avviene fuori dal sito. Serve comunque
+sapere prezzi e condizioni, perché finiscono nel preventivo indicativo e
+nei Termini e condizioni.
 
 - Prezzo per notte (in euro, un unico valore fisso — prezzi diversi per
   stagione/periodo non sono ancora supportati dal sito):
@@ -104,9 +95,6 @@ riepilogo del prezzo e nei Termini e condizioni.
 - Con quali mezzi di pagamento (bonifico, contanti all'arrivo, altro):
 - Politica di cancellazione applicata davvero (di default: nessuna penale
   fino al momento del saldo):
-
-Offerte via email: vuole poter mandare, a chi lo sceglie alla fine del
-check-in, al massimo tre email l'anno con offerte per tornare? (sì/no)
 
 ## 6c. Dati legali obbligatori
 

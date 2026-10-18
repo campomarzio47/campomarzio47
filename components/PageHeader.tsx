@@ -16,17 +16,13 @@ type SectionWithTitle = {
  */
 export default function PageHeader({
   section,
-  subtitle,
   className = "",
 }: {
   section: SectionWithTitle;
-  /** Sostituisce il sottotitolo del dizionario (es. /prenota con i pagamenti). */
-  subtitle?: string;
   className?: string;
 }) {
   const { dict } = useLocale();
-  const entry = { ...(dict[section] as { title: string; subtitle?: string; eyebrow?: string }) };
-  if (subtitle) entry.subtitle = subtitle;
+  const entry = dict[section] as { title: string; subtitle?: string; eyebrow?: string };
 
   return (
     <header className={`mb-12 md:mb-16 ${className}`}>

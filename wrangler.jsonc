@@ -28,20 +28,6 @@
     "binding": "IMAGES"
   },
 
-  // Database D1: oggi contiene solo l'elenco di chi, alla fine del
-  // check-in, sceglie di ricevere le offerte via email (lib/newsletter.ts;
-  // la tabella si crea da sola al primo uso). Niente database_id di
-  // proposito: al primo deploy Cloudflare crea il database e lo collega al
-  // Worker (provisioning automatico), e l'ID si legge in dashboard → D1.
-  // Togliere questo blocco spegne le offerte: la casella del check-in
-  // sparisce e l'informativa privacy smette di parlarne.
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "campomarzio47"
-    }
-  ],
-
   // Senza questo, ogni deploy cancellerebbe le variabili impostate a mano
   // nella dashboard (Settings → Variables and Secrets). I secret non
   // vengono mai toccati dal deploy, le variabili in chiaro sì.

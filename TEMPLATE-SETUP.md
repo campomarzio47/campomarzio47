@@ -207,8 +207,7 @@ diversi:
   alla build e scritte nel codice;
 - **Variables and Secrets** (Worker → Settings): tutte le altre, lette a
   runtime. Come *Secret* le credenziali (`SMTP_USER`, `SMTP_PASSWORD`,
-  `CHECKIN_ZIP_PASSWORD`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-  `BOOKING_TOKEN_SECRET`) e gli URL iCal, che contengono un token; come
+  `CHECKIN_ZIP_PASSWORD`) e gli URL iCal, che contengono un token; come
   *Text* le altre. `keep_vars` in `wrangler.jsonc` evita che un deploy
   cancelli quelle impostate a mano.
 
@@ -261,72 +260,23 @@ ma non lo sono:
   soggiorno verrebbe registrato dal portale come ospiti nuovi, gonfiando
   le presenze.
 
-## 6b. Prenotazione diretta: richiesta via email o pagamento con Stripe
+## 6b. Richiesta di prenotazione diretta
 
 `content/property.ts` ha un blocco `pricing` (`pricePerNight`,
 `cleaningFee`, `minNights`, `minAdvanceDays`, `currency`) da compilare
 con i valori del brief prima di attivare `/prenota` — di default
 `pricePerNight` è `0`, che mostrerebbe un totale a zero se lasciato così.
 
-`/prenota` funziona in due modi, scelti **da soli** in base alle
-variabili d'ambiente (`paymentsEnabled()` in `lib/stripe.ts`):
+Non serve altro codice né alcuna variabile d'ambiente oltre all'SMTP:
+`/prenota` invia la richiesta via email all'host (con `replyTo`
+dell'ospite) e una presa in carico all'ospite. Nessun pagamento, nessun
+database.
 
-- **senza Stripe** (default): la richiesta parte via email all'host (con
-  `replyTo` dell'ospite) e una presa in carico all'ospite. Nessun
-  pagamento. È la scelta giusta per chi riceve poche prenotazioni dirette.
-- **con Stripe**, se ci sono `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-  e `BOOKING_TOKEN_SECRET`: l'ospite autorizza la carta su Stripe
-  Checkout (addebito **non** immediato), l'host riceve un'email con il
-  link Conferma/Rifiuta e solo la conferma incassa. Se non decide entro
-  la scadenza dell'autorizzazione (pochi giorni, la data è nell'email),
-  l'ospite viene avvisato e non paga nulla.
-
-Termini, informativa, bottoni e testi del riepilogo cambiano con la
-modalità (`lib/features.ts`): il sito non descrive mai un pagamento che
-non fa. Per attivare Stripe:
-
-1. Account Stripe intestato all'host (sono suoi i soldi e i rimborsi),
-   con l'attività verificata.
-2. Sviluppatori → Webhook → endpoint `https://<dominio>/api/stripe/webhook`
-   con gli eventi `checkout.session.completed` e `payment_intent.canceled`;
-   il "signing secret" va in `STRIPE_WEBHOOK_SECRET`.
-3. `BOOKING_TOKEN_SECRET`: 64 caratteri casuali
-   (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`).
-4. `legal.stay.freeCancellationDays` in `content/legal.ts`: fino a quanti
-   giorni prima dell'arrivo si cancella con rimborso totale. È nei Termini
-   e nelle email, quindi va deciso con l'host, non lasciato al default.
-5. Provare tutto con le chiavi **di test** (`sk_test_`) e la carta
-   4242 4242 4242 4242 prima di mettere quelle live. In locale: mai le
-   chiavi live in `.env.local`, o una prova crea pagamenti veri.
-
-Dopo una conferma l'host deve bloccare le date su Airbnb e Booking a mano
-(l'email glielo ricorda): il sito non scrive nei loro calendari. I
-rimborsi si fanno dalla dashboard di Stripe.
-
-## 6d. Offerte via email (facoltative, database D1)
-
-Alla fine del check-in l'ospite può scegliere, con una casella non
-spuntata e separata dalla presa visione della privacy, di ricevere al
-massimo tre email l'anno con offerte. L'iscrizione finisce nel database
-D1 del Worker (`lib/newsletter.ts`): email, nome, lingua, data del
-soggiorno, testo esatto del consenso con la data, token per
-disiscriversi. La tabella si crea da sola.
-
-- **Attivazione**: basta il blocco `d1_databases` in `wrangler.jsonc`
-  (binding `DB`, senza ID: Cloudflare crea il database al primo deploy).
-  Toglierlo spegne tutto — casella, sezione dell'informativa — senza
-  altre modifiche. In locale `next dev` usa una copia del database in
-  `.wrangler/` (`initOpenNextCloudflareForDev` in `next.config.ts`).
-- **Invio**: `node scripts/offerte.mjs <file>` dal PC (istruzioni in testa
-  allo script): anteprima, `--prova tua@email`, poi `--invia`. Serve
-  `npx wrangler login` con l'account Cloudflare del sito e l'SMTP in
-  `.env.local`. Lo script cancella prima gli iscritti con l'ultimo
-  soggiorno più vecchio di 24 mesi e rifiuta un quarto invio in dodici
-  mesi: sono le due promesse dell'informativa.
-- **Disiscrizione**: link in ogni email verso `/offerte/disiscrizione`
-  (serve un clic sul bottone, perché gli antispam aprono i link) più
-  l'intestazione `List-Unsubscribe` per il clic unico di Gmail e Yahoo.
-  Disiscriversi cancella la riga.
+**Stripe è stato rimosso dal modello** e non va reintrodotto per inerzia:
+portava obblighi (PSD2, rimborsi, contestazioni) sproporzionati al volume
+tipico di questi siti, e i Termini oggi dichiarano espressamente che il
+sito non raccoglie dati di pagamento. Se un nuovo cliente li vuole
+davvero, vanno riscritti anche `/termini` e l'informativa privacy.
 
 ## 6c. Dati legali (obbligatorio, vedi `LEGALE.md`)
 
@@ -341,8 +291,7 @@ mostrati**, quindi un sito senza CIN sembra a posto. Prima di consegnare,
 verificare a video che il footer mostri davvero il codice.
 
 Da compilare anche: `business` (ragione sociale, P.IVA, REA, sede, PEC),
-`stay` (ore per il saldo, mezzi di pagamento, giorni di cancellazione
-gratuita se si usa Stripe, imposta di soggiorno) e
+`stay` (ore per il saldo, mezzi di pagamento, imposta di soggiorno) e
 `providers.email`/`providers.mailbox` con il nome del fornitore SMTP e
 della casella scelti al §5 — finiscono nell'elenco dei responsabili del
 trattamento dell'informativa privacy.
@@ -355,8 +304,7 @@ accetta), e se non corrispondono il problema non è il testo.
 
 I nuovi siti si pubblicano su **Cloudflare Workers**, tramite l'adapter
 OpenNext (`@opennextjs/cloudflare`): esegue la build vera di Next, quindi
-il codice è lo stesso che girava su Vercel. Anche Campo Marzio 47 si
-sposta qui (ottobre 2026), per poter rimettere i pagamenti.
+il codice è lo stesso che gira su Vercel, dove resta Campo Marzio 47.
 Il piano gratuito di Cloudflare ammette l'uso commerciale (quello di
 Vercel no, vedi `LEGALE.md` §6) e il contratto self-serve incorpora il
 DPA art. 28 GDPR.
@@ -364,8 +312,7 @@ DPA art. 28 GDPR.
 Cosa è già predisposto nel modello: `wrangler.jsonc` (nome del Worker,
 `nodejs_compat` per nodemailer e archiver, binding `IMAGES` per
 `next/image`, `keep_vars`), `open-next.config.ts` (cache di sola lettura
-sugli asset statici: niente R2/KV da creare), il database D1 per le
-offerte (creato da solo al primo deploy, §6d), `public/_headers`, e gli
+sugli asset statici: niente R2/KV/D1 da creare), `public/_headers`, e gli
 script `npm run preview` (anteprima in locale sul runtime Workers) e
 `npm run deploy` (protetto, vedi §5).
 
