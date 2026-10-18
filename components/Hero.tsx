@@ -49,7 +49,10 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative h-[76svh] min-h-[520px] w-full overflow-hidden bg-charcoal md:h-[92vh] md:max-h-[1100px]">
+    // Su telefono riempie tutta la prima schermata: a 76svh l'inizio della
+    // frase dell'introduzione ("Travi a vista, rovere…") spuntava tagliato
+    // sotto la foto, dietro la barra delle date.
+    <section className="relative h-[100svh] min-h-[520px] w-full overflow-hidden bg-charcoal md:h-[92vh] md:max-h-[1100px]">
       <div ref={imageRef} className="absolute inset-0 will-change-transform">
         <Image
           src={property.heroImage}
