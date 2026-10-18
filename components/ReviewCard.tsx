@@ -1,52 +1,56 @@
 "use client";
 
-import { Star, Quote } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
+import { fill } from "@/content/dictionaries";
+import { defaultLocale, intlLocale } from "@/lib/locale";
 import type { Review } from "@/content/property";
 
-const MAX_STARS = 5;
-
 /**
- * Le stelle sono derivate dal voto reale della recensione, non disegnate
- * fisse a cinque: i voti arrivano da Airbnb e Booking.com in decimi, e
- * mostrarne cinque a prescindere significherebbe pubblicare una
- * valutazione non ancorata al dato — cioè, se un domani arrivasse una
- * recensione da 8/10, una valutazione falsa.
+ * Una recensione come una citazione stampata: il testo in Bodoni, chi
+ * l'ha scritta sotto.
+ *
+ * Il voto è mostrato com'è — in decimi, come lo danno Airbnb e Booking —
+ * e non convertito in stelle: cinque stelle disegnate a prescindere
+ * sarebbero una valutazione non ancorata al dato, e una recensione da 8/10
+ * diventerebbe una valutazione falsa.
  */
 export default function ReviewCard({ review }: { review: Review }) {
-  const { dict } = useLocale();
-  const stars = Math.round((review.rating / 10) * MAX_STARS);
-  const ratingLabel = dict.a11y.ratingOutOfFive.replace("{rating}", String(stars));
+  const { dict, locale } = useLocale();
+  const [year, month] = review.date.split("-").map(Number);
+  const when =
+    year && month
+      ? new Intl.DateTimeFormat(intlLocale[locale], { month: "long", year: "numeric" }).format(
+          new Date(year, month - 1, 1),
+        )
+      : review.date;
 
   return (
-    <div className="relative flex flex-col gap-3 overflow-hidden rounded-md bg-charcoal p-6 text-off-white">
-      <Quote
-        size={72}
-        strokeWidth={0}
-        fill="currentColor"
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-2 -top-2 text-off-white/[0.06]"
-      />
-      {/* Il gruppo porta l'etichetta testuale: le icone da sole non
-          dicono nulla a chi usa uno screen reader. */}
-      <div role="img" aria-label={ratingLabel} className="flex items-center gap-1">
-        {Array.from({ length: MAX_STARS }).map((_, i) => (
-          <Star
-            key={i}
-            size={15}
-            fill={i < stars ? "currentColor" : "none"}
-            strokeWidth={i < stars ? 0 : 1.5}
-            aria-hidden="true"
-            className={i < stars ? "text-bordeaux" : "text-off-white/30"}
-          />
-        ))}
-      </div>
-      <p className="relative text-sm leading-relaxed text-off-white/90">
-        &ldquo;{review.text}&rdquo;
-      </p>
-      <div className="mt-2 text-xs uppercase tracking-wide text-off-white/60">
-        {review.name} · {review.group} · {review.date}
-      </div>
-    </div>
+    <figure className="flex h-full flex-col rounded-[2px] border border-divider bg-paper p-7 md:p-9">
+      <span aria-hidden="true" className="block h-8 font-display text-[4.5rem] leading-[0.9] text-bordeaux">
+        &ldquo;
+      </span>
+      {/* La recensione resta nella sua lingua originale: lang lo dice a
+          screen reader e motori di ricerca anche quando il sito è in
+          un'altra lingua. */}
+      <blockquote lang={review.lang ?? defaultLocale} className="mt-3 flex-1 font-display text-[1.3rem] leading-[1.45] md:text-[1.4rem]">
+        {review.text}
+      </blockquote>
+      <figcaption className="mt-8 flex items-end justify-between gap-4 border-t border-divider pt-5">
+        <span>
+          <span className="block font-semibold">{review.name}</span>
+          <span className="mt-0.5 block text-sm text-mid">
+            {dict.reviews.groups[review.group]} · {when}
+          </span>
+        </span>
+        <span
+          role="img"
+          aria-label={fill(dict.a11y.ratingOutOfTen, { rating: review.rating })}
+          className="tabular flex-none font-display text-2xl italic"
+        >
+          {review.rating}
+          <span className="text-base not-italic text-mid">/10</span>
+        </span>
+      </figcaption>
+    </figure>
   );
 }

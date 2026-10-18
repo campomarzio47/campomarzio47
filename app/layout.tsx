@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Bodoni_Moda, Instrument_Sans } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import CheckInFab from "@/components/CheckInFab";
+import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SkipLink from "@/components/SkipLink";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { dictionaries } from "@/content/dictionaries";
 import { LOCALE_COOKIE, defaultLocale, isLocale } from "@/lib/locale";
@@ -14,15 +12,20 @@ import { property } from "@/content/property";
 import { legal } from "@/content/legal";
 import { siteUrl, ogImage } from "@/lib/seo";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+// Bodoni per i titoli: è un carattere italiano (Giambattista Bodoni,
+// Parma), e con l'asse ottico "opsz" resta elegante sia nei titoli enormi
+// sia nelle cifre piccole. Instrument Sans per tutto il resto: leggibile
+// a 16 px sui telefoni, che sono la maggior parte delle visite.
+const bodoni = Bodoni_Moda({
+  variable: "--font-bodoni",
+  subsets: ["latin", "latin-ext"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dmsans",
-  subsets: ["latin"],
+const instrument = Instrument_Sans({
+  variable: "--font-instrument",
+  subsets: ["latin", "latin-ext"],
 });
 
 const meta = dictionaries[defaultLocale].meta;
@@ -52,6 +55,7 @@ export const metadata: Metadata = {
     siteName: property.name,
     images: [ogImage],
     locale: "it_IT",
+    alternateLocale: ["en_GB", "de_DE"],
     type: "website",
   },
   twitter: {
@@ -120,9 +124,9 @@ export default async function RootLayout({
   return (
     <html
       lang={initialLocale}
-      className={`${cormorant.variable} ${dmSans.variable} h-full scroll-smooth antialiased`}
+      className={`${bodoni.variable} ${instrument.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full bg-off-white text-charcoal font-sans">
+      <body className="min-h-full bg-off-white font-sans text-charcoal">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: structuredData() }}
@@ -132,15 +136,13 @@ export default async function RootLayout({
           {/* Colonna flex: con `flex-1` sul contenuto il footer resta in
               fondo alla finestra anche sulle pagine corte, senza dover
               forzare un'altezza minima che creerebbe scroll inutile. */}
-          <div className="flex min-h-screen flex-col md:pl-64">
-            <Sidebar />
-            <main id="contenuto" className="flex-1">
+          <div className="flex min-h-dvh flex-col">
+            <Header />
+            <main id="contenuto" tabIndex={-1} className="flex-1 outline-none">
               {children}
             </main>
             <Footer />
           </div>
-          <CheckInFab />
-          <LanguageSwitcher className="fixed right-4 top-4 z-40 hidden md:flex" />
         </LocaleProvider>
       </body>
     </html>

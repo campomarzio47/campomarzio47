@@ -41,7 +41,16 @@ type PageKey = keyof Dictionary["meta"]["pages"];
  */
 export function pageMetadata(key: PageKey, path: string): Metadata {
   const dict = dictionaries[defaultLocale];
-  const title = `${dict[key].title} — ${property.name}`;
+  // Per le pagine principali il titolo SEO è il nome della voce di menu
+  // ("Contatti", "Prenota ora"): l'h1 della pagina può essere più
+  // discorsivo ("Scrivici, o chiamaci") senza cambiare ciò che Google
+  // indicizza. Gli asterischi del corsivo non devono mai arrivare qui.
+  const navTitle: Partial<Record<PageKey, string>> = {
+    booking: dict.nav.book,
+    checkin: dict.nav.checkin,
+    contact: dict.nav.contact,
+  };
+  const title = `${(navTitle[key] ?? dict[key].title).replace(/\*/g, "")} — ${property.name}`;
   const description = dict.meta.pages[key].description;
 
   return {
@@ -55,6 +64,7 @@ export function pageMetadata(key: PageKey, path: string): Metadata {
       siteName: property.name,
       images: [ogImage],
       locale: "it_IT",
+      alternateLocale: ["en_GB", "de_DE"],
       type: "website",
     },
     twitter: {

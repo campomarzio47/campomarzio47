@@ -13,7 +13,7 @@ export default async function PrenotaPage({
   const { from, to } = await searchParams;
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-12 md:px-10 md:py-16">
+    <div className="mx-auto max-w-7xl px-5 pb-16 pt-12 md:px-10 md:pb-28 md:pt-20">
       <PageHeader section="booking" />
       <BookingForm initialFrom={from} initialTo={to} />
     </div>

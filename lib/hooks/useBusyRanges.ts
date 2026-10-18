@@ -19,7 +19,7 @@ function firstBookableDay(): Date {
 
 // Recupera e trasforma le date occupate da /api/availability (feed iCal di
 // Airbnb/Booking) nel formato DateRange[] atteso da react-day-picker.
-// Condiviso da AvailabilityBar e BookingCalendar (selezione intervallo per
+// Condiviso da AvailabilityBar e BookingForm (selezione intervallo per
 // la prenotazione diretta).
 //
 // `busy` va usato come modifier (stile `.rdp-busy`, "prenotato altrove");

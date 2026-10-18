@@ -1,30 +1,59 @@
 @import "tailwindcss";
 
+/* La palette viene dalla casa stessa: il bordeaux delle sedie, il rovere
+   del pavimento, il bianco caldo delle travi, il nero della scala in
+   acciaio. Non è una scelta di gusto applicata da fuori, ed è per questo
+   che va tenuta quando si ritocca il sito. */
 :root {
-  --color-off-white: #f7f5f2;
-  --color-bordeaux: #8b2635;
+  --color-off-white: #f5f1ea; /* sfondo: le travi sbiancate */
+  --color-paper: #fbf9f5; /* superfici rialzate: schede, campi */
+  --color-sand: #ebe4d9; /* superfici secondarie, bande dell'intervallo date */
+  --color-bordeaux: #8b2635; /* le sedie: accento primario */
   --color-bordeaux-dark: #6e1e2a;
-  --color-charcoal: #1e1e1e;
-  --color-mid: #6b6560;
-  --color-beam: #d4c5b0;
-  --color-divider: #e2ddd8;
+  --color-charcoal: #1c1a19; /* la scala: testo e sezioni scure */
+  --color-mid: #67615b; /* testo secondario: 5:1 su off-white */
+  --color-beam: #cdb89c; /* il rovere: accento secondario */
+  --color-divider: #e0d8cc;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-curtain: cubic-bezier(0.77, 0, 0.175, 1);
+
+  --header-height: 4rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-height: 4.75rem;
+  }
 }
 
 @theme inline {
   --color-off-white: var(--color-off-white);
+  --color-paper: var(--color-paper);
+  --color-sand: var(--color-sand);
   --color-bordeaux: var(--color-bordeaux);
   --color-bordeaux-dark: var(--color-bordeaux-dark);
   --color-charcoal: var(--color-charcoal);
   --color-mid: var(--color-mid);
   --color-beam: var(--color-beam);
   --color-divider: var(--color-divider);
-  --font-display: var(--font-cormorant);
-  --font-sans: var(--font-dmsans);
+  --font-display: var(--font-bodoni);
+  --font-sans: var(--font-instrument);
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --ease-curtain: var(--ease-curtain);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
 }
 
 body {
   background: var(--color-off-white);
   color: var(--color-charcoal);
+  font-feature-settings: "kern", "liga";
 }
 
 ::selection {
@@ -32,75 +61,475 @@ body {
   color: var(--color-off-white);
 }
 
-/* Calendario (react-day-picker): stile minimalista/moderno, coerente con
-   la palette del sito — pillole piene per l'intervallo selezionato, oggi
-   segnalato con un punto anziché un bordo, date occupate attenuate invece
-   che barrate, nav rotonda con hover. Vedi node_modules/react-day-picker
-   /src/style.css per l'elenco completo delle custom property disponibili. */
-.rdp-root {
-  --rdp-accent-color: var(--color-bordeaux);
-  --rdp-accent-background-color: var(--color-beam);
-  --rdp-today-color: var(--color-bordeaux);
-  --rdp-selected-border: none;
-  --rdp-day_button-border: 2px solid transparent;
-  --rdp-nav_button-width: 2.5rem;
-  --rdp-nav_button-height: 2.5rem;
-  --rdp-weekday-text-transform: uppercase;
-  font-family: var(--font-sans);
+/* Le ancore della home (#foto, #servizi...) non devono finire sotto
+   l'intestazione fissa. */
+[id] {
+  scroll-margin-top: calc(var(--header-height) + 1rem);
 }
 
-.rdp-weekday {
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  color: var(--color-mid);
+button,
+[role="button"],
+a,
+label,
+summary,
+select {
+  touch-action: manipulation;
+}
+
+/* Classi di componente nel layer "components" di Tailwind: così una
+   utility sullo stesso elemento (hidden, px-7, w-full...) vince sempre.
+   Fuori da un layer vincerebbero loro, a prescindere dalla specificità. */
+@layer components {
+  /* Bodoni a grandi dimensioni: l'asse ottico "opsz" lo rende più
+     contrastato e sottile nei titoli, più robusto nelle didascalie. */
+  .font-display {
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
+  }
+
+  /* Etichetta sopra i titoli di sezione. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-bordeaux);
+  }
+
+  /* Il motivo della scacchiera: Marostica è la città della Partita a
+     Scacchi. Usato con parsimonia, come firma, mai come decorazione di
+     riempimento. */
+  .checker {
+    --checker-size: 6px;
+    --checker-color: var(--color-bordeaux);
+    background:
+      conic-gradient(
+        var(--checker-color) 25%,
+        transparent 0 50%,
+        var(--checker-color) 0 75%,
+        transparent 0
+      )
+      0 0 / calc(var(--checker-size) * 2) calc(var(--checker-size) * 2);
+  }
+
+  /* Quattro caselle di scacchiera davanti a ogni etichetta di sezione. */
+  .eyebrow::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    flex: none;
+    background:
+      linear-gradient(currentColor, currentColor) 0 0 / 5px 5px no-repeat,
+      linear-gradient(currentColor, currentColor) 5px 5px / 5px 5px no-repeat;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* ─── Campi dei moduli ──────────────────────────────────────────────
+     16px di testo come minimo: sotto, Safari su iPhone ingrandisce la
+     pagina a ogni tocco su un campo, ed è la cosa più fastidiosa che un
+     modulo possa fare su un telefono. */
+  .field-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-charcoal);
+  }
+
+  .field-label > .field-hint,
+  .field-hint {
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--color-mid);
+  }
+
+  .field {
+    width: 100%;
+    min-height: 3rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-divider);
+    background: var(--color-paper);
+    padding: 0.7rem 0.9rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--color-charcoal);
+    outline: none;
+    transition:
+      border-color 0.2s var(--ease-out),
+      box-shadow 0.2s var(--ease-out),
+      background-color 0.2s var(--ease-out);
+  }
+
+  .field::placeholder {
+    color: color-mix(in srgb, var(--color-mid) 75%, transparent);
+  }
+
+  .field:hover {
+    border-color: color-mix(in srgb, var(--color-beam) 80%, var(--color-divider));
+  }
+
+  .field:focus,
+  .field:focus-visible {
+    border-color: var(--color-charcoal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-bordeaux) 18%, transparent);
+    background: #fff;
+  }
+
+  .field[aria-invalid="true"] {
+    border-color: var(--color-bordeaux);
+  }
+
+  select.field {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%231c1a19' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+  }
+
+  input[type="date"].field {
+    appearance: none;
+    min-height: 3rem;
+  }
+
+  textarea.field {
+    resize: vertical;
+    min-height: 6rem;
+  }
+
+  /* ─── Bottoni ───────────────────────────────────────────────────────── */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition:
+      background-color 0.25s var(--ease-out),
+      color 0.25s var(--ease-out),
+      border-color 0.25s var(--ease-out),
+      transform 0.2s var(--ease-out),
+      opacity 0.2s var(--ease-out);
+    cursor: pointer;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--color-bordeaux);
+    outline-offset: 3px;
+  }
+
+  .btn-primary {
+    background: var(--color-bordeaux);
+    color: var(--color-off-white);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-bordeaux-dark);
+  }
+
+  .btn-dark {
+    background: var(--color-charcoal);
+    color: var(--color-off-white);
+  }
+
+  .btn-dark:hover:not(:disabled) {
+    background: #000;
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--color-divider);
+    background: transparent;
+    color: var(--color-charcoal);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--color-charcoal);
+  }
+
+  /* La freccia dei bottoni scivola in avanti al passaggio del mouse:
+     indica la direzione in cui porta il clic. */
+  .btn .arrow,
+  .link-arrow .arrow {
+    transition: transform 0.35s var(--ease-out);
+  }
+
+  .btn:hover .arrow,
+  .link-arrow:hover .arrow {
+    transform: translateX(4px);
+  }
+
+  /* Link testuale con sottolineatura che si disegna da sinistra. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 2px;
+    transition: background-size 0.4s var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .link-draw:hover {
+      animation: draw-underline 0.6s var(--ease-out);
+    }
+  }
+
+  @keyframes draw-underline {
+    0% {
+      background-size: 100% 1px;
+      background-position: 100% 100%;
+    }
+    45% {
+      background-size: 0% 1px;
+      background-position: 100% 100%;
+    }
+    46% {
+      background-position: 0 100%;
+    }
+    100% {
+      background-size: 100% 1px;
+      background-position: 0 100%;
+    }
+  }
+}
+
+/* ─── Calendario (react-day-picker) ─────────────────────────────────
+   Il foglio di stile della libreria NON viene importato: dichiarava le
+   proprie variabili su `.rdp-root` (accento `blue`) e, caricato dopo
+   questo file, le sovrascriveva — è da lì che arrivavano il blu dei
+   giorni selezionati e delle frecce. Qui sotto c'è tutto ciò che serve,
+   con i colori del sito. */
+.rdp-root {
+  --rdp-cell: 2.75rem;
+  position: relative;
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+.rdp-vhidden,
+.rdp-root [class*="vhidden"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+}
+
+.rdp-months {
+  position: relative;
+  display: flex;
+  gap: 2.5rem;
+}
+
+.rdp-month {
+  flex: 1;
+  min-width: 0;
 }
 
 .rdp-month_caption {
+  display: flex;
+  align-items: center;
+  height: 2.75rem;
+  padding-inline: 0.25rem;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-transform: capitalize;
 }
 
-.rdp-selected {
-  font-weight: 500;
-  font-size: inherit;
+.rdp-nav {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 0.25rem;
+  z-index: 2;
+}
+
+.rdp-button_previous,
+.rdp-button_next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-divider);
+  background: var(--color-paper);
+  color: var(--color-charcoal);
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease-out),
+    border-color 0.2s var(--ease-out),
+    transform 0.2s var(--ease-out);
+}
+
+.rdp-button_previous:hover:not(:disabled):not([aria-disabled="true"]),
+.rdp-button_next:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--color-charcoal);
+}
+
+.rdp-button_previous:active:not(:disabled),
+.rdp-button_next:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.rdp-button_previous:disabled,
+.rdp-button_previous[aria-disabled="true"],
+.rdp-button_next:disabled,
+.rdp-button_next[aria-disabled="true"] {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.rdp-button_previous:focus-visible,
+.rdp-button_next:focus-visible,
+.rdp-day_button:focus-visible {
+  outline: 2px solid var(--color-bordeaux);
+  outline-offset: 2px;
+}
+
+.rdp-month_grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.rdp-weekday {
+  height: 2.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--color-mid);
+}
+
+.rdp-day {
+  position: relative;
+  height: var(--rdp-cell);
+  padding: 2px 0;
+  text-align: center;
 }
 
 .rdp-day_button {
-  font-weight: 500;
-  transition:
-    background-color 0.15s ease-out,
-    color 0.15s ease-out;
-}
-
-.rdp-day:not(.rdp-selected):not(.rdp-disabled) .rdp-day_button:hover {
-  background-color: var(--color-divider);
-}
-
-.rdp-button_next,
-.rdp-button_previous {
-  border-radius: 9999px;
-  transition: background-color 0.15s ease-out;
-}
-
-.rdp-button_next:hover:not(:disabled),
-.rdp-button_previous:hover:not(:disabled) {
-  background-color: var(--color-divider);
-}
-
-.rdp-today .rdp-day_button {
   position: relative;
-  font-weight: 700;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rdp-cell);
+  max-width: 100%;
+  height: calc(var(--rdp-cell) - 4px);
+  margin: 0 auto;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-charcoal);
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease-out),
+    color 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out);
 }
 
-.rdp-today:not(.rdp-selected) .rdp-day_button::after {
+@media (hover: hover) {
+  .rdp-day:not(.rdp-disabled):not(.rdp-selected) .rdp-day_button:hover {
+    box-shadow: inset 0 0 0 1px var(--color-charcoal);
+  }
+}
+
+.rdp-outside,
+.rdp-hidden {
+  visibility: hidden;
+}
+
+/* Giorni passati o dentro il preavviso minimo: non selezionabili. */
+.rdp-disabled:not(.rdp-busy) .rdp-day_button {
+  color: color-mix(in srgb, var(--color-mid) 55%, transparent);
+  cursor: default;
+}
+
+/* Oggi: un punto sotto il numero, non un bordo che sembrerebbe una
+   selezione. */
+.rdp-today .rdp-day_button::after {
   content: "";
   position: absolute;
-  bottom: 4px;
+  bottom: 5px;
+  left: 50%;
   width: 4px;
   height: 4px;
-  border-radius: 9999px;
+  margin-left: -2px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+/* Intervallo scelto: arrivo e partenza pieni in bordeaux, i giorni in
+   mezzo uniti da una banda color sabbia che li lega visivamente. */
+.rdp-range_middle {
+  background: var(--color-sand);
+}
+
+.rdp-range_start:not(.rdp-range_end) {
+  background: linear-gradient(90deg, transparent 50%, var(--color-sand) 50%);
+}
+
+.rdp-range_end:not(.rdp-range_start) {
+  background: linear-gradient(90deg, var(--color-sand) 50%, transparent 50%);
+}
+
+.rdp-range_start .rdp-day_button,
+.rdp-range_end .rdp-day_button {
   background: var(--color-bordeaux);
+  color: var(--color-off-white);
+  font-weight: 600;
+  animation: day-pop 0.35s var(--ease-out);
+}
+
+.rdp-range_middle .rdp-day_button {
+  border-radius: 0;
+  color: var(--color-charcoal);
+}
+
+@keyframes day-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Date occupate. Il progetto le voleva "attenuate invece che barrate", ma
@@ -116,41 +545,156 @@ body {
   text-decoration-thickness: 1px;
 }
 
-@keyframes kenburns {
+/* Cambio mese: le settimane scorrono nella direzione della freccia. */
+.rdp-weeks_before_enter {
+  animation: rdp-in-left 0.4s var(--ease-out);
+}
+.rdp-weeks_after_enter {
+  animation: rdp-in-right 0.4s var(--ease-out);
+}
+.rdp-weeks_before_exit,
+.rdp-weeks_after_exit {
+  animation: rdp-fade-out 0.2s ease-out forwards;
+}
+.rdp-caption_after_enter,
+.rdp-caption_before_enter {
+  animation: rdp-fade-in 0.4s var(--ease-out);
+}
+.rdp-caption_after_exit,
+.rdp-caption_before_exit {
+  animation: rdp-fade-out 0.2s ease-out forwards;
+}
+
+@keyframes rdp-in-left {
   from {
-    transform: scale(1);
+    opacity: 0;
+    transform: translateX(-24px);
   }
   to {
-    transform: scale(1.08);
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rdp-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rdp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rdp-fade-out {
+  to {
+    opacity: 0;
   }
 }
 
-.animate-kenburns {
-  animation: kenburns 24s ease-in-out infinite alternate;
+/* ─── Movimento ───────────────────────────────────────────────────────
+   Un solo ritmo per tutto il sito: le cose entrano dal basso con una
+   decelerazione lunga (--ease-out), le foto si scoprono come una tenda
+   (--ease-curtain). Tutto rispetta prefers-reduced-motion in fondo. */
+
+/* Ingresso di ogni pagina (app/template.tsx). Lo stato finale è
+   `transform: none` e non `translateY(0)`: un transform residuo farebbe
+   da contenitore per gli elementi `fixed` dentro la pagina. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
+.page-enter {
+  animation: page-in 0.7s var(--ease-out) both;
+}
+
+/* Comparsa allo scorrimento (components/Reveal.tsx). */
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(28px);
   transition:
-    opacity 0.6s ease-out,
-    transform 0.6s ease-out;
+    opacity 0.9s var(--ease-out),
+    transform 1.1s var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
 }
 
 .reveal-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
-@keyframes sheet-in {
+/* Foto che si scoprono dal basso, con l'immagine che si assesta mentre il
+   sipario sale: dà peso alle fotografie senza bisogno di effetti sopra. */
+.reveal-mask-inner {
+  height: 100%;
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 1.2s var(--ease-curtain);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-mask img {
+  transform: scale(1.18);
+  transition:
+    transform 1.8s var(--ease-out) var(--reveal-delay, 0ms),
+    scale 1.2s var(--ease-out);
+}
+
+.reveal-mask-inner.is-open {
+  clip-path: inset(0 0 0 0);
+}
+
+.reveal-mask.reveal-visible img {
+  transform: scale(1);
+}
+
+/* Righe di un titolo che salgono da dietro una linea invisibile. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.line-mask > span {
+  display: block;
+  transform: translateY(105%);
+  animation: line-up 1.1s var(--ease-out) forwards;
+  animation-delay: var(--line-delay, 0ms);
+}
+
+@keyframes line-up {
+  to {
+    transform: none;
+  }
+}
+
+/* Foto di copertina: entra leggermente ingrandita e si assesta, una volta
+   sola (lo zoom infinito "Ken Burns" stancava e sapeva di modello). */
+@keyframes hero-settle {
   from {
-    opacity: 0;
-    transform: translateY(24px);
+    transform: scale(1.14);
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
+}
+
+.hero-settle {
+  animation: hero-settle 2.6s var(--ease-out) both;
 }
 
 @keyframes fade-in {
@@ -162,42 +706,216 @@ body {
   }
 }
 
-@keyframes pop-in {
+@keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: none;
   }
 }
 
-.animate-sheet-in {
-  animation: sheet-in 0.3s ease-out;
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes curtain-down {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes curtain-up {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes step-forward {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes step-back {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(120%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scroll-cue {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  45% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  55% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .animate-fade-in {
-  animation: fade-in 0.2s ease-out;
+  animation: fade-in 0.35s var(--ease-out) both;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.8s var(--ease-out) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.animate-sheet-in {
+  animation: sheet-in 0.5s var(--ease-out) both;
 }
 
 .animate-pop-in {
-  animation: pop-in 0.18s ease-out;
+  animation: pop-in 0.35s var(--ease-out) both;
+}
+
+.animate-curtain {
+  animation: curtain-down 0.7s var(--ease-curtain) both;
+}
+
+/* Passi del check-in: avanti entra da destra, indietro da sinistra. */
+.animate-step-forward {
+  animation: step-forward 0.55s var(--ease-out) both;
+}
+
+.animate-step-back {
+  animation: step-back 0.55s var(--ease-out) both;
+}
+
+.animate-curtain-out {
+  animation: curtain-up 0.4s var(--ease-curtain) both;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.25s ease-in both;
+}
+
+.animate-sheet-out {
+  animation: sheet-out 0.3s var(--ease-in-out) both;
+}
+
+.animate-dock-in {
+  animation: dock-in 0.9s var(--ease-out) 0.9s both;
+}
+
+.animate-scroll-cue {
+  animation: scroll-cue 2.4s var(--ease-in-out) infinite;
+}
+
+.animate-check {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: check-draw 0.7s var(--ease-out) 0.3s forwards;
+}
+
+/* Barra delle foto nel visualizzatore: niente barra di scorrimento,
+   resta lo scorrimento col dito. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-kenburns {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
   }
+
   .reveal,
-  .reveal-visible {
+  .reveal-visible,
+  .reveal-mask-inner,
+  .reveal-mask img {
     opacity: 1;
     transform: none;
-    transition: none;
+    clip-path: none;
   }
-  .animate-sheet-in,
-  .animate-fade-in,
-  .animate-pop-in {
+
+  .line-mask > span {
+    transform: none;
+  }
+
+  .animate-scroll-cue {
     animation: none;
   }
 }

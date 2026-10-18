@@ -27,7 +27,7 @@ export default function PrivacyAck({
   const [before, after] = dict.privacyAck.label.split("{link}");
 
   return (
-    <label htmlFor={id} className="flex items-start gap-3 text-xs leading-relaxed text-mid">
+    <label htmlFor={id} className="flex cursor-pointer items-start gap-3 text-[0.8125rem] leading-relaxed text-mid">
       <input
         id={id}
         name={id}
@@ -35,7 +35,7 @@ export default function PrivacyAck({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 accent-bordeaux focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
+        className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-bordeaux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bordeaux"
       />
       <span>
         {before}
@@ -44,7 +44,7 @@ export default function PrivacyAck({
           // Il link sta dentro la label: senza questo, aprirlo
           // spunterebbe anche la casella.
           onClick={(e) => e.stopPropagation()}
-          className="rounded-sm underline underline-offset-4 hover:text-bordeaux focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux"
+          className="rounded-sm text-charcoal underline underline-offset-4 hover:text-bordeaux focus-visible:outline-2 focus-visible:outline-bordeaux"
         >
           {dict.privacyAck.linkText}
         </Link>

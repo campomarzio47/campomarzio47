@@ -1,19 +1,26 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import type { DateRange } from "react-day-picker";
-import BookingCalendar, { nightsInRange } from "@/components/BookingCalendar";
+import { format } from "date-fns";
+import { ArrowRight } from "lucide-react";
+import DateRangeCalendar, {
+  CalendarLegend,
+  RangeHint,
+  nightsInRange,
+} from "@/components/DateRangeCalendar";
+import Stepper from "@/components/Stepper";
 import PrivacyAck from "@/components/PrivacyAck";
 import { useLocale } from "@/components/LocaleProvider";
 import { property } from "@/content/property";
-import type { Dictionary } from "@/content/dictionaries";
+import { fill, plural, type Dictionary } from "@/content/dictionaries";
+import { dateFnsLocale } from "@/lib/date-locale";
+import { intlLocale } from "@/lib/locale";
+import { useBusyRanges } from "@/lib/hooks/useBusyRanges";
 
 type Status = "idle" | "sending" | "sent" | "error";
 type ErrorCode = keyof Dictionary["booking"]["errors"];
-
-const inputClasses =
-  "w-full rounded-md border border-divider bg-off-white px-3 py-2 text-sm outline-none placeholder:text-mid focus:border-bordeaux focus-visible:ring-2 focus-visible:ring-bordeaux";
-const labelClasses = "flex flex-col gap-1 text-xs text-mid";
 
 function toIso(date: Date): string {
   const y = date.getFullYear();
@@ -22,21 +29,39 @@ function toIso(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-function formatPrice(amount: number, currency: string, locale: string): string {
-  return new Intl.NumberFormat(locale === "en" ? "en-GB" : "it-IT", {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
-
 function initialRangeFrom(from?: string, to?: string): DateRange | undefined {
   if (!from || !to) return undefined;
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
+  // "2026-10-23" letto come data locale, non come mezzanotte UTC: in
+  // America sarebbe diventato il 22.
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const [ty, tm, td] = to.split("-").map(Number);
+  const fromDate = new Date(fy, fm - 1, fd);
+  const toDate = new Date(ty, tm - 1, td);
   if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) return undefined;
   return { from: fromDate, to: toDate };
 }
 
+function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+  return (
+    <section className="border-t border-charcoal pt-6">
+      <h2 className="mb-6 flex items-baseline gap-4">
+        <span className="tabular font-display text-lg italic text-bordeaux">
+          {String(n).padStart(2, "0")}
+        </span>
+        <span className="font-display text-[1.85rem] leading-none md:text-[2.2rem]">{title}</span>
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/**
+ * Richiesta di prenotazione: date, ospiti, dati, in quest'ordine e numerati.
+ * Il riepilogo col prezzo resta di lato su desktop; su telefono il totale
+ * e il bottone d'invio stanno in una barra che segue lo scorrimento.
+ * Un unico <form>: anche la casella privacy e il bottone del riepilogo ne
+ * fanno parte, così la validazione del browser vale per tutto.
+ */
 export default function BookingForm({
   initialFrom,
   initialTo,
@@ -45,10 +70,11 @@ export default function BookingForm({
   initialTo?: string;
 } = {}) {
   const { dict, locale } = useLocale();
+  const availability = useBusyRanges();
   const [range, setRange] = useState<DateRange | undefined>(() =>
     initialRangeFrom(initialFrom, initialTo),
   );
-  const [guests, setGuests] = useState(1);
+  const [guests, setGuests] = useState(Math.min(2, property.facts.maxGuests));
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -56,18 +82,29 @@ export default function BookingForm({
   const [privacyAck, setPrivacyAck] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [errorCode, setErrorCode] = useState<ErrorCode | null>(null);
+  const [datesMissing, setDatesMissing] = useState(false);
+  const datesRef = useRef<HTMLDivElement>(null);
 
   const nights = nightsInRange(range);
   const minNights = property.pricing.minNights || 1;
   const { pricePerNight, cleaningFee, currency } = property.pricing;
-  const total = nights >= minNights ? nights * pricePerNight + cleaningFee : 0;
-  const canSubmit = Boolean(
-    range?.from && range?.to && nights >= minNights && nome && email && privacyAck,
-  );
+  const validStay = nights >= minNights;
+  const total = validStay ? nights * pricePerNight + cleaningFee : 0;
+  const money = (amount: number) =>
+    new Intl.NumberFormat(intlLocale[locale], {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  const short = (d: Date) => format(d, "EEE d MMM", { locale: dateFnsLocale[locale] });
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!range?.from || !range?.to) return;
+    if (!range?.from || !range?.to || !validStay) {
+      setDatesMissing(true);
+      datesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
 
     setStatus("sending");
     setErrorCode(null);
@@ -96,6 +133,7 @@ export default function BookingForm({
       }
 
       setStatus("sent");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
       setErrorCode("server_error");
       setStatus("error");
@@ -106,126 +144,244 @@ export default function BookingForm({
   // uno screen reader non vedrebbe altrimenti che la pagina è cambiata.
   if (status === "sent") {
     return (
-      <div role="status" className="rounded-md border border-divider p-6">
-        <p className="font-display text-xl">{dict.bookingConfirmation.title}</p>
-        <p className="mt-2 text-sm leading-relaxed text-mid">
-          {dict.bookingConfirmation.subtitle}
-        </p>
-      </div>
+      <Confirmation
+        title={dict.bookingConfirmation.title}
+        body={dict.bookingConfirmation.subtitle}
+        back={dict.bookingConfirmation.back}
+      />
     );
   }
 
-  return (
-    <div className="flex flex-col gap-10 md:flex-row">
-      <div className="flex-1">
-        <BookingCalendar value={range} onChange={setRange} />
-      </div>
+  const sending = status === "sending";
 
-      <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
-        <label className={labelClasses} htmlFor="booking-guests">
-          {dict.booking.guestsLabel}
-          <input
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="grid gap-x-16 gap-y-14 md:grid-cols-[minmax(0,1fr)_22rem] lg:grid-cols-[minmax(0,1fr)_24rem]"
+    >
+      <div className="flex flex-col gap-14">
+        <div ref={datesRef} className="scroll-mt-28">
+          <Step n={1} title={dict.booking.stepDates}>
+            <div className="rounded-[1.25rem] border border-divider bg-paper p-4 sm:p-6">
+              {availability.state === "loading" ? (
+                <div className="flex h-80 items-center justify-center text-sm text-mid">
+                  {dict.availability.loading}
+                </div>
+              ) : availability.state === "ready" ? (
+                <DateRangeCalendar
+                  value={range}
+                  onChange={(next) => {
+                    setRange(next);
+                    setDatesMissing(false);
+                  }}
+                  availability={availability}
+                />
+              ) : (
+                <p className="text-sm text-mid">
+                  {availability.state === "error" ? dict.availability.error : dict.availability.unconfigured}
+                </p>
+              )}
+              <div className="mt-5 flex flex-col gap-3 border-t border-divider pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <RangeHint value={range} />
+                <CalendarLegend />
+              </div>
+            </div>
+            {datesMissing && (
+              <p role="alert" className="mt-3 text-sm font-medium text-bordeaux">
+                {nights > 0 && !validStay
+                  ? fill(dict.booking.minNightsWarning, { min: minNights })
+                  : dict.booking.missingDates}
+              </p>
+            )}
+          </Step>
+        </div>
+
+        <Step n={2} title={dict.booking.stepGuests}>
+          <Stepper
             id="booking-guests"
-            required
-            type="number"
+            label={dict.booking.guestsLabel}
+            hint={fill(dict.booking.guestsHint, { max: property.facts.maxGuests })}
+            value={guests}
             min={1}
             max={property.facts.maxGuests}
-            value={guests}
-            onChange={(e) => setGuests(Number(e.target.value))}
-            className={inputClasses}
+            onChange={setGuests}
           />
-        </label>
+        </Step>
 
-        <label className={labelClasses} htmlFor="booking-name">
-          {dict.booking.nameLabel}
-          <input
-            id="booking-name"
-            required
-            autoComplete="name"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            className={inputClasses}
-          />
-        </label>
+        <Step n={3} title={dict.booking.stepDetails}>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="field-label sm:col-span-2" htmlFor="booking-name">
+              {dict.booking.nameLabel}
+              <input
+                id="booking-name"
+                required
+                autoComplete="name"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                className="field"
+              />
+            </label>
+            <label className="field-label" htmlFor="booking-email">
+              {dict.booking.emailLabel}
+              <input
+                id="booking-email"
+                required
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="field"
+              />
+            </label>
+            <label className="field-label" htmlFor="booking-phone">
+              <span>
+                {dict.booking.phoneLabel}{" "}
+                <span className="font-normal text-mid">({dict.booking.optionalLabel})</span>
+              </span>
+              <input
+                id="booking-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                className="field"
+              />
+            </label>
+            <label className="field-label sm:col-span-2" htmlFor="booking-message">
+              <span>
+                {dict.booking.messageLabel}{" "}
+                <span className="font-normal text-mid">({dict.booking.optionalLabel})</span>
+              </span>
+              <textarea
+                id="booking-message"
+                rows={3}
+                placeholder={dict.booking.messagePlaceholder}
+                value={messaggio}
+                onChange={(e) => setMessaggio(e.target.value)}
+                className="field"
+              />
+            </label>
+          </div>
+        </Step>
+      </div>
 
-        <label className={labelClasses} htmlFor="booking-email">
-          {dict.booking.emailLabel}
-          <input
-            id="booking-email"
-            required
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClasses}
-          />
-        </label>
+      <aside className="md:sticky md:top-[calc(var(--header-height)+2rem)] md:self-start">
+        <div className="rounded-[1.25rem] border border-divider bg-paper p-6 md:p-7">
+          <h2 className="font-display text-2xl">{dict.booking.summaryTitle}</h2>
 
-        <label className={labelClasses} htmlFor="booking-phone">
-          {dict.booking.phoneLabel}{" "}
-          <span className="font-normal">({dict.booking.optionalLabel})</span>
-          <input
-            id="booking-phone"
-            type="tel"
-            autoComplete="tel"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-
-        <label className={labelClasses} htmlFor="booking-message">
-          {dict.booking.messageLabel}{" "}
-          <span className="font-normal">({dict.booking.optionalLabel})</span>
-          <textarea
-            id="booking-message"
-            rows={3}
-            value={messaggio}
-            onChange={(e) => setMessaggio(e.target.value)}
-            className={inputClasses}
-          />
-        </label>
-
-        {nights > 0 && (
-          <div className="rounded-md border border-divider p-4 text-sm">
-            <div className="flex justify-between">
-              <span>{dict.booking.nightsLabel}</span>
-              <span>{nights}</span>
+          <dl className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-divider bg-divider text-sm">
+            <div className="bg-paper px-4 py-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-mid">
+                {dict.availabilityBar.arrivalLabel}
+              </dt>
+              <dd className="mt-1 font-medium first-letter:uppercase">
+                {range?.from ? short(range.from) : "—"}
+              </dd>
             </div>
+            <div className="bg-paper px-4 py-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-mid">
+                {dict.availabilityBar.departureLabel}
+              </dt>
+              <dd className="mt-1 font-medium first-letter:uppercase">
+                {range?.to && nights > 0 ? short(range.to) : "—"}
+              </dd>
+            </div>
+          </dl>
+
+          <dl className="mt-5 flex flex-col gap-2 text-[0.9375rem]">
             <div className="flex justify-between text-mid">
-              <span>{dict.booking.pricePerNightLabel}</span>
-              <span>{formatPrice(pricePerNight, currency, locale)}</span>
+              <dt>
+                {nights > 0
+                  ? `${money(pricePerNight)} × ${plural(dict.availabilityBar.nights, nights)}`
+                  : `${money(pricePerNight)} ${dict.availabilityBar.perNight}`}
+              </dt>
+              <dd className="tabular">{validStay ? money(nights * pricePerNight) : "—"}</dd>
             </div>
             {cleaningFee > 0 && (
               <div className="flex justify-between text-mid">
-                <span>{dict.booking.cleaningFeeLabel}</span>
-                <span>{formatPrice(cleaningFee, currency, locale)}</span>
+                <dt>{dict.booking.cleaningFeeLabel}</dt>
+                <dd className="tabular">{money(cleaningFee)}</dd>
               </div>
             )}
-            <div className="mt-2 flex justify-between border-t border-divider pt-2 font-medium">
-              <span>{dict.booking.totalLabel}</span>
-              <span>{formatPrice(total, currency, locale)}</span>
+            <div className="mt-2 flex items-baseline justify-between border-t border-divider pt-4">
+              <dt className="font-medium">{dict.booking.totalLabel}</dt>
+              <dd className="tabular font-display text-3xl">{validStay ? money(total) : "—"}</dd>
             </div>
-            <p className="mt-3 text-xs leading-relaxed text-mid">{dict.booking.quoteNote}</p>
+          </dl>
+          <p className="mt-3 text-xs leading-relaxed text-mid">{dict.booking.quoteNote}</p>
+
+          <div className="mt-6 border-t border-divider pt-5">
+            <PrivacyAck id="booking-privacy" checked={privacyAck} onChange={setPrivacyAck} />
           </div>
-        )}
 
-        <PrivacyAck id="booking-privacy" checked={privacyAck} onChange={setPrivacyAck} />
+          <button type="submit" disabled={sending} className="btn btn-primary mt-6 hidden w-full md:flex">
+            {sending ? dict.booking.sendingLabel : dict.booking.submitButton}
+            {!sending && <ArrowRight size={17} strokeWidth={2} aria-hidden="true" className="arrow" />}
+          </button>
 
-        <button
-          type="submit"
-          disabled={!canSubmit || status === "sending"}
-          className="inline-flex items-center justify-center rounded-md bg-bordeaux px-6 py-3 text-sm font-medium text-off-white transition-all duration-200 hover:bg-bordeaux-dark active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux focus-visible:ring-offset-2"
-        >
-          {status === "sending" ? dict.booking.sendingLabel : dict.booking.submitButton}
-        </button>
+          {status === "error" && errorCode && (
+            <p role="alert" className="mt-4 text-sm font-medium text-bordeaux">
+              {dict.booking.errors[errorCode]}
+            </p>
+          )}
 
-        {status === "error" && errorCode && (
-          <p role="alert" className="text-sm text-bordeaux">
-            {dict.booking.errors[errorCode]}
-          </p>
-        )}
-      </form>
+          <ul className="mt-6 flex flex-col gap-2 border-t border-divider pt-5 text-sm text-mid">
+            {dict.booking.promises.map((promise) => (
+              <li key={promise} className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="checker h-2.5 w-2.5 flex-none opacity-80"
+                  style={{ "--checker-size": "2.5px" } as CSSProperties}
+                />
+                {promise}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+
+      {/* Telefono: totale e invio sempre a portata di pollice. */}
+      <div className="sticky bottom-0 z-20 -mx-5 -mb-px border-t border-divider bg-paper/95 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md md:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="tabular font-display text-xl leading-tight">{validStay ? money(total) : "—"}</p>
+            <p className="truncate text-xs text-mid">
+              {validStay && range?.from && range.to
+                ? `${short(range.from)} – ${short(range.to)} · ${plural(dict.availabilityBar.nights, nights)}`
+                : dict.booking.noDates}
+            </p>
+          </div>
+          <button type="submit" disabled={sending} className="btn btn-primary flex-none">
+            {sending ? dict.booking.sendingLabel : dict.booking.submitButton}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+export function Confirmation({ title, body, back }: { title: string; body: string; back: string }) {
+  return (
+    <div role="status" className="animate-fade-up mx-auto max-w-xl py-10 text-center">
+      <svg viewBox="0 0 64 64" className="mx-auto h-16 w-16" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" fill="none" stroke="var(--color-divider)" strokeWidth="1.5" />
+        <path
+          d="M20 33 l8 8 l16 -18"
+          fill="none"
+          stroke="var(--color-bordeaux)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="animate-check"
+        />
+      </svg>
+      <p className="mt-8 font-display text-[2.6rem] leading-none">{title}</p>
+      <p className="mt-5 text-[1.0625rem] leading-relaxed text-mid">{body}</p>
+      <Link href="/" className="btn btn-ghost mt-10">
+        {back}
+      </Link>
     </div>
   );
 }

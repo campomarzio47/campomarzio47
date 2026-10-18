@@ -186,8 +186,12 @@ Per non riaprire discussioni chiuse:
   Codice privacy. I caratteri tipografici sono serviti dal nostro server,
   quindi il browser non contatta Google.
 - **Recensioni.** Sono accompagnate dalla dichiarazione di provenienza
-  richiesta dall'art. 22 comma 4-bis del Codice del consumo. Le stelle ora
-  derivano dal voto reale invece di essere sempre cinque.
+  richiesta dall'art. 22 comma 4-bis del Codice del consumo. Il voto è
+  mostrato com'è, in decimi, e non convertito in stelle sempre piene.
+- **Testi in tedesco.** Privacy, cookie e termini esistono anche in
+  tedesco: sono traduzioni di cortesia e lo dichiarano ("im Zweifel gilt
+  die italienische Fassung"). Se cambia la versione italiana va
+  aggiornata anche quella tedesca (e inglese).
 - **Diritto di recesso.** Escluso per legge (art. 59 c. 1 lett. n del
   Codice del consumo) e spiegato nei Termini, non semplicemente negato.
 - **Nessun riferimento alla piattaforma ODR europea**, dismessa il 20

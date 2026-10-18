@@ -2,7 +2,31 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { PlaceOption } from "@/lib/reference-data";
+import type { Locale } from "@/lib/locale";
 import { useLocale } from "@/components/LocaleProvider";
+
+/** "STATI UNITI D'AMERICA" → "Stati Uniti D'America"; la sigla di provincia fra parentesi resta maiuscola. */
+function titleCase(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/(^|[\s'’\-/])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toUpperCase())
+    .replace(/\(([a-z]{2})\)$/i, (_, sigla: string) => `(${sigla.toUpperCase()})`);
+}
+
+/** Minuscolo e senza accenti: "osterreich" trova "Österreich". */
+function normalize(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
+/** Nome da mostrare: nella lingua di chi compila se lo conosciamo, altrimenti quello ufficiale. */
+export function placeDisplayName(option: PlaceOption, locale: Locale): string {
+  if (locale !== "it" && option.names) return option.names[locale];
+  return titleCase(option.label);
+}
 
 /**
  * Campo con suggerimenti per comuni e stati.
@@ -14,22 +38,30 @@ import { useLocale } from "@/components/LocaleProvider";
  * lista prima che il Tab potesse arrivarci, quindi chi naviga da tastiera
  * non riusciva a completare il check-in — che è la funzione principale del
  * sito. Da qui la riscrittura.
+ *
+ * Gli stati si cercano anche in inglese e tedesco (lib/country-names.ts):
+ * la tabella ufficiale conosce solo "GERMANIA", e un ospite tedesco scrive
+ * "Deutschland". Il valore salvato resta sempre il codice e il nome
+ * ufficiali.
  */
 export default function PlaceAutocomplete({
+  id,
   value,
   onChange,
   options,
   placeholder,
   required,
 }: {
+  id?: string;
   value: PlaceOption | null;
   onChange: (option: PlaceOption | null) => void;
   options: PlaceOption[];
   placeholder?: string;
   required?: boolean;
 }) {
-  const { dict } = useLocale();
-  const [query, setQuery] = useState(value?.label ?? "");
+  const { dict, locale } = useLocale();
+  const display = (o: PlaceOption | null) => (o ? placeDisplayName(o, locale) : "");
+  const [query, setQuery] = useState(display(value));
   const [open, setOpen] = useState(false);
   const [touched, setTouched] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -37,15 +69,39 @@ export default function PlaceAutocomplete({
   const listId = useId();
   const hintId = useId();
 
-  useEffect(() => {
-    setQuery(value?.label ?? "");
-  }, [value?.code]);
+  // Allinea il testo alla scelta (anche quando cambia la lingua). Con
+  // `value` vuoto il testo resta quello che l'utente sta scrivendo.
+  const [synced, setSynced] = useState({ value, locale });
+  if (synced.value !== value || synced.locale !== locale) {
+    setSynced({ value, locale });
+    if (value) setQuery(placeDisplayName(value, locale));
+  }
+
+  // Indice di ricerca calcolato una volta sola per elenco: i comuni sono
+  // quasi ottomila.
+  const index = useMemo(
+    () =>
+      options.map((o) => ({
+        option: o,
+        keys: [o.label, o.names?.en, o.names?.de].filter(Boolean).map((k) => normalize(k!)),
+      })),
+    [options],
+  );
 
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (q.length < 2 || q === value?.label.toLowerCase()) return [];
-    return options.filter((o) => o.label.toLowerCase().includes(q)).slice(0, 20);
-  }, [query, options, value]);
+    const q = normalize(query);
+    if (q.length < 2 || (value && q === normalize(display(value)))) return [];
+    const starts: PlaceOption[] = [];
+    const contains: PlaceOption[] = [];
+    for (const { option, keys } of index) {
+      if (keys.some((k) => k.startsWith(q))) starts.push(option);
+      else if (keys.some((k) => k.includes(q))) contains.push(option);
+      if (starts.length >= 20) break;
+    }
+    return [...starts, ...contains].slice(0, 20);
+    // display dipende solo da locale
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, index, value, locale]);
 
   // Tiene l'opzione evidenziata dentro la parte visibile della lista
   // quando la si percorre con le frecce.
@@ -55,8 +111,8 @@ export default function PlaceAutocomplete({
   }, [activeIndex]);
 
   function selectOption(o: PlaceOption) {
-    onChange(o);
-    setQuery(o.label);
+    onChange({ code: o.code, label: o.label, names: o.names });
+    setQuery(placeDisplayName(o, locale));
     setOpen(false);
     setActiveIndex(-1);
   }
@@ -95,22 +151,21 @@ export default function PlaceAutocomplete({
   }
 
   function handleBlur() {
-    // Da' il tempo al click su un suggerimento di registrarsi prima di chiudere.
+    // Dà il tempo al clic su un suggerimento di registrarsi prima di chiudere.
     setTimeout(() => {
       setOpen(false);
       setTouched(true);
       setActiveIndex(-1);
 
       if (!value) {
-        const q = query.trim().toLowerCase();
+        const q = normalize(query);
         if (q.length >= 2) {
           // L'utente ha scritto il nome ma non ha scelto un suggerimento:
           // se il testo identifica in modo univoco un'opzione, la
           // selezioniamo comunque (es. "comacchio" -> "COMACCHIO (FE)").
-          const matches = options.filter((o) => o.label.toLowerCase().includes(q));
-          if (matches.length === 1) {
-            selectOption(matches[0]);
-          }
+          const exact = index.filter(({ keys }) => keys.some((k) => k === q || k.startsWith(`${q} (`)));
+          const matches = exact.length ? exact : index.filter(({ keys }) => keys.some((k) => k.includes(q)));
+          if (matches.length === 1) selectOption(matches[0].option);
         }
       }
     }, 150);
@@ -122,9 +177,13 @@ export default function PlaceAutocomplete({
   return (
     <div className="relative">
       <input
+        id={id}
         required={required && !value}
         placeholder={placeholder}
         value={query}
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
@@ -142,17 +201,13 @@ export default function PlaceAutocomplete({
         aria-expanded={expanded}
         aria-controls={listId}
         aria-autocomplete="list"
-        aria-activedescendant={
-          expanded && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
-        }
+        aria-activedescendant={expanded && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
         aria-invalid={invalid}
         aria-describedby={invalid ? hintId : undefined}
-        className={`w-full rounded-md border bg-off-white px-3 py-2 text-sm outline-none placeholder:text-mid ${
-          invalid ? "border-bordeaux" : "border-divider focus:border-bordeaux"
-        }`}
+        className="field"
       />
       {invalid && (
-        <p id={hintId} className="mt-1 text-xs text-bordeaux">
+        <p id={hintId} className="mt-1.5 text-xs font-medium text-bordeaux">
           {dict.checkin.selectFromListHint}
         </p>
       )}
@@ -162,27 +217,32 @@ export default function PlaceAutocomplete({
         role="listbox"
         aria-label={dict.a11y.suggestions}
         hidden={!expanded}
-        className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-divider bg-off-white shadow-lg"
+        className="animate-pop-in absolute z-30 mt-1.5 max-h-64 w-full overflow-auto rounded-xl border border-divider bg-paper py-1.5 shadow-[0_20px_40px_-20px_rgba(28,26,25,0.35)]"
       >
-        {results.map((o, i) => (
-          <li
-            key={o.code}
-            id={`${listId}-${i}`}
-            role="option"
-            aria-selected={i === activeIndex}
-            // onMouseDown + preventDefault: senza, il mousedown toglie il
-            // focus all'input e il blur chiude la lista prima che il click
-            // arrivi a destinazione.
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => selectOption(o)}
-            onMouseEnter={() => setActiveIndex(i)}
-            className={`cursor-pointer px-3 py-2 text-left text-sm ${
-              i === activeIndex ? "bg-divider/60" : ""
-            }`}
-          >
-            {o.label}
-          </li>
-        ))}
+        {results.map((o, i) => {
+          const name = placeDisplayName(o, locale);
+          const official = titleCase(o.label);
+          return (
+            <li
+              key={o.code}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === activeIndex}
+              // onMouseDown + preventDefault: senza, il mousedown toglie il
+              // focus all'input e il blur chiude la lista prima che il clic
+              // arrivi a destinazione.
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => selectOption(o)}
+              onMouseEnter={() => setActiveIndex(i)}
+              className={`flex min-h-11 cursor-pointer items-center justify-between gap-3 px-4 py-2 text-[0.9375rem] ${
+                i === activeIndex ? "bg-sand" : ""
+              }`}
+            >
+              <span>{name}</span>
+              {name !== official && <span className="text-xs text-mid">{official}</span>}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

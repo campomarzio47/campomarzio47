@@ -7,7 +7,7 @@ export const metadata: Metadata = pageMetadata("checkin", "/check-in");
 
 export default function CheckInPage() {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12 md:px-10 md:py-16">
+    <div className="mx-auto max-w-7xl px-5 pb-16 pt-12 md:px-10 md:pb-28 md:pt-20">
       <PageHeader section="checkin" />
       <CheckInForm />
     </div>

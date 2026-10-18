@@ -1,17 +1,24 @@
 import comuniData from "@/content/data/comuni.json";
 import statiData from "@/content/data/stati.json";
+import { countryNames } from "@/lib/country-names";
 
 // Tabelle ufficiali "Comuni" e "Stati" (Polizia di Stato, scaricate da
 // alloggiatiweb.poliziadistato.it/PortaleAlloggiati/Tabelle.aspx). Usate per
 // risolvere in automatico i codici richiesti dall'XML Ross1000/GIES, senza
 // bisogno di completare nulla a mano.
 
-export type PlaceOption = { code: string; label: string };
+export type PlaceOption = {
+  code: string;
+  /** Nome ufficiale della tabella: è quello che finisce nei file e nel PDF. */
+  label: string;
+  /** Nome in inglese e tedesco, solo per cercare e mostrare (vedi lib/country-names.ts). */
+  names?: { en: string; de: string };
+};
 
 export const ITALIA_CODE = "100000100";
 
 export const statiOptions: PlaceOption[] = (statiData as { code: string; name: string }[]).map(
-  (s) => ({ code: s.code, label: s.name }),
+  (s) => ({ code: s.code, label: s.name, names: countryNames[s.name] }),
 );
 
 export const comuniOptions: PlaceOption[] = (

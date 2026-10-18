@@ -1,11 +1,17 @@
+/** Tipo di viaggiatore, come lo classificano Airbnb e Booking. Le etichette tradotte sono in dictionaries.ts -> reviews.groups. */
+export type TravellerGroup = "family" | "group" | "couple" | "solo" | "friends" | "business";
+
 /** Una recensione citata dalle piattaforme (vedi `reviews` più sotto). */
 export type Review = {
   name: string;
-  group: string;
+  group: TravellerGroup;
+  /** Mese del soggiorno, "AAAA-MM": viene scritto per esteso nella lingua di chi legge. */
   date: string;
   /** Voto su 10, come lo riportano Airbnb e Booking. */
   rating: number;
   text: string;
+  /** Lingua in cui è scritta, se non è l'italiano (es. "en", "de"). */
+  lang?: string;
 };
 
 export const property = {
@@ -20,6 +26,9 @@ export const property = {
     zip: "36063",
     city: "Marostica",
     province: "VI",
+    // Nome per esteso della provincia, sopra il nome in copertina
+    // ("Marostica · Vicenza").
+    provinceName: "Vicenza",
     country: "Italia",
     full: "Via Campo Marzio 47, 36063 Marostica (VI), Italia",
   },
@@ -43,8 +52,9 @@ export const property = {
     bookingUrl:
       "https://www.booking.com/hotel/it/exclusive-house-in-marostica.it.html",
   },
-  // Prezzi per la prenotazione diretta con pagamento (/prenota). Importi in
-  // euro interi (niente centesimi).
+  // Prezzi mostrati nella richiesta di prenotazione (/prenota) e nella
+  // barra delle date in home: sono un preventivo, non un incasso. Importi
+  // in euro interi (niente centesimi).
   // Prezzo unico per ora. Prezzi diversi per periodo/stagione sono
   // pianificati ma non ancora implementati: quando le date saranno
   // decise andrà aggiunta una logica di tariffe per intervallo di date
@@ -66,22 +76,22 @@ export const property = {
   reviews: [
     {
       name: "Nadir",
-      group: "Famiglia",
-      date: "Febbraio 2026",
+      group: "family",
+      date: "2026-02",
       rating: 10,
       text: "Immobile bellissimo, con spazi congeniali e organizzati. La posizione è centralissima, il centro e le principali attrazioni della cittadina si raggiungono in pochi minuti. Host gentilissimi.",
     },
     {
       name: "Cristian",
-      group: "Famiglia",
-      date: "Gennaio 2025",
+      group: "family",
+      date: "2025-01",
       rating: 10,
       text: "Molto vicino al centro di Marostica, in posizione tranquilla. La casa è accogliente e moderna, dotata di tutti i comfort. Siamo stati benissimo.",
     },
     {
       name: "Lucia",
-      group: "Gruppo",
-      date: "Dicembre 2024",
+      group: "group",
+      date: "2024-12",
       rating: 10,
       text: "L'appartamento è molto accogliente, luminoso e ben arredato. La cura di ogni dettaglio è evidente. La posizione è centrale ma tranquilla. Speriamo di tornare presto.",
     },
@@ -91,13 +101,37 @@ export const property = {
   ] as readonly Review[],
   // Foto grande in cima alla home page.
   heroImage: "/photos/copertina.jpg",
+  // Tutte le foto della galleria, nell'ordine in cui si sfogliano.
+  // Larghezza e altezza sono quelle reali del file: servono a mostrare
+  // ogni foto nel suo formato (verticale o orizzontale) e a non ingrandirla
+  // oltre la sua risoluzione, che con le foto da telefono si vede subito.
+  // In home compaiono le prime quattro, scelte per orientamento (vedi
+  // components/PhotoMosaic.tsx): metti in testa le più belle.
+  // Alt e didascalie sono in dictionaries.ts -> photos.items, nello stesso
+  // ordine.
   gallery: [
-    { src: "/photos/soggiorno-tavolo.jpg" },
-    { src: "/photos/soggiorno-divano.jpg" },
-    { src: "/photos/camera-matrimoniale.jpg" },
-    { src: "/photos/camera-letti-castello.jpg" },
-    { src: "/photos/bagno.jpg" },
+    { src: "/photos/soggiorno-tavolo.jpg", width: 911, height: 683 },
+    { src: "/photos/camera-matrimoniale.jpg", width: 512, height: 683 },
+    { src: "/photos/zona-pranzo.jpg", width: 512, height: 683 },
+    { src: "/photos/cucina.jpg", width: 911, height: 683 },
+    { src: "/photos/soggiorno-divano.jpg", width: 911, height: 683 },
+    { src: "/photos/camera-letti-castello.jpg", width: 911, height: 683 },
+    { src: "/photos/bagno.jpg", width: 911, height: 683 },
+    { src: "/photos/bagno-secondo.jpg", width: 512, height: 683 },
+    { src: "/photos/giardino.jpg", width: 512, height: 683 },
+    { src: "/photos/vista-castello.jpg", width: 512, height: 683 },
+    { src: "/photos/ingresso.jpg", width: 911, height: 683 },
   ],
+  // Sezione "dove siamo" della home: una foto del luogo (vista, paese,
+  // dintorni) accanto ai testi di dictionaries.ts -> place. Con `photo`
+  // vuoto la sezione mostra solo il testo; con `place.title` vuoto nel
+  // dizionario non compare affatto.
+  surroundings: {
+    photo: { src: "/photos/vista-castello.jpg", width: 512, height: 683 },
+    // Link "Apri in Mappe": un semplice link, nessuna mappa incorporata
+    // (niente cookie di terze parti, vedi la cookie policy).
+    mapsQuery: "Via Campo Marzio 47, 36063 Marostica VI",
+  },
 } as const;
 
 export type Property = typeof property;

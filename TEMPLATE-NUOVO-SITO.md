@@ -15,8 +15,9 @@ domande per il cliente in `TEMPLATE-BRIEF.md`; gli obblighi legali in
 ## Regole che valgono per tutta la procedura
 
 - **Il codice del modello non si tocca.** Cambiano contenuti (`content/`),
-  foto, palette e font, configurazione. Le uniche eccezioni previste sono
-  le icone dei servizi (`TEMPLATE-SETUP.md` §4bis) e i font. Se un brief
+  foto, palette e font, configurazione. L'unica eccezione prevista è il
+  motivo grafico della scacchiera (`TEMPLATE-SETUP.md` §3ter), che è di
+  Marostica e per un altro luogo va sostituito o tolto. Se un brief
   richiede altro codice (una regione diversa dal Veneto, prezzi
   stagionali, una lingua in più), fermati e dillo: è lavoro sul modello,
   da fare lì e poi riportare qui, non una variante locale.
@@ -129,17 +130,22 @@ Nell'ordine di `TEMPLATE-SETUP.md`:
    messe solo se reali e verificabili, nella lingua originale. Senza
    recensioni: `reviews: [] as readonly Review[]`, e la sezione sparisce
    da sola. Un URL Airbnb o Booking vuoto toglie il link corrispondente.
-2. **`content/dictionaries.ts`**, sia `it` sia `en`: le chiavi di
-   `TEMPLATE-SETUP.md` §3, più ogni riga che `check` segnala.
+2. **`content/dictionaries.ts`**, in `it`, `en` **e** `de`: le chiavi di
+   `TEMPLATE-SETUP.md` §3, più ogni riga che `check` segnala. Il tedesco
+   non è facoltativo: il selettore di lingua lo offre su ogni pagina.
    `photos.items` va **nello stesso ordine di `gallery`**, perché è
    abbinato per indice. Le description restano entro ~160 caratteri e non
    devono promettere una prenotazione immediata.
-3. **Servizi**: le icone mancanti vanno aggiunte alla mappa in
-   `components/Amenities.tsx` (§4bis).
+3. **Servizi e luogo**: `amenities.groups` e `place` nelle tre lingue
+   (§3 e §4bis), solo con dati del brief. Se il brief non dice nulla del
+   luogo, `place.title` resta vuoto e la sezione sparisce.
 4. **`content/legal.ts`**: `business`, `codes`, `stay` dai dati del brief.
    `providers.hosting` diventa `Cloudflare, Inc.`, con paese «Stati Uniti,
-   con data center anche nell'Unione Europea» e in inglese «United States,
-   with data centres also in the European Union». Poi `providers.email` e
+   con data center anche nell'Unione Europea», in inglese «United States,
+   with data centres also in the European Union» e in tedesco
+   «Vereinigte Staaten, mit Rechenzentren auch in der Europäischen Union»
+   (campi `*En` e `*De`, anche per finalità e conservazione). Poi
+   `providers.email` e
    `providers.mailbox` dal brief, e `privacy.lastUpdated` alla data di
    oggi.
 5. **`content/legal-texts.ts`**: leggilo tutto, confrontalo con il brief
@@ -184,7 +190,9 @@ Nell'ordine di `TEMPLATE-SETUP.md`:
      configurazione `<slug>-cloudflare` di `.claude/launch.json`
      (porta 8787).
 4. Nell'anteprima controlla:
-   - tutte le pagine, in italiano e in inglese, su desktop e su mobile;
+   - tutte le pagine, in italiano, inglese e tedesco, su desktop e
+     soprattutto su telefono (è da lì che arriva la maggior parte degli
+     ospiti);
    - il footer con il CIN;
    - un check-in completo **solo da tastiera**, comune e stato compresi;
    - un messaggio di contatto e una richiesta di prenotazione.

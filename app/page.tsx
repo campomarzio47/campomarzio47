@@ -1,11 +1,13 @@
 "use client";
 
 import Hero from "@/components/Hero";
+import Intro from "@/components/Intro";
 import AvailabilityBar from "@/components/AvailabilityBar";
-import PhotoCarousel from "@/components/PhotoCarousel";
+import PhotoMosaic from "@/components/PhotoMosaic";
 import Amenities from "@/components/Amenities";
+import Place from "@/components/Place";
 import ReviewsSection from "@/components/ReviewsSection";
-import Reveal from "@/components/Reveal";
+import SectionHeading from "@/components/SectionHeading";
 import { useLocale } from "@/components/LocaleProvider";
 import { property } from "@/content/property";
 
@@ -15,51 +17,48 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <Intro />
 
-      <section className="mx-auto max-w-3xl px-6 pb-16 text-center md:px-10">
-        <Reveal>
-          <p className="font-display text-2xl italic text-mid">{dict.hero.tagline}</p>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-charcoal/90">
-            {dict.hero.description}
-          </p>
-        </Reveal>
+      <section id="foto" className="px-5 pb-20 md:px-10 md:pb-36">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeading
+            eyebrow={dict.photos.eyebrow}
+            title={dict.photos.title}
+            subtitle={dict.photos.subtitle}
+            className="mb-12 md:mb-16"
+          />
+          <PhotoMosaic />
+        </div>
       </section>
 
-      <section id="foto" className="border-t border-divider px-6 py-14 md:px-10 md:py-16">
-        <Reveal className="mx-auto max-w-4xl">
-          <h2 className="font-display text-2xl md:text-3xl">{dict.photos.title}</h2>
-          <p className="mt-1 text-sm text-mid">{dict.photos.subtitle}</p>
-          <div className="mt-6">
-            <PhotoCarousel />
-          </div>
-        </Reveal>
+      <section id="servizi" className="border-t border-divider px-5 py-20 md:px-10 md:py-36">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeading
+            eyebrow={dict.amenities.eyebrow}
+            title={dict.amenities.title}
+            subtitle={dict.amenities.subtitle}
+            className="mb-12 md:mb-20"
+          />
+          <Amenities />
+        </div>
       </section>
 
-      <section id="servizi" className="border-t border-divider px-6 py-14 md:px-10 md:py-16">
-        <Reveal className="mx-auto max-w-4xl">
-          <h2 className="font-display text-2xl md:text-3xl">{dict.amenities.title}</h2>
-          <p className="mt-1 text-sm text-mid">{dict.amenities.subtitle}</p>
-          <div className="mt-6">
-            <Amenities />
-          </div>
-        </Reveal>
-      </section>
+      <Place />
 
       {/* Senza recensioni (struttura nuova) la sezione non c'è: un titolo
           "Recensioni" sopra il vuoto dice il contrario di quello che
           vorrebbe. Il redirect da /recensioni porta comunque in home. */}
       {property.reviews.length > 0 && (
-        <section
-          id="recensioni"
-          className="border-t border-divider px-6 pt-14 pb-32 md:px-10 md:pt-16 md:pb-40"
-        >
-          <Reveal className="mx-auto max-w-4xl">
-            <h2 className="font-display text-2xl md:text-3xl">{dict.reviews.title}</h2>
-            <p className="mt-1 text-sm text-mid">{dict.reviews.subtitle}</p>
-            <div className="mt-6">
-              <ReviewsSection />
-            </div>
-          </Reveal>
+        <section id="recensioni" className="overflow-hidden px-5 py-20 md:px-10 md:py-36">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              eyebrow={dict.reviews.eyebrow}
+              title={dict.reviews.title}
+              subtitle={dict.reviews.subtitle}
+              className="mb-12 md:mb-16"
+            />
+            <ReviewsSection />
+          </div>
         </section>
       )}
 

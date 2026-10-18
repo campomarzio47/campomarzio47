@@ -37,37 +37,38 @@ passaggio.
 
 ## 3. Stile visivo
 
-**Il sito Campo Marzio 47 usa uno stile "boutique elegante"** (palette
-bordeaux/off-white, font serif Cormorant Garamond + DM Sans, animazioni
-discrete come lo zoom lento sulla foto hero). Non è detto che vada bene
-per il prossimo immobile: uno chalet di montagna, un appartamento in
-città o una casa per famiglie/gruppi possono richiedere un registro
-diverso. Rispondi per capire se riusare lo stile esistente o cambiarlo
-(vedi `TEMPLATE-SETUP.md` §3bis per cosa è coinvolto nel cambio):
+**Il sito Campo Marzio 47 ha uno stile editoriale costruito sulla casa**
+(palette presa dai suoi materiali, Bodoni per i titoli, la scacchiera di
+Marostica come motivo, foto che si scoprono scorrendo). Non va copiato:
+va rifatto partendo da questa casa e da questo luogo. Rispondi per
+capire da dove partire (vedi `TEMPLATE-SETUP.md` §3ter):
 
 - Aggettivi che descrivono il mood desiderato (es. "moderno e minimale",
   "caldo e familiare", "montano e rustico", "luminoso e giovane"...):
 - Colore principale desiderato, se già in mente (altrimenti lo propongo
   io in base al mood):
-- Va bene mantenere lo stile "boutique" di Campo Marzio 47 (bordeaux +
-  serif elegante), o va cambiato? Se cambiato, siti di riferimento/
-  ispirazione (anche solo link) sono utili:
-- Le animazioni discrete attuali (zoom lento sulla foto hero, comparsa
-  graduale delle sezioni scorrendo) vanno bene, ridotte, o del tutto
-  rimosse per un look più sobrio?
+- Colori e materiali della casa che la rendono riconoscibile (un
+  portone, un pavimento, un tessuto): diventano la palette.
+- Qualcosa che il paese o il luogo ha di unico (una festa, un prodotto,
+  un monumento visibile da casa): diventa il motivo e la sezione "Dove
+  siamo".
+- Siti di riferimento o ispirazione (anche solo link):
+- Le animazioni (foto che si scoprono, titoli che salgono) vanno bene o
+  si preferisce un sito più fermo?
 
 ## 4. Servizi/amenità
 
 Elenco puntato di tutto ciò che è incluso (es. Wi-Fi, aria condizionata,
 lavatrice, parcheggio, giardino, culla su richiesta, animali ammessi...).
-Per ciascuno, se possibile indicare anche un'icona di riferimento (es.
-"parcheggio" → un'auto) — aiuta a scegliere l'icona giusta in
-`components/Amenities.tsx` (vedi `TEMPLATE-SETUP.md` §4bis).
+Per ciascuno un dettaglio concreto, se c'è ("parcheggio: gratuito,
+davanti all'ingresso"): sul sito non ci sono icone, e il dettaglio è
+quello che lo rende credibile.
 
 ## 5. Recensioni (facoltative, 2-3 reali se disponibili)
 
-Per ciascuna: nome ospite, gruppo (famiglia/coppia/gruppo...), mese/anno,
-voto, testo della recensione (lasciare nella lingua originale, non tradurre).
+Per ciascuna: nome ospite, gruppo (famiglia/coppia/gruppo/amici/da solo/
+lavoro), mese/anno, voto in decimi, testo della recensione (lasciare nella
+lingua originale, non tradurre).
 
 ## 6. Prenotazioni
 
@@ -221,4 +222,4 @@ di lui il sito usa solo un cookie tecnico ed è esente dal banner.
 
 Qualsiasi cosa il modello Campo Marzio 47 non copre (es. prezzi da
 mostrare, mappa, servizi extra a pagamento, lingue aggiuntive oltre
-IT/EN...).
+IT/EN/DE...).

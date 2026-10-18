@@ -26,9 +26,11 @@ type Provider = {
   /** A cosa serve, in una riga, per l'elenco nell'informativa privacy. */
   purpose: string;
   purposeEn: string;
+  purposeDe: string;
   /** Dove risiedono i dati, come va scritto nell'informativa. */
   country: string;
   countryEn: string;
+  countryDe: string;
 };
 
 export type LegalConfig = {
@@ -79,10 +81,13 @@ export type LegalConfig = {
     /** Conservazione, in forma già leggibile, per l'informativa. */
     retentionContact: string;
     retentionContactEn: string;
+    retentionContactDe: string;
     retentionBooking: string;
     retentionBookingEn: string;
+    retentionBookingDe: string;
     retentionCheckin: string;
     retentionCheckinEn: string;
+    retentionCheckinDe: string;
   };
 };
 
@@ -116,36 +121,47 @@ export const legal: LegalConfig = {
       name: "Vercel Inc.",
       purpose: "hosting del sito e log tecnici",
       purposeEn: "website hosting and technical logs",
+      purposeDe: "Hosting der Website und technische Protokolle",
       country: "Stati Uniti, con server nell'Unione Europea",
       countryEn: "United States, with servers in the European Union",
+      countryDe: "Vereinigte Staaten, mit Servern in der Europäischen Union",
     },
     email: {
       name: "",
       purpose: "invio delle email generate dal sito",
       purposeEn: "delivery of the emails sent by this website",
+      purposeDe: "Versand der von dieser Website erzeugten E-Mails",
       country: "Unione Europea",
       countryEn: "European Union",
+      countryDe: "Europäische Union",
     },
     mailbox: {
       name: "",
       purpose: "casella di posta su cui l'host riceve i messaggi",
       purposeEn: "mailbox where the host receives messages",
+      purposeDe: "Postfach, in dem der Gastgeber die Nachrichten empfängt",
       country: "",
       countryEn: "",
+      countryDe: "",
     },
   },
   privacy: {
     lastUpdated: "2026-09-20",
     retentionContact: "24 mesi dall'ultimo contatto",
     retentionContactEn: "24 months from the last contact",
+    retentionContactDe: "24 Monate ab dem letzten Kontakt",
     retentionBooking:
       "24 mesi dalla richiesta, o per la durata prevista dalla legge se la richiesta diventa un soggiorno",
     retentionBookingEn:
       "24 months from the request, or for the period required by law if the request becomes a stay",
+    retentionBookingDe:
+      "24 Monate ab der Anfrage oder, wenn aus der Anfrage ein Aufenthalt wird, für die gesetzlich vorgeschriebene Dauer",
     retentionCheckin:
       "il tempo necessario agli adempimenti di pubblica sicurezza e statistici, e comunque non oltre quanto imposto dalla normativa applicabile",
     retentionCheckinEn:
       "as long as needed for the public-security and statistical obligations, and in any case no longer than the applicable law requires",
+    retentionCheckinDe:
+      "so lange, wie es die Meldepflichten gegenüber Polizei und Statistik erfordern, und keinesfalls länger, als das geltende Recht vorschreibt",
   },
 };
 

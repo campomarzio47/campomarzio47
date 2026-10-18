@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { CSSProperties } from "react";
 import { useLocale } from "@/components/LocaleProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { Wordmark } from "@/components/Header";
 import { property } from "@/content/property";
 import { legal, controllerName, controllerAddress } from "@/content/legal";
 
@@ -20,11 +24,12 @@ import { legal, controllerName, controllerAddress } from "@/content/legal";
  * una riga in meno che un segnaposto sotto gli occhi di un ospite. L'elenco
  * di cosa compilare è in LEGALE.md.
  *
- * Il padding inferiore abbondante serve a non finire sotto la barra
- * "Verifica disponibilità", che in home è `fixed` in fondo allo schermo.
+ * In home il padding inferiore è più alto: la barra delle date resta fissa
+ * in fondo allo schermo e non deve coprire le ultime righe.
  */
 export default function Footer() {
   const { dict } = useLocale();
+  const pathname = usePathname();
   const { business, codes } = legal;
 
   const legalLines = [
@@ -35,18 +40,61 @@ export default function Footer() {
   ].filter(Boolean) as string[];
 
   const linkClasses =
-    "rounded-sm underline underline-offset-4 transition-colors hover:text-bordeaux focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bordeaux";
+    "rounded-sm transition-colors hover:text-off-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-off-white";
 
   return (
-    <footer className="border-t border-divider px-6 pt-12 pb-28 text-sm md:px-10 md:pb-24">
-      <div className="mx-auto flex max-w-4xl flex-col gap-10">
-        <div className="grid gap-8 sm:grid-cols-2">
-          <div>
-            <h2 className="font-display text-base text-charcoal">
+    <footer className="relative bg-charcoal text-off-white/70">
+      <div
+        aria-hidden="true"
+        className="checker h-3"
+        style={{ "--checker-color": "var(--color-bordeaux)" } as CSSProperties}
+      />
+      <div
+        className={`mx-auto max-w-7xl px-5 pt-16 md:px-10 md:pb-14 ${
+          pathname === "/" ? "pb-32" : "pb-12"
+        }`}
+      >
+        <div className="grid gap-12 md:grid-cols-12">
+          <div className="md:col-span-5">
+            <Link
+              href="/"
+              className="inline-block text-[2.5rem] leading-none text-off-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-off-white md:text-[3.25rem]"
+            >
+              <Wordmark />
+            </Link>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed">{property.address.full}</p>
+          </div>
+
+          <div className="md:col-span-3">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-off-white/45">
+              {dict.footer.contactHeading}
+            </h2>
+            <ul className="mt-4 flex flex-col text-sm">
+              <li>
+                <a
+                  href={`tel:${property.host.phone.replace(/\s/g, "")}`}
+                  className={`${linkClasses} inline-flex min-h-11 items-center`}
+                >
+                  {property.host.phone}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${business.email}`}
+                  className={`${linkClasses} inline-flex min-h-11 items-center break-all`}
+                >
+                  {business.email}
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-4">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-off-white/45">
               {dict.footer.legalHeading}
             </h2>
-            <address className="mt-3 flex flex-col gap-1 text-xs not-italic leading-relaxed text-mid">
-              <span className="text-charcoal">{controllerName()}</span>
+            <address className="mt-4 flex flex-col gap-1 text-sm not-italic leading-relaxed">
+              <span className="text-off-white/90">{controllerName()}</span>
               <span>{controllerAddress()}</span>
               {legalLines.map((line) => (
                 <span key={line}>{line}</span>
@@ -54,54 +102,34 @@ export default function Footer() {
             </address>
 
             {codes.cin && (
-              <p className="mt-4 inline-flex items-baseline gap-2 rounded-md border border-divider px-3 py-1.5">
-                <span className="text-[11px] uppercase tracking-wide text-mid">
+              <p className="mt-5 inline-flex items-baseline gap-3 rounded-full border border-off-white/20 px-4 py-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-off-white/50">
                   {dict.footer.cinLabel}
                 </span>
-                <span className="font-medium tracking-wide text-charcoal">{codes.cin}</span>
+                <span className="font-medium tracking-wide text-off-white">{codes.cin}</span>
               </p>
             )}
             {codes.cir && (
-              <p className="mt-2 text-xs text-mid">
+              <p className="mt-2 text-xs">
                 {dict.footer.cirLabel} {codes.cir}
               </p>
             )}
           </div>
-
-          <div>
-            <h2 className="font-display text-base text-charcoal">
-              {dict.footer.contactHeading}
-            </h2>
-            <ul className="mt-3 flex flex-col gap-1 text-xs text-mid">
-              <li>
-                <a
-                  href={`tel:${property.host.phone.replace(/\s/g, "")}`}
-                  className={linkClasses}
-                >
-                  {property.host.phone}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${business.email}`} className={linkClasses}>
-                  {business.email}
-                </a>
-              </li>
-            </ul>
-          </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-divider pt-6 text-xs text-mid sm:flex-row sm:items-center sm:justify-between">
-          <nav className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/privacy" className={linkClasses}>
+        <div className="mt-14 flex flex-col gap-6 border-t border-off-white/10 pt-6 text-xs md:flex-row md:items-center md:justify-between">
+          <nav aria-label={dict.footer.legalHeading} className="flex flex-wrap gap-x-6">
+            <Link href="/privacy" className={`${linkClasses} inline-flex min-h-11 items-center`}>
               {dict.footer.privacyLink}
             </Link>
-            <Link href="/cookie-policy" className={linkClasses}>
+            <Link href="/cookie-policy" className={`${linkClasses} inline-flex min-h-11 items-center`}>
               {dict.footer.cookiesLink}
             </Link>
-            <Link href="/termini" className={linkClasses}>
+            <Link href="/termini" className={`${linkClasses} inline-flex min-h-11 items-center`}>
               {dict.footer.termsLink}
             </Link>
           </nav>
+          <LanguageSwitcher tone="light" className="-ml-1.5" />
           <p>
             © {new Date().getFullYear()} {controllerName()}
           </p>

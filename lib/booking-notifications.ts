@@ -2,7 +2,7 @@ import { property } from "@/content/property";
 import { legal } from "@/content/legal";
 import { sendMail } from "@/lib/mailer";
 import { nightsBetween } from "@/lib/pricing";
-import type { Locale } from "@/lib/locale";
+import { intlLocale, type Locale } from "@/lib/locale";
 
 /**
  * Email generate da una richiesta di prenotazione diretta.
@@ -27,7 +27,7 @@ export type BookingRequest = {
 };
 
 function formatAmount(amount: number, locale: Locale): string {
-  return new Intl.NumberFormat(locale === "en" ? "en-GB" : "it-IT", {
+  return new Intl.NumberFormat(intlLocale[locale], {
     style: "currency",
     currency: property.pricing.currency,
     maximumFractionDigits: 0,
@@ -35,10 +35,12 @@ function formatAmount(amount: number, locale: Locale): string {
 }
 
 function formatDate(iso: string, locale: Locale): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString(
-    locale === "en" ? "en-GB" : "it-IT",
-    { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" },
-  );
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString(intlLocale[locale], {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 function hostText(request: BookingRequest, nights: number): string {
@@ -73,6 +75,34 @@ function guestCopy(request: BookingRequest, nights: number) {
   const checkout = formatDate(request.checkout, request.locale);
   const total = formatAmount(request.total, request.locale);
   const hours = legal.stay.paymentDueHoursBeforeArrival;
+
+  if (request.locale === "de") {
+    return {
+      subject: `Wir haben Ihre Anfrage erhalten — ${property.name}`,
+      text: [
+        `Guten Tag ${request.nome},`,
+        "",
+        `vielen Dank für Ihre Anfrage für ${property.name}. Das haben Sie uns gesendet:`,
+        "",
+        `Anreise: ${checkin}`,
+        `Abreise: ${checkout} (${nights} ${nights === 1 ? "Nacht" : "Nächte"})`,
+        `Gäste: ${request.guests}`,
+        `Voraussichtlicher Gesamtpreis: ${total}`,
+        "",
+        "Bitte beachten Sie: Dies ist eine Anfrage, noch keine Buchung. Die",
+        "Termine sind erst reserviert, wenn wir sie Ihnen schriftlich bestätigen,",
+        "und es wurde Ihnen nichts berechnet — wir haben keine Kartendaten erfragt.",
+        "",
+        "Wenn wir Sie beherbergen können, senden wir Ihnen eine Bestätigung mit",
+        `dem endgültigen Preis und den Zahlungsmodalitäten. Der Betrag ist spätestens ${hours}`,
+        "Stunden vor der Anreise fällig; dann senden wir Ihnen auch den Zugangscode.",
+        "",
+        "Wir antworten meist innerhalb von ein bis zwei Tagen.",
+        "",
+        property.host.name,
+      ].join("\n"),
+    };
+  }
 
   if (request.locale === "en") {
     return {

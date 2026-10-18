@@ -146,7 +146,7 @@ async function init(opts) {
     const kb = Math.round(statSync(out).size / 1024);
     const note = Math.max(info.width, info.height) < 2000 ? "  ← bassa risoluzione per un'immagine a piena larghezza" : "";
     console.log(`  ${file} → ${out} (${info.width}x${info.height}, ${kb} KB)${note}`);
-    if (file !== cover) gallery.push(`/photos/${base}.jpg`);
+    if (file !== cover) gallery.push({ src: `/photos/${base}.jpg`, width: info.width, height: info.height });
   }
 
   await sharp(path.join(foto, cover))
@@ -169,7 +169,10 @@ async function init(opts) {
   console.log(`\nAnteprime da 800 px in ${previews}.`);
   console.log("\nPer content/property.ts:\n");
   console.log(`  heroImage: "/photos/copertina.jpg",`);
-  console.log(`  gallery: [\n${gallery.map((src) => `    { src: "${src}" },`).join("\n")}\n  ],`);
+  // Larghezza e altezza servono al sito per rispettare il formato di ogni
+  // foto e non ingrandirla oltre la sua risoluzione (vedi property.ts).
+  const lines = gallery.map(({ src, width, height }) => `    { src: "${src}", width: ${width}, height: ${height} },`);
+  console.log(`  gallery: [\n${lines.join("\n")}\n  ],`);
 }
 
 function walk(dir) {

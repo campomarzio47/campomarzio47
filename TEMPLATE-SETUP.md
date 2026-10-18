@@ -35,77 +35,109 @@ Cloudflare. Non riusare repo GitHub o Worker di un cliente precedente.
 ## 2. `content/property.ts`
 
 Sostituire tutti i valori con quelli del brief: `name`, `nameAccent`,
-`type`, `address`, `host`, `facts`, `booking`, `reviews`, `heroImage`,
-`gallery`, `pricing` (incluso `minAdvanceDays`, il preavviso minimo in
-giorni prima dell'arrivo — di default 2). Questo file guida logo, hero,
-meta title delle pagine, PDF di check-in e il nome "prodotto" di default
-nell'XML Ross1000 — va sempre aggiornato per primo.
+`type`, `address` (compreso `provinceName`, la provincia per esteso che
+compare sopra il nome in copertina), `host`, `facts`, `booking`,
+`reviews`, `heroImage`, `gallery`, `surroundings`, `pricing` (incluso
+`minAdvanceDays`, il preavviso minimo in giorni prima dell'arrivo — di
+default 2). Questo file guida logo, hero, meta title delle pagine, PDF di
+check-in e il nome "prodotto" di default nell'XML Ross1000 — va sempre
+aggiornato per primo.
+
+- `gallery`: ogni foto con `width` e `height` reali (li stampa
+  `new-site.mjs init`). Servono a mostrarla nel suo formato e a non
+  ingrandirla oltre la sua risoluzione.
+- `surroundings`: la foto della sezione "Dove siamo" (vista, paese) e
+  l'indirizzo per il link "Apri in Mappe". Con `photo.src` vuoto la
+  sezione mostra solo il testo.
+- `reviews`: `group` è una chiave (`family`, `couple`, `group`, `solo`,
+  `friends`, `business`) e `date` è `"AAAA-MM"`: etichetta e mese vengono
+  scritti nella lingua di chi legge. `lang` solo se la recensione non è
+  in italiano.
 
 ## 3. `content/dictionaries.ts`
 
 A differenza di `property.ts`, questo file contiene sia UI generica
 (riusabile senza modifiche: label dei form, bottoni, testi del check-in)
 sia testi discorsivi specifici dell'immobile che vanno riscritti a mano,
-in entrambe le lingue (`it` e `en`):
+in **tutte e tre le lingue** (`it`, `en`, `de`):
 
-- `meta.title` / `meta.description`
-- `hero.tagline` / `hero.description`
-- `photos.subtitle` (cita il nome della proprietà) e `photos.items`
-  (alt/caption di ogni foto della galleria)
-- `amenities.items` (titolo/descrizione/categoria di ogni servizio — vedi
-  §4bis per l'icona)
-- `contact.subtitle` (cita il nome dell'host)
-- messaggio di conferma del form di check-in (cita la città)
+- `meta.title` / `meta.description` / `meta.pages.*`
+- `hero.tagline` (la frase grande sotto la copertina), `hero.description`,
+  `hero.imageAlt` (descrive la foto di copertina, non lo slogan)
+- `photos.title`/`subtitle` e `photos.items` (alt e didascalia di ogni
+  foto, nello stesso ordine di `gallery`)
+- `amenities.groups` (vedi §4bis)
+- `place`: la sezione "Dove siamo" — titolo, paragrafi, didascalia della
+  foto e tre `points` brevi (es. "Centro storico — pochi minuti"). Solo
+  fatti verificabili: niente distanze o minuti inventati. Con `title`
+  vuoto la sezione sparisce.
+- `contact.title`/`subtitle` (cita il nome dell'host) e `contact.languages`
+- `checkin.sentBody` (cita la città)
+
+Nei titoli il testo fra asterischi va in corsivo (`"Dentro *la casa*"`,
+reso da `components/Emphasis.tsx`): è il ritmo tondo/corsivo del sito.
+Gli asterischi non vanno in alt, aria-label e metadati.
 
 Cercare nel file le occorrenze del vecchio nome proprietà/città per non
 dimenticarne nessuna prima di considerare la traduzione completa.
 
-## 3bis. Home page: hero minimale + barra "Verifica disponibilità"
+## 3bis. Home page
 
-La home (`app/page.tsx` + `components/Hero.tsx`) è volutamente minimale:
-l'hero mostra solo foto a piena larghezza + nome della proprietà; `hero.tagline`
-e `hero.description` (da `dictionaries.ts`) vengono renderizzati subito sotto,
-in una sezione separata, non nell'hero stesso. Sotto, le sezioni Foto
-(`components/PhotoCarousel.tsx`), Servizi (`components/Amenities.tsx`) e
-Recensioni (`components/ReviewsSection.tsx`) — non sono pagine a sé, sono
-ancore `#foto`/`#servizi`/`#recensioni` nella stessa pagina.
-`components/AvailabilityBar.tsx` aggiunge una barra fissa in fondo pagina
-(solo nella home) con selezione Arrivo/Partenza che reindirizza a
-`/prenota?from=...&to=...` — non richiede setup aggiuntivo, ma se il nuovo
-host non vuole i pagamenti diretti (vedi `TEMPLATE-BRIEF.md`) va rimossa o
-puntata altrove.
+La home (`app/page.tsx`) è una sequenza di sezioni, tutte nella stessa
+pagina (le vecchie route `/foto`, `/servizi`, `/recensioni` sono redirect
+alle ancore):
+
+1. **Copertina** (`components/Hero.tsx`): solo foto e nome, con città e
+   provincia sopra. Niente bottoni né numeri.
+2. **Introduzione** (`components/Intro.tsx`): `hero.tagline` in grande,
+   `hero.description`, i numeri della casa (da `property.facts`) e un
+   richiamo al check-in online per chi ha già prenotato altrove.
+3. **Foto** (`#foto`, `components/PhotoMosaic.tsx`): quattro foto scelte
+   per orientamento (orizzontale, due verticali, orizzontale) e la
+   galleria a schermo intero (`components/PhotoViewer.tsx`).
+4. **Servizi** (`#servizi`, `components/Amenities.tsx`).
+5. **Dove siamo** (`#dove`, `components/Place.tsx`): la sezione scura,
+   da `dictionaries.place` e `property.surroundings`.
+6. **Recensioni** (`#recensioni`): sparisce con `reviews: []`.
+
+`components/AvailabilityBar.tsx` aggiunge in home la barra delle date
+(fissa in basso su telefono, "pillola" fluttuante su desktop) che porta a
+`/prenota?from=...&to=...`. Se il nuovo host non vuole richieste dirette
+(vedi `TEMPLATE-BRIEF.md`) va rimossa da `app/page.tsx`.
 
 ## 3ter. Personalizzare lo stile visivo
 
-**Importante**: lo stile "boutique elegante" di Campo Marzio 47 (palette
-bordeaux/off-white, serif Cormorant Garamond, animazioni discrete) è una
-scelta per QUESTA proprietà, non un vincolo del codice. In base al brief
-(§3, "Stile visivo"), il nuovo sito potrebbe aver bisogno di un registro
-diverso — es. più giovane/vivace per una casa per gruppi, più sobrio per
-un B&B di montagna. Punti da toccare:
+**Importante**: lo stile di Campo Marzio 47 è costruito sulla casa — la
+palette viene dai suoi materiali (il bordeaux delle sedie, il rovere, il
+bianco delle travi, il nero della scala) e la scacchiera da Marostica,
+la città della Partita a Scacchi. Per un altro immobile vanno ripensati
+palette e motivo, non copiati. Punti da toccare:
 
-- **Palette**: `app/globals.css`, variabili CSS in `:root` (`--color-*`)
-  — sono l'unico posto da cambiare, sono già esposte a Tailwind v4 via
-  `@theme inline` e usate ovunque nel sito (nessun colore hardcoded nei
-  componenti).
-- **Font**: `app/layout.tsx` (import da `next/font/google`, attualmente
-  Cormorant Garamond + DM Sans) — cambiare gli import e aggiornare le
-  variabili CSS `--font-cormorant`/`--font-dmsans` referenziate in
-  `globals.css` (o rinominarle per chiarezza se si cambiano i font).
-- **Animazioni/motion**: in `app/globals.css` — `.animate-kenburns` (zoom
-  lento sulla foto hero), `.reveal`/`.reveal-visible` (comparsa graduale
-  delle sezioni scorrendo, via `components/Reveal.tsx`), `.animate-pop-in`/
-  `.animate-sheet-in`/`.animate-fade-in` (popover, pannelli, lightbox).
-  Sono pensate per essere discrete e coerenti con uno stile boutique; per
-  un sito più sobrio si possono anche rimuovere del tutto (togliere le
-  classi dai componenti che le usano) senza rompere nulla — non sono
-  legate a nessuna logica funzionale.
-- **Calendario** (`react-day-picker`, usato da `components/BookingCalendar.tsx`
-  e `components/AvailabilityBar.tsx`): stile in `app/globals.css` sotto
-  `.rdp-root` e classi correlate, basato sulle CSS custom property della
-  libreria — eredita automaticamente `--color-bordeaux` ecc., quindi
-  cambiando la palette si aggiorna da solo; non serve toccarlo a meno di
-  voler cambiare la forma (es. punto "oggi", raggio degli angoli).
+- **Palette**: `app/globals.css`, variabili `--color-*` in `:root`
+  (`off-white`, `paper`, `sand`, `bordeaux`, `charcoal`, `mid`, `beam`,
+  `divider`). Sono l'unico posto da cambiare: nessun colore è scritto nei
+  componenti. Verificare il contrasto (≥ 4,5:1) di `--color-mid` sullo
+  sfondo.
+- **Font**: `app/layout.tsx` — Bodoni Moda (titoli, con asse ottico) e
+  Instrument Sans (testo), esposti come `--font-bodoni`/`--font-instrument`
+  e mappati su `font-display`/`font-sans` in `globals.css`.
+- **Motivo della scacchiera**: classe `.checker` e il segno davanti alle
+  etichette (`.eyebrow::before`). Per un altro immobile si sostituisce
+  con un segno che abbia un senso per quel luogo, o si toglie.
+- **Movimento**: tutto in `app/globals.css` — ingresso delle pagine
+  (`.page-enter`, da `app/template.tsx`), comparsa allo scorrimento
+  (`.reveal`, e `.reveal-mask` per le foto che si scoprono come un
+  sipario, via `components/Reveal.tsx`), titoli che salgono riga per riga
+  (`.line-mask`), menu, pannelli e passi del check-in. Tutto rispetta
+  `prefers-reduced-motion`.
+- **Classi di componente** (`.btn`, `.field`, `.eyebrow`...): stanno in
+  `@layer components`. Fuori da un layer vincerebbero sulle utility di
+  Tailwind (`hidden`, `px-*`...) a prescindere dalla specificità.
+- **Calendario** (`react-day-picker`, in `components/DateRangeCalendar.tsx`):
+  il foglio di stile della libreria **non** si importa — ridefiniva
+  l'accento in `blue` e, caricato dopo `globals.css`, lo sovrascriveva.
+  Lo stile completo è nella sezione "Calendario" di `globals.css` e usa
+  le variabili della palette.
 
 ## 4. Foto
 
@@ -118,7 +150,8 @@ ruotate secondo l'EXIF, ridimensionate a max 2560 px di lato lungo, in
 JPEG e **senza metadati** (le foto da telefono contengono le coordinate
 GPS della casa). Rigenera `public/og-image.jpg` dalla copertina, crea
 anteprime da 800 px in `.new-site/anteprime/` e stampa l'elenco
-`heroImage`/`gallery` da incollare in `property.ts`. Segnala le foto
+`heroImage`/`gallery` (con larghezza e altezza) da incollare in
+`property.ts`. Segnala le foto
 troppo piccole per un'immagine a piena larghezza: quelle scaricate da
 Airbnb/Booking sono spesso troppo compresse, meglio gli originali del
 fotografo o dell'host. HEIC non è supportato: esportare prima in JPEG.
@@ -127,20 +160,24 @@ Gli originali restano fuori dal repo (`materiale/`, gitignorata).
 `photos.items` in `dictionaries.ts` (alt e didascalie) è abbinato a
 `gallery` **per posizione**: stesso ordine, stesso numero di voci.
 
+L'ordine conta anche per la home: `PhotoMosaic` prende le prime foto
+orizzontali e verticali che trova per riempire i quattro posti della
+composizione. Mettere in testa le più belle, e almeno due verticali se
+ci sono.
+
 Lo stesso script, con `check`, cerca nel progetto i residui
 dell'immobile del modello (nome, indirizzo, telefono, email, URL,
 dominio, salvati da `init` prima di qualunque modifica) e i bloccanti
 come il CIN vuoto. Va lanciato prima di considerare finito il sito.
 
-## 4bis. Icone dei servizi
+## 4bis. Servizi
 
-`components/Amenities.tsx` ha una mappa `icons` che associa una stringa
-(il campo `icon` di ogni voce in `dictionaries.ts` → `amenities.items`) a
-un'icona [Lucide](https://lucide.dev/icons/). Se un nuovo servizio non
-rientra tra le icone già presenti nella mappa (Wifi, Car, Thermometer,
-ChefHat, Tv, Trees, WashingMachine, DoorOpen), importare l'icona Lucide
-corrispondente e aggiungerla alla mappa prima di referenziarla nel
-dizionario — altrimenti va in fallback su `Wifi`.
+I servizi sono un elenco tipografico — nome e dettaglio — diviso in
+gruppi (`amenities.groups` in `dictionaries.ts`, es. "Dentro" e "Fuori"),
+**senza icone**: le icone generiche erano la parte del sito che sembrava
+più fatta in serie. Il valore sta nel dettaglio scritto bene
+("gratuito, davanti all'ingresso"), quindi ogni voce va scritta per
+quella casa, nelle tre lingue, e solo con servizi confermati dal brief.
 
 ## 5. Variabili d'ambiente
 
@@ -481,7 +518,8 @@ riscrittura della cookie policy (che oggi afferma il contrario).
   `.env.production.local`, `.smtp-sink/` e `.open-next/` (che contiene
   in chiaro i valori dei file `.env`).
 - Controllo visivo di ogni pagina in locale (home — incluse le sezioni
-  Foto/Servizi/Recensioni —, prenota, check-in, contatti), sia IT che EN,
+  Foto/Servizi/Dove siamo/Recensioni —, prenota, check-in, contatti), in
+  IT, EN e DE, soprattutto su telefono,
   sia con lo stile scelto (§3ter) verificato in chiaro che tutti i testi
   restino leggibili con la nuova palette (contrasto testo/sfondo).
 - Un check-in di prova end-to-end per confermare che l'email arrivi con
@@ -493,7 +531,7 @@ riscrittura della cookie policy (che oggi afferma il contrario).
   (host e ospite) e l'host deve poter rispondere con "Rispondi".
 - **Il footer mostra il CIN** su ogni pagina. Se non compare, il campo in
   `content/legal.ts` è vuoto e il sito non è pubblicabile (vedi §6c).
-- `/privacy`, `/cookie-policy` e `/termini` rese in entrambe le lingue,
+- `/privacy`, `/cookie-policy` e `/termini` rese in tutte e tre le lingue,
   senza righe vuote o segnaposto.
 - Con gli strumenti di rete del browser: nessuna richiesta a domini
   esterni (`google-analytics.com`, `fonts.gstatic.com`) e, in

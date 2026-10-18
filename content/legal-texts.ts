@@ -3,11 +3,12 @@ import { legal, controllerName, controllerAddress } from "@/content/legal";
 // Il nome del cookie arriva da lib/locale.ts e non è scritto a mano: una
 // cookie policy che nomina un cookie diverso da quello realmente usato è
 // essa stessa un'informazione inesatta.
-import { LOCALE_COOKIE, type Locale } from "@/lib/locale";
+import { LOCALE_COOKIE, locales, type Locale } from "@/lib/locale";
 
 /**
- * Testi delle tre pagine legali (privacy, cookie, termini), in italiano e
- * inglese.
+ * Testi delle tre pagine legali (privacy, cookie, termini), in italiano,
+ * inglese e tedesco. In caso di dubbio fa fede la versione italiana: le
+ * traduzioni tedesche lo dicono esplicitamente.
  *
  * Stanno qui e non in `content/dictionaries.ts` per una ragione pratica:
  * quello è il dizionario delle stringhe di interfaccia, va letto e
@@ -44,6 +45,12 @@ function compact(items: (string | null | false | undefined)[]): string[] {
 
 const hours = legal.stay.paymentDueHoursBeforeArrival;
 const maxGuests = property.facts.maxGuests;
+
+// I valori possibili del cookie della lingua, scritti nella policy ("it, en
+// oppure de"): derivati da lib/locale.ts per la stessa ragione del nome.
+function cookieValues(or: string): string {
+  return `${locales.slice(0, -1).join(", ")} ${or} ${locales[locales.length - 1]}`;
+}
 
 // ─────────────────────────────── ITALIANO ───────────────────────────────
 
@@ -160,7 +167,7 @@ function cookiesIt(): LegalDocument {
       {
         heading: "L'unico cookie che usiamo",
         paragraphs: [
-          `Si chiama ${LOCALE_COOKIE}, contiene due lettere (it oppure en) e serve a ricordare la lingua che hai scelto, così non devi riselezionarla a ogni pagina. Dura dodici mesi e non contiene nulla che permetta di identificarti.`,
+          `Si chiama ${LOCALE_COOKIE}, contiene due lettere (${cookieValues("oppure")}) e serve a ricordare la lingua che hai scelto, così non devi riselezionarla a ogni pagina. Dura dodici mesi e non contiene nulla che permetta di identificarti.`,
         ],
       },
       {
@@ -417,7 +424,7 @@ function cookiesEn(): LegalDocument {
       {
         heading: "The only cookie we use",
         paragraphs: [
-          `It is called ${LOCALE_COOKIE}, it holds two letters (it or en), and it remembers the language you picked so you do not have to choose it again on every page. It lasts twelve months and contains nothing that could identify you.`,
+          `It is called ${LOCALE_COOKIE}, it holds two letters (${cookieValues("or")}), and it remembers the language you picked so you do not have to choose it again on every page. It lasts twelve months and contains nothing that could identify you.`,
         ],
       },
       {
@@ -559,7 +566,266 @@ function termsEn(): LegalDocument {
   };
 }
 
+// ──────────────────────────────── DEUTSCH ────────────────────────────────
+
+function privacyDe(): LegalDocument {
+  const { business, providers, privacy } = legal;
+
+  return {
+    intro:
+      "Diese Seite erklärt, welche personenbezogenen Daten wir über diese Website erheben, warum, an wen wir sie weitergeben und welche Rechte Sie haben. Es handelt sich um die Information nach Artikel 13 der Verordnung (EU) 2016/679 (DSGVO).",
+    sections: [
+      {
+        heading: "Wer Ihre Daten verarbeitet",
+        paragraphs: [
+          "Verantwortlicher ist, wer die auf dieser Website vorgestellte Ferienunterkunft betreibt:",
+        ],
+        items: compact([
+          controllerName(),
+          controllerAddress(),
+          business.vatNumber && `Italienische USt-IdNr. ${business.vatNumber}`,
+          business.taxCode && `Italienische Steuernummer ${business.taxCode}`,
+          business.email && `E-Mail: ${business.email}`,
+          business.pec && `Zertifizierte E-Mail (PEC): ${business.pec}`,
+          business.phone && `Telefon: ${business.phone}`,
+        ]),
+      },
+      {
+        heading: "Welche Daten wir erheben, und auf welcher Rechtsgrundlage",
+        paragraphs: [
+          "Die Website erhebt nur dann Daten, wenn Sie eines der drei Formulare ausfüllen. Es gibt kein Profiling, keine Werbung und keine automatisierten Entscheidungen.",
+          "1. Kontaktformular — Name, E-Mail, ungefähre Reisedaten und Ihre Nachricht. Sie dienen dazu, Ihnen zu antworten. Rechtsgrundlage sind vorvertragliche Maßnahmen auf Ihre Anfrage und unser berechtigtes Interesse, auf Nachrichten zu antworten (Art. 6 Abs. 1 lit. b und f DSGVO).",
+          "2. Buchungsanfrage — Name, E-Mail, Telefon, Reisedaten, Anzahl der Gäste und eine eventuelle Nachricht. Sie dienen dazu, die Verfügbarkeit zu prüfen und Ihnen zu antworten und, wenn die Anfrage bestätigt wird, den Aufenthalt abzuwickeln. Rechtsgrundlage sind vorvertragliche Maßnahmen und anschließend die Erfüllung des Vertrags (Art. 6 Abs. 1 lit. b DSGVO).",
+          "3. Online-Check-in — Personalien jedes Gastes (Vor- und Nachname, Geschlecht, Geburtsdatum und -ort, Staatsangehörigkeit, Wohnsitz) und, für die Person, die die Gruppe anmeldet, die Angaben zum Ausweisdokument, die italienische Steuernummer und die Adresse. Diese Daten verlangen nicht wir, sondern das Gesetz. Rechtsgrundlage ist daher die Erfüllung einer rechtlichen Verpflichtung (Art. 6 Abs. 1 lit. c DSGVO), und zwar:",
+        ],
+        items: [
+          "die Meldung der beherbergten Personen an die Behörde für öffentliche Sicherheit nach Art. 109 des italienischen Gesetzes über die öffentliche Sicherheit (T.U.L.P.S.), über das Portal Alloggiati Web der Staatspolizei;",
+          "die statistische Erfassung des Tourismus für die Region Venetien über das System Ross1000/GIES.",
+        ],
+      },
+      {
+        heading: "Was geschieht, wenn Sie die Check-in-Daten nicht angeben",
+        paragraphs: [
+          "Beim Kontaktformular und bei der Buchungsanfrage ist die Angabe freiwillig: Ohne diese Daten können wir Ihnen lediglich nicht antworten.",
+          "Beim Check-in nicht. Die Meldung jeder beherbergten Person ist eine gesetzliche Pflicht des Gastgebers, und ohne diese Daten kann der Aufenthalt nicht stattfinden. Aus demselben Grund handelt es sich nicht um eine Einwilligung, die Sie widerrufen könnten: Mit dem Häkchen im Check-in bestätigen Sie, diese Information gelesen zu haben, Sie erlauben keine freiwillige Verarbeitung.",
+        ],
+      },
+      {
+        heading: "An wen wir Daten weitergeben",
+        paragraphs: ["Die erhobenen Daten werden nur weitergegeben an:"],
+        items: compact([
+          "die Behörde für öffentliche Sicherheit (die zuständige Questura), nur die Check-in-Daten;",
+          "die Region Venetien, nur die statistischen Daten zum Tourismus;",
+          providers.hosting.name &&
+            `${providers.hosting.name} — ${providers.hosting.purposeDe} (${providers.hosting.countryDe});`,
+          providers.email.name &&
+            `${providers.email.name} — ${providers.email.purposeDe} (${providers.email.countryDe});`,
+          providers.mailbox.name &&
+            `${providers.mailbox.name} — ${providers.mailbox.purposeDe}${
+              providers.mailbox.countryDe ? ` (${providers.mailbox.countryDe})` : ""
+            };`,
+          "Berater (etwa Steuerberater) und Behörden, wenn das Gesetz es verlangt.",
+        ]),
+      },
+      {
+        heading: "Wir verkaufen Ihre Daten nicht",
+        paragraphs: [
+          "Ihre Daten werden weder verkauft noch zu kommerziellen Zwecken an Dritte weitergegeben, sie fließen in keinerlei Marketing ein und werden nicht für Profiling verwendet.",
+        ],
+      },
+      {
+        heading: "Übermittlung außerhalb der Europäischen Union",
+        paragraphs: [
+          "Die oben genannten Dienstleister können Daten auch außerhalb des Europäischen Wirtschaftsraums verarbeiten. In diesem Fall stützt sich die Übermittlung auf einen Angemessenheitsbeschluss der Europäischen Kommission oder auf die Standardvertragsklauseln nach Art. 46 DSGVO.",
+        ],
+      },
+      {
+        heading: "Wie und wie lange die Daten gespeichert werden",
+        paragraphs: [
+          "Diese Website hat keine Datenbank und speichert die Formulardaten nicht: Was Sie senden, wird per E-Mail an den Verantwortlichen übermittelt und nur in dessen Postfach und in den gesetzlich vorgeschriebenen Unterlagen aufbewahrt.",
+          "Die Speicherdauer beträgt:",
+        ],
+        items: [
+          `Kontaktformular: ${privacy.retentionContactDe}.`,
+          `Buchungsanfrage: ${privacy.retentionBookingDe}.`,
+          `Check-in-Daten: ${privacy.retentionCheckinDe}.`,
+        ],
+      },
+      {
+        heading: "Ihre Rechte",
+        paragraphs: [
+          "Sie können jederzeit Auskunft über Ihre Daten verlangen, sie berichtigen lassen, wenn sie falsch sind, ihre Löschung oder die Einschränkung der Verarbeitung verlangen, sie in einem maschinenlesbaren Format erhalten und der Verarbeitung widersprechen (Art. 15–22 DSGVO).",
+          "Eine ehrliche Einschränkung: Bei Daten, die wir gesetzlich an Behörden melden müssen, können Löschung und Widerspruch nicht gewährt werden, solange diese Pflicht besteht. Bei allem anderen schon.",
+        ],
+        items: compact([
+          business.email && `Um Ihre Rechte auszuüben, schreiben Sie an ${business.email}`,
+          business.pec && `oder per zertifizierter E-Mail an ${business.pec}.`,
+          "Wenn Sie der Meinung sind, dass die Verarbeitung gegen die DSGVO verstößt, können Sie sich bei der italienischen Datenschutzbehörde (www.garanteprivacy.it) oder bei der Aufsichtsbehörde Ihres Landes beschweren.",
+        ]),
+      },
+      {
+        heading: "Aktualisierungen",
+        paragraphs: [
+          `Diese Information wurde zuletzt am ${privacy.lastUpdated} aktualisiert. Wenn wir die Art der Datenverarbeitung ändern, aktualisieren wir diese Seite.`,
+          "Dies ist eine Übersetzung aus dem Italienischen; im Zweifel gilt die italienische Fassung.",
+        ],
+      },
+    ],
+  };
+}
+
+function cookiesDe(): LegalDocument {
+  return {
+    intro:
+      "Cookies sind kleine Dateien, die eine Website in Ihrem Browser speichert. Diese Website verwendet genau eines, und es dient nicht dazu, Sie zu verfolgen.",
+    sections: [
+      {
+        heading: "Das einzige Cookie, das wir verwenden",
+        paragraphs: [
+          `Es heißt ${LOCALE_COOKIE}, enthält zwei Buchstaben (${cookieValues("oder")}) und merkt sich die Sprache, die Sie gewählt haben, damit Sie sie nicht auf jeder Seite neu auswählen müssen. Es ist zwölf Monate gültig und enthält nichts, was Sie identifizieren könnte.`,
+        ],
+      },
+      {
+        heading: "Warum Sie kein Banner sehen",
+        paragraphs: [
+          "Weil keines nötig ist. Eine vorherige Einwilligung ist für Profiling-Cookies und für Cookies von Dritten erforderlich, die das Surfverhalten verfolgen; rein technische Cookies wie die Sprachwahl sind nach Art. 122 des italienischen Datenschutzgesetzes und den Leitlinien der Datenschutzbehörde davon ausgenommen.",
+          "Ihnen ein Banner zu zeigen, um zu fragen, ob wir uns merken dürfen, dass Sie auf Deutsch lesen, wäre nur ein unnötiges Hindernis.",
+        ],
+      },
+      {
+        heading: "Keine Cookies von Dritten",
+        paragraphs: [
+          "Auf dieser Website gibt es keine Statistik-Tools, keine Werbung, keine Social-Media-Buttons, keine eingebetteten Karten und keine Videos von Dritten.",
+          "Auch die Schriften werden von unserem eigenen Server ausgeliefert: Ihr Browser kontaktiert dafür nicht Google, wie es auf den meisten Websites geschieht.",
+        ],
+      },
+      {
+        heading: "Wie Sie es löschen",
+        paragraphs: [
+          "Sie können Cookies in den Einstellungen Ihres Browsers löschen oder blockieren. Wenn Sie das Sprach-Cookie löschen, zeigt die Website wieder Italienisch an.",
+        ],
+      },
+    ],
+  };
+}
+
+function termsDe(): LegalDocument {
+  const { business, codes, stay } = legal;
+
+  const touristTaxLine =
+    stay.touristTax.applies === true
+      ? `Zusätzlich fällt eine Kurtaxe an: ${
+          stay.touristTax.details || "gemäß der Satzung der Gemeinde"
+        }. Sie ist im angegebenen Preis nicht enthalten und wird vor Ort bezahlt.`
+      : stay.touristTax.applies === false
+        ? "Für diese Unterkunft fällt keine Kurtaxe an: Der angegebene Preis ist das, was Sie tatsächlich bezahlen."
+        : "Erhebt die Gemeinde eine Kurtaxe, ist sie im angegebenen Preis nicht enthalten und wird vor Ort gemäß der geltenden Satzung bezahlt.";
+
+  return {
+    intro:
+      "Diese Bedingungen regeln Ihren Aufenthalt in der auf dieser Website vorgestellten Unterkunft und die Nutzung der Website selbst. Bitte lesen Sie sie, bevor Sie eine Buchungsanfrage senden. Dies ist eine Übersetzung aus dem Italienischen; im Zweifel gilt die italienische Fassung.",
+    sections: [
+      {
+        heading: "Wer wir sind",
+        paragraphs: ["Die Unterkunft wird als Ferienunterkunft vermietet von:"],
+        items: compact([
+          controllerName(),
+          controllerAddress(),
+          business.vatNumber && `Italienische USt-IdNr. ${business.vatNumber}`,
+          business.rea && `Handelsregister: ${business.rea}`,
+          business.email && `E-Mail: ${business.email}`,
+          business.pec && `Zertifizierte E-Mail (PEC): ${business.pec}`,
+          codes.cin && `Nationaler Identifikationscode (CIN): ${codes.cin}`,
+          codes.cir && `Regionaler Identifikationscode (CIR): ${codes.cir}`,
+        ]),
+      },
+      {
+        heading: "Was Sie buchen",
+        paragraphs: [
+          "Es handelt sich um die touristische Vermietung einer Wohneinheit, nicht um einen Hotelbetrieb. Hoteldienstleistungen werden nicht erbracht: keine Rezeption, keine Reinigung während des Aufenthalts, keine Verpflegung.",
+          `Die Unterkunft bietet Platz für höchstens ${maxGuests} Personen. Die in der Anfrage angegebene Zahl der Gäste darf nicht überschritten werden.`,
+        ],
+      },
+      {
+        heading: "Eine Anfrage ist noch keine Buchung",
+        paragraphs: [
+          "Mit dem Formular auf dieser Website senden Sie uns eine Anfrage. Sie ist keine Buchung, verpflichtet keine der beiden Seiten und ist mit keiner Zahlung verbunden.",
+          "Der Vertrag kommt erst zustande, wenn Sie von uns eine schriftliche Bestätigung per E-Mail erhalten. Bis dahin bleiben die Termine für andere verfügbar.",
+          "Der Betrag, den die Website bei der Wahl der Termine anzeigt, ist ein unverbindlicher Kostenvoranschlag auf Grundlage des aktuellen Preises. Maßgeblich ist der Preis in unserer Bestätigungs-E-Mail.",
+        ],
+      },
+      {
+        heading: "Preis und Leistungen",
+        paragraphs: [
+          "Der Preis gilt pro Nacht und umfasst Nebenkosten, Bettwäsche und Handtücher. Eventuelle Zusatzkosten, etwa eine Endreinigung, werden vor der Bestätigung gesondert angegeben.",
+          touristTaxLine,
+        ],
+      },
+      {
+        heading: "Zahlung",
+        paragraphs: compact([
+          "Bei der Anfrage ist keine Anzahlung zu leisten, und diese Website erhebt keine Zahlungsdaten: Sie werden zu keinem Zeitpunkt nach einer Kartennummer gefragt.",
+          `Der gesamte Betrag ist spätestens ${hours} Stunden vor der Anreise fällig. Zum selben Zeitpunkt erzeugen wir den Zugangscode für das Haus und senden ihn Ihnen.`,
+          stay.paymentMethods && `Akzeptierte Zahlungsmittel: ${stay.paymentMethods}.`,
+          !stay.paymentMethods &&
+            "Die akzeptierten Zahlungsmittel teilen wir Ihnen in der Bestätigungs-E-Mail mit.",
+          "Geht die Zahlung nicht fristgerecht ein, gilt die Buchung als storniert und der Zugang zur Unterkunft wird nicht gewährt.",
+        ]),
+      },
+      {
+        heading: "Stornierung",
+        paragraphs: [
+          "Sie können jederzeit vor der Zahlung des Betrags kostenlos und ohne Angabe von Gründen stornieren. Da nichts im Voraus bezahlt wird, gibt es nichts zu erstatten und nichts einzubehalten.",
+          `Nach der Zahlung — also in den letzten ${hours} Stunden vor der Anreise — wird der Betrag nicht mehr erstattet, sofern die Parteien nicht schriftlich etwas anderes vereinbaren.`,
+        ],
+      },
+      {
+        heading: "Widerrufsrecht",
+        paragraphs: [
+          "Das vierzehntägige Widerrufsrecht für Fernabsatzverträge gilt für diese Buchung nicht.",
+          "Das ergibt sich aus Art. 59 Abs. 1 Buchst. n des italienischen Verbrauchergesetzbuchs, der den Widerruf bei Verträgen über die Bereitstellung von Unterkünften zu anderen als Wohnzwecken ausschließt, wenn der Vertrag einen bestimmten Zeitpunkt oder Zeitraum vorsieht. Genau das ist ein für feste Termine gebuchter Aufenthalt: Wer die Termine für Sie freihält, verzichtet darauf, sie anderen zu vermieten.",
+          "Die oben beschriebenen Stornierungsbedingungen gelten weiterhin und lassen Ihnen in der Praxis bis zur Zahlung die Freiheit, kostenlos zu stornieren.",
+        ],
+      },
+      {
+        heading: "Ihre Pflichten als Gast",
+        items: [
+          "Die Angaben aller beherbergten Personen vor oder bei der Ankunft mitteilen: Das ist eine gesetzliche Pflicht für uns, und ohne diese Angaben können wir den Aufenthalt nicht gestatten.",
+          `Die Höchstzahl von ${maxGuests} Gästen nicht überschreiten und keine nicht angemeldeten Personen beherbergen.`,
+          "Die Unterkunft oder den Zugangscode in keiner Form an Dritte weitergeben.",
+          "Keine Feste oder Veranstaltungen ausrichten und die Ruhe der Nachbarschaft respektieren.",
+          "Die Unterkunft mit der gebotenen Sorgfalt nutzen und uns Defekte oder Schäden umgehend melden.",
+        ],
+      },
+      {
+        heading: "Schäden und Haftung",
+        paragraphs: [
+          "Sie haften nach den allgemeinen Regeln des italienischen Zivilrechts für Schäden an der Unterkunft und der Einrichtung, die Sie oder die von Ihnen beherbergten Personen verursachen.",
+          "Wir haften unsererseits im gesetzlichen Rahmen. Wir haften nicht für Ereignisse, die wir nicht beeinflussen können, etwa Unterbrechungen von Strom, Wasser oder Internet durch die Versorger, und nicht für unbeaufsichtigt gelassene persönliche Gegenstände.",
+        ],
+      },
+      {
+        heading: "Beschwerden, anwendbares Recht und Gerichtsstand",
+        paragraphs: compact([
+          business.email &&
+            `Wenn etwas nicht stimmt, schreiben Sie uns an ${business.email}${
+              business.pec ? ` oder per zertifizierter E-Mail an ${business.pec}` : ""
+            }: Wir suchen immer zuerst nach einer Lösung.`,
+          "Der Vertrag unterliegt italienischem Recht. Sind Sie Verbraucher, ist ausschließlich das Gericht Ihres Wohnsitzes oder gewählten Wohnsitzes zuständig, und die zwingenden Schutzvorschriften des italienischen Verbrauchergesetzbuchs bleiben unberührt.",
+        ]),
+      },
+      {
+        heading: "Aktualisierungen",
+        paragraphs: [
+          `Diese Bedingungen wurden zuletzt am ${legal.privacy.lastUpdated} aktualisiert. Für Ihren Aufenthalt gelten die Bedingungen, die bei der Bestätigung der Buchung in Kraft sind.`,
+        ],
+      },
+    ],
+  };
+}
+
 export const legalTexts: Record<Locale, LegalDocuments> = {
   it: { privacy: privacyIt(), cookies: cookiesIt(), terms: termsIt() },
   en: { privacy: privacyEn(), cookies: cookiesEn(), terms: termsEn() },
+  de: { privacy: privacyDe(), cookies: cookiesDe(), terms: termsDe() },
 };

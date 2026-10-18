@@ -25,71 +25,123 @@ sotto `app/`, `components/`, `lib/`, `content/`.
 
 ## Design
 
-- Font: **Cormorant Garamond** (`font-display`, titoli) + **DM Sans**
-  (`font-sans`, corpo), caricati via `next/font/google` in
-  `app/layout.tsx`.
+Rifatto da capo a ottobre 2026: l'accusa era che il sito "sembrava fatto
+dall'AI" (griglia di icone, card generiche, carosello di foto anonimo).
+La direzione è editoriale e costruita sulla casa, non applicata da fuori:
+non tornare a icone decorative, card tutte uguali o effetti da modello.
+
+- **Identità**: la palette viene dai materiali della casa (il bordeaux
+  delle sedie, il rovere del pavimento, il bianco caldo delle travi, il
+  nero della scala in acciaio); il motivo grafico è la **scacchiera** —
+  Marostica è la città della Partita a Scacchi, e sul tavolo del
+  soggiorno c'è davvero una scacchiera (si vede nella foto di copertina).
+  Va usata come firma, con parsimonia: `.checker` (fascia in cima al
+  footer, fondo del menu) e il segno davanti alle etichette di sezione
+  (`.eyebrow::before`).
+- Font: **Bodoni Moda** (`font-display`, titoli; carattere italiano, con
+  asse ottico `opsz`) + **Instrument Sans** (`font-sans`, testo), via
+  `next/font/google` in `app/layout.tsx` (`--font-bodoni`,
+  `--font-instrument`). Nei titoli del dizionario il testo fra asterischi
+  va in corsivo (`"Dentro *la casa*"`, `components/Emphasis.tsx`): il
+  ritmo tondo/corsivo è parte dell'identità.
 - Palette (CSS variables in `app/globals.css`, esposte a Tailwind v4 via
   `@theme inline`):
-  - `--color-off-white: #f7f5f2` — sfondo
+  - `--color-off-white: #f5f1ea` — sfondo
+  - `--color-paper: #fbf9f5` — superfici rialzate (schede, campi)
+  - `--color-sand: #ebe4d9` — superfici secondarie, banda delle date
   - `--color-bordeaux: #8b2635` / `--color-bordeaux-dark: #6e1e2a` —
-    accento primario (CTA, link attivi)
-  - `--color-charcoal: #1e1e1e` — testo
-  - `--color-mid: #6b6560` — testo secondario
-  - `--color-beam: #d4c5b0` — accento secondario
-  - `--color-divider: #e2ddd8` — bordi/separatori
+    accento primario (CTA, date scelte)
+  - `--color-charcoal: #1c1a19` — testo e sezioni scure
+  - `--color-mid: #67615b` — testo secondario (5:1 sullo sfondo)
+  - `--color-beam: #cdb89c` — accento secondario (rovere)
+  - `--color-divider: #e0d8cc` — bordi/separatori
+- **Classi di componente in `@layer components`** (`.btn`, `.field`,
+  `.field-label`, `.eyebrow`, `.link-draw`, `.checker`...). Fuori da un
+  layer vincevano sulle utility di Tailwind a prescindere dalla
+  specificità: `hidden` non nascondeva un `.btn`. Nuove classi di questo
+  tipo vanno lì.
+- **Campi a 16 px minimo** (`.field`): sotto, Safari su iPhone ingrandisce
+  la pagina a ogni tocco su un campo.
 - Icone del sito: `app/favicon.ico` (16/32/48), `app/icon.png` (512) e
-  `app/apple-icon.png` (180) — marchio "47" off-white su bordeaux, coerente
-  con l'accento del logo in sidebar. Sono generati da
-  `scripts/generate-icons.mjs` (da lanciare a mano, gli asset sono
-  committati); Next emette i `<link>` da solo in base al nome dei file,
-  `layout.tsx` non c'entra. Alle dimensioni piccole il marchio usa il serif
-  **in grassetto**: a 16 px il peso normale si sfalda nell'antialiasing.
-- Layout: sidebar fissa a sinistra su desktop (`components/Sidebar.tsx`),
-  drawer su mobile, bottone check-in flottante (`CheckInFab`). Pagine
-  brevi, niente scroll infinito — è una scelta esplicita del progetto,
-  non solo un dettaglio estetico.
-- Nav della sidebar: solo 4 voci, tutte allo stesso livello (nessun
-  bottone speciale) — La Casa, Prenota ora, Check-in online, Contatti.
-  Foto/Servizi/Recensioni non sono più voci di nav (vedi sotto: sono
-  ancore dentro la home, raggiungibili solo scorrendo o da link diretto
-  `/#foto` ecc., non dalla sidebar).
-- Home (`app/page.tsx` + `components/Hero.tsx`): hero minimale, solo foto
-  a piena larghezza + nome della proprietà — niente facts (mq/camere/
-  ospiti) né bottoni nell'hero. `hero.tagline`/`hero.description`
-  vivono subito sotto, in una sezione a parte. La CTA di prenotazione è
-  `components/AvailabilityBar.tsx`: barra fissa in fondo pagina, **solo
-  nella home** (non nelle altre pagine), con selezione Arrivo/Partenza
-  che porta a `/prenota?from=...&to=...` (BookingForm legge questi query
-  param per precompilare il calendario). Su desktop è affiancata alla
-  sidebar (`md:left-64`); su mobile è un bottone full-width fisso in
-  basso che apre un pannello con il calendario — per questo `CheckInFab`
-  si nasconde in home su mobile (altrimenti si sovrapporrebbero).
-- Foto, Servizi e Recensioni **non sono più pagine separate**: sono
-  sezioni della home (`id="foto"`/`"servizi"`/`"recensioni"` in
-  `app/page.tsx`), con `components/PhotoCarousel.tsx` (scroll
-  orizzontale nativo con snap + `Lightbox.tsx` riusato per l'ingrandimento
-  — niente libreria di carousel esterna), `components/Amenities.tsx`
-  (griglia compatta 4 colonne, pensata per stare senza troppo scroll) e
-  `components/ReviewsSection.tsx` (invariato). Le vecchie route
-  `/foto`, `/servizi`, `/recensioni` restano come redirect verso le
-  rispettive ancore (`permanentRedirect("/#foto")` ecc., 308) per non rompere link
-  salvati, ma non compaiono più nella sidebar.
-- Micro-interazioni (tutte in `app/globals.css`, rispettano
-  `prefers-reduced-motion`): `.animate-kenburns` (zoom lentissimo sulla
-  foto hero), `components/Reveal.tsx` + `.reveal`/`.reveal-visible`
-  (fade+slide-up all'ingresso in viewport via IntersectionObserver,
-  usato per le sezioni della home), `.animate-pop-in`/`.animate-sheet-in`/
-  `.animate-fade-in` (popover, pannello mobile, lightbox). Il calendario
-  (`react-day-picker`) è restilizzato in stile minimalista via le CSS
-  custom property della libreria sotto `.rdp-root` — eredita
-  automaticamente la palette del sito.
-  **Attenzione ai `transform` su antenati di elementi `fixed`**: un
-  antenato con `transform` (anche `.reveal`) ridefinisce il contenitore
-  di riferimento per `position: fixed` nei discendenti. `Lightbox.tsx`
-  ci è cascato (era annidato dentro `Reveal`) ed è per questo che si
-  monta con `createPortal` su `document.body` invece che nell'albero
-  normale — pattern da riusare per qualunque futuro overlay/modale
-  potenzialmente annidato in un `Reveal`.
+  `app/apple-icon.png` (180) — marchio "47" off-white su bordeaux. Sono
+  generati da `scripts/generate-icons.mjs` (da lanciare a mano, gli asset
+  sono committati); Next emette i `<link>` da solo in base al nome dei
+  file. Alle dimensioni piccole il marchio usa il serif **in grassetto**:
+  a 16 px il peso normale si sfalda nell'antialiasing.
+- **Il sito è usato soprattutto da telefono**: ogni modifica va provata
+  prima a 375 px. Bersagli di tocco ≥ 44 px, niente doppio tap.
+- Layout: **intestazione in alto** (`components/Header.tsx`), non più la
+  sidebar a sinistra (rubava 256 px a un sito di fotografie). In home è
+  trasparente sopra la foto e diventa carta semitrasparente scendendo;
+  si nasconde scorrendo verso il basso e ricompare risalendo. Su telefono
+  "Check-in" resta sempre a vista accanto a "Menu": è il motivo per cui
+  la maggior parte delle persone apre il sito. Il menu su telefono è a
+  tutto schermo (`components/MobileMenu.tsx`), con le lingue per esteso.
+  Pagine brevi, niente scroll infinito.
+- Nav: solo 4 voci, tutte allo stesso livello (nessun bottone speciale) —
+  La Casa, Prenota ora, Check-in online, Contatti (`components/nav-items.ts`).
+- Home (`app/page.tsx`), in ordine: copertina (`Hero.tsx`: solo foto e
+  nome, con città/provincia sopra — niente facts né bottoni), introduzione
+  (`Intro.tsx`: `hero.tagline` in grande, descrizione, numeri della casa,
+  richiamo al check-in), Foto (`#foto`), Servizi (`#servizi`), Dove siamo
+  (`#dove`, sezione scura), Recensioni (`#recensioni`). Le vecchie route
+  `/foto`, `/servizi`, `/recensioni` restano come redirect alle ancore
+  (`permanentRedirect`, 308).
+- **Foto** (`components/PhotoMosaic.tsx` + `PhotoViewer.tsx`): in home
+  quattro foto in composizione a zig-zag (orizzontale, due verticali
+  sfalsate, orizzontale), scelte da `property.gallery` **rispettando
+  l'orientamento** — una verticale tagliata in orizzontale perde metà
+  stanza. Il tocco apre la galleria a schermo intero: scorrimento nativo
+  con scroll-snap (segue il dito, nessuna libreria), miniature, contatore,
+  frecce e tastiera su desktop. Ogni foto è mostrata al massimo a 1,25
+  volte la sua larghezza reale (`width`/`height` in `property.ts`): le
+  foto della galleria sono scatti da telefono a 911/512 px, e ingrandite a
+  tutto schermo diventavano pastose. Il tasto "indietro" del telefono
+  chiude la galleria (una voce in più nella cronologia, stesso URL).
+- **Servizi** (`components/Amenities.tsx`): elenco tipografico nome +
+  dettaglio, in gruppi (`amenities.groups`), **senza icone**.
+- **Recensioni**: voto mostrato in decimi com'è ("10/10"), mai stelle;
+  gruppo e mese tradotti (`group` è una chiave, `date` è `"AAAA-MM"`).
+- **Barra delle date** (`components/AvailabilityBar.tsx`), solo in home:
+  su telefono barra fissa in basso con prezzo a notte e bottone che apre
+  un pannello dal basso col calendario; su desktop "pillola" fluttuante
+  con calendario a due mesi. Porta a `/prenota?from=...&to=...`. È
+  montata con un portale (vedi sotto, `transform`).
+- **Calendario** (`components/DateRangeCalendar.tsx`, condiviso da barra
+  e `/prenota`): un mese su telefono, due affiancati da 768 px. **Il
+  foglio di stile di react-day-picker non va importato**: dichiarava
+  `--rdp-accent-color: blue` su `.rdp-root` e, caricato dopo
+  `globals.css`, sovrascriveva la palette — da lì il blu dei giorni
+  scelti e delle frecce. Tutto lo stile è nella sezione "Calendario" di
+  `globals.css`. Dopo un intervallo completo il tocco successivo
+  ricomincia dall'arrivo (come Airbnb). `RangeHint` dice cosa fare
+  adesso (arrivo → partenza → "5 notti").
+- **Movimento** (tutto in `app/globals.css`, un solo ritmo: `--ease-out`
+  per le entrate, `--ease-curtain` per i sipari; tutto rispetta
+  `prefers-reduced-motion`): ingresso di ogni pagina (`.page-enter`, da
+  `app/template.tsx`), titoli che salgono riga per riga (`.line-mask`),
+  comparsa allo scorrimento (`components/Reveal.tsx`: `.reveal` e, per le
+  foto, `variant="mask"` — un sipario che si alza mentre l'immagine si
+  assesta), foto di copertina che si assesta una volta (`.hero-settle`,
+  non più lo zoom infinito) con parallasse leggera, menu a sipario,
+  pannelli dal basso, passi del check-in che scorrono nella direzione di
+  marcia. Le finestre hanno anche un'animazione d'uscita
+  (`lib/hooks/usePresence.ts`).
+  **Due trappole già pagate**:
+  - Il sipario (`clip-path` chiuso) sta su un elemento **interno**
+    (`.reveal-mask-inner`): Chrome considera "non visibile" per
+    l'IntersectionObserver un elemento con `clip-path` completamente
+    chiuso, e la foto non si scopriva mai. Inoltre il compilatore CSS
+    riduceva il selettore `.reveal-mask.reveal-visible .reveal-mask-inner`
+    a `.reveal-mask.reveal-visible`: per questo l'apertura usa la classe
+    `.is-open` direttamente sull'elemento interno.
+  - **`transform` su antenati di elementi `fixed`**: un antenato con
+    `transform` (`.reveal`, `.page-enter` durante l'ingresso,
+    l'intestazione quando si nasconde) diventa il contenitore di
+    riferimento per `position: fixed`. Per questo menu, galleria, barra
+    delle date e pannello si montano con `createPortal` su
+    `document.body`, e `.page-enter` finisce con `transform: none`.
+    Pattern da riusare per qualunque futuro overlay.
 
 ### Accessibilità
 
@@ -103,9 +155,14 @@ persone davvero. Cose da non rompere:
   focus resta sull'input. Erano bottoni, e il `blur` chiudeva la lista
   prima che il Tab potesse raggiungerli — il check-in, cioè la funzione
   principale del sito, era impossibile da completare senza mouse.
-- `Lightbox`, drawer della `Sidebar` e pannello date di `AvailabilityBar`
-  sono finestre modali: `role="dialog"`, Esc, trappola del focus e focus
-  restituito all'elemento di partenza. Se aggiungi un overlay, seguili.
+- Galleria (`PhotoViewer`), menu (`MobileMenu`) e pannello date di
+  `AvailabilityBar` sono finestre modali: `role="dialog"`, Esc, trappola
+  del focus e focus restituito all'elemento di partenza, tutto in
+  `lib/hooks/useDialog.ts`. Se aggiungi un overlay, usa quello.
+- Il check-in a passi sposta il focus sul titolo di ogni nuovo passo:
+  chi usa uno screen reader deve sentire dove si trova.
+- Il nome in copertina è su due righe (blocchi): fra le due c'è uno
+  spazio esplicito, o il titolo verrebbe letto "Campo Marzio47".
 - `LocaleProvider` aggiorna `document.documentElement.lang` a ogni cambio
   lingua: l'HTML iniziale arriva dal cookie, ma il cambio è solo client.
 - Ogni campo ha un'etichetta associata: i placeholder non danno un nome
@@ -123,7 +180,9 @@ persone davvero. Cose da non rompere:
   recensioni, foto, `pricing`). È il file da modificare per primo per
   qualsiasi cambio di contenuto "dati".
 - `content/dictionaries.ts` — tutte le stringhe UI, tipizzate
-  (`Dictionary`), con oggetti paralleli `it`/`en`. Contiene sia UI
+  (`Dictionary`), con oggetti paralleli **`it`/`en`/`de`** (il tedesco è
+  stato aggiunto a ottobre 2026). Helper `plural()` per singolare/plurale
+  (`{ one, other }`) e `fill()` per i segnaposto `{chiave}`. Contiene sia UI
   generica sia alcuni testi discorsivi specifici della proprietà (vedi
   `TEMPLATE-SETUP.md` per l'elenco esatto). La sezione `a11y` raccoglie
   le stringhe che vedono solo screen reader e tastiera: vanno tradotte
@@ -131,7 +190,13 @@ persone davvero. Cose da non rompere:
 - `content/legal.ts` e `content/legal-texts.ts` — dati e testi legali,
   vedi la sezione "Pagine legali e conformità".
 - i18n **cookie-based**, non URL-based: nessuna route `/it/`, `/en/`.
-  `lib/locale.ts` (`Locale`, `LOCALE_COOKIE`, `defaultLocale="it"`),
+  `lib/locale.ts` (`locales`, `Locale`, `LOCALE_COOKIE`,
+  `defaultLocale="it"`, `intlLocale` per prezzi e date, `localeNames`),
+  `lib/date-locale.ts` (locale date-fns: inglese **britannico**, settimana
+  che parte di lunedì). Aggiungere una lingua significa: `locales`, un
+  oggetto completo in `dictionaries.ts`, le tre funzioni in
+  `legal-texts.ts`, i campi `*De`-like in `legal.ts`, un ramo in
+  `lib/booking-notifications.ts` (email all'ospite) e `country-names.ts`.
   `components/LocaleProvider.tsx` espone `useLocale() -> {locale, dict,
   setLocale}`. Il cookie viene letto server-side solo in
   `app/layout.tsx` (per l'HTML iniziale) e in eventuali API route che
@@ -141,12 +206,27 @@ persone davvero. Cose da non rompere:
   essere una chiave di `Dictionary` con forma `{title, subtitle?}` — le
   nuove pagine che vogliono riusarlo devono seguire questa forma.
 - Dati di riferimento ISTAT (comuni/stati) in `content/data/*.json`,
-  esposti da `lib/reference-data.ts`.
+  esposti da `lib/reference-data.ts`. Gli stati hanno anche il nome
+  inglese e tedesco (`lib/country-names.ts`), solo per cercare e mostrare:
+  la tabella ufficiale conosce "GERMANIA", un ospite tedesco scrive
+  "Deutschland". Il valore salvato resta codice + nome ufficiale.
+- I metadati SEO restano in italiano (lingua predefinita); il titolo
+  delle pagine principali è il nome della voce di menu ("Contatti"), non
+  l'h1 discorsivo ("Scrivici, o chiamaci"): vedi `pageMetadata()`.
 
 ## Funzionalità principali
 
-- `/check-in` — check-in ospiti. Genera e invia via email all'host **tre**
-  allegati, che coprono due adempimenti distinti su due portali diversi:
+- `/check-in` — check-in ospiti, **a passi** (`components/CheckInForm.tsx`):
+  soggiorno → chi prenota → documento → un passo per ogni altro ospite →
+  conferma con riepilogo e "Modifica" per sezione. Ogni passo è un
+  `<form>` a sé (la validazione del browser controlla solo quel passo); i
+  dati restano in memoria, **mai** in localStorage (sono documenti
+  d'identità). Il sesso parte vuoto e va scelto, mai preimpostato. Motivo
+  del viaggio e mezzo di trasporto si chiedono una volta e si applicano a
+  tutti gli ospiti. Gli errori mostrati all'ospite sono quelli del
+  dizionario, mai il testo del server (che è in italiano). Genera e invia
+  via email all'host **tre** allegati, che coprono due adempimenti
+  distinti su due portali diversi:
   - `lib/ross1000.ts` — XML di movimentazione turistica (statistica) per
     il portale Ross1000/GIES. Tracciato confermato contro il manuale
     ufficiale GIES. **Specifico per il Veneto**: non riusare per altre
@@ -168,7 +248,10 @@ persone davvero. Cose da non rompere:
   produce lo stesso identificativo. Non tornare mai a un valore casuale:
   ogni ri-caricamento creerebbe ospiti nuovi invece di aggiornare quelli
   esistenti, gonfiando le presenze sul portale.
-- `/prenota` — **richiesta** di prenotazione diretta, vedi sotto. Usa il
+- `/prenota` — **richiesta** di prenotazione diretta, vedi sotto. Tre
+  passi numerati (date, ospiti con − e +, dati) e un riepilogo col prezzo
+  che su desktop resta di lato e su telefono diventa una barra in fondo
+  con totale e invio (un unico `<form>`). Usa il
   feed iCal Airbnb/Booking (`lib/ical.ts`, `lib/hooks/useBusyRanges.ts`)
   solo per disabilitare le date già occupate nel calendario — non esiste
   più una pagina "Disponibilità" a sé stante (rimossa: poco usata e
@@ -192,7 +275,8 @@ viene inoltrata via email e non è archiviata da nessuna parte.
 - `POST /api/booking/create` valida (date, preavviso, notti minime,
   sovrapposizione con l'iCal) e chiama `sendBookingRequestEmails`
   (`lib/booking-notifications.ts`): email all'host con `replyTo`
-  dell'ospite, più una presa in carico all'ospite nella sua lingua.
+  dell'ospite, più una presa in carico all'ospite nella sua lingua
+  (it/en/de).
 - Le email dicono a chiare lettere che **la richiesta non è una
   prenotazione** finché l'host non conferma per iscritto. Non è una
   formalità: senza pagamento né calendario condiviso, l'unica difesa
@@ -216,12 +300,14 @@ modifica dovrebbe sapere quale.
   pagamento, imposta di soggiorno, fornitori. I campi vuoti vengono
   **omessi**, mai mostrati come segnaposto: il sito sembra a posto anche
   quando non lo è, ed è per questo che esiste `LEGALE.md`.
-- `content/legal-texts.ts` — prosa di privacy, cookie e termini (it/en),
+- `content/legal-texts.ts` — prosa di privacy, cookie e termini
+  (it/en/de; il tedesco dichiara che in caso di dubbio fa fede l'italiano),
   resa da `components/LegalPage.tsx`. Sta fuori da `dictionaries.ts`, che
   resta per le stringhe di UI. I valori variabili sono interpolati da
   `legal.ts`, **incluso il nome del cookie** letto da `lib/locale.ts`:
   una cookie policy che nomina un cookie diverso da quello reale è essa
-  stessa un'informazione falsa.
+  stessa un'informazione falsa. Allo stesso modo i valori possibili del
+  cookie ("it, en oppure de") vengono da `locales`.
 - `components/Footer.tsx` — su ogni pagina. Il **CIN va indicato in ogni
   annuncio ovunque pubblicato**, sito diretto compreso (art. 13-ter DL
   145/2023, sanzione 500-5.000 €): non spostarlo in una pagina sola.
