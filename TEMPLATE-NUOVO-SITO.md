@@ -151,13 +151,22 @@ Nell'ordine di `TEMPLATE-SETUP.md`:
 5. **`content/legal-texts.ts`**: leggilo tutto, confrontalo con il brief
    (saldo, cancellazione, numero di ospiti) e segnala le differenze invece
    di correggerle in silenzio. Sono le condizioni che l'host propone agli
-   ospiti.
+   ospiti. Ogni testo ha due versioni, con e senza pagamento Stripe, e la
+   sezione sulle offerte via email compare solo con il database: leggi
+   quelle che il sito userà davvero (§6b del brief). Se l'host vuole i
+   pagamenti, `stay.freeCancellationDays` va deciso con lui.
 6. **Stile**: palette in `app/globals.css` (`:root`), font in
    `app/layout.tsx`. Verifica il contrasto (almeno 4,5:1 per il testo)
    tra `--color-charcoal` e `--color-mid` sullo sfondo, e tra il bianco e
    l'accento dei bottoni.
 7. **Icone**: `MARK`/`BG`/`FG` in `scripts/generate-icons.mjs`, poi
    `node scripts/generate-icons.mjs`.
+7bis. **Intestazione del PDF di check-in** (`content/checkin-pdf-header.ts`):
+   ridisegnala nello stile della nuova casa — colori, motivo, carattere
+   — e riscrivine il commento. **Mai quella di Campo Marzio 47** (nome con
+   "47" bordeaux e fascia a scacchiera): è richiesta esplicita
+   dell'utente, e `check` la segnala finché il commento nomina il modello.
+   Controlla il risultato generando un PDF di prova (Fase 5).
 8. **Configurazione**: in `next.config.ts` metti `CANONICAL_HOST` al
    dominio definitivo e lascia **`ALIAS_HOSTS = []`** finché il dominio
    non risponde (Fase 6). Imposta l'URL di ripiego in `lib/seo.ts`. Crea
@@ -195,7 +204,12 @@ Nell'ordine di `TEMPLATE-SETUP.md`:
      ospiti);
    - il footer con il CIN;
    - un check-in completo **solo da tastiera**, comune e stato compresi;
-   - un messaggio di contatto e una richiesta di prenotazione.
+   - un messaggio di contatto e una richiesta di prenotazione;
+   - se l'host vuole i pagamenti, la prenotazione con le chiavi Stripe
+     **di test** e la carta 4242 4242 4242 4242: email all'host, link
+     Conferma e Rifiuta;
+   - la casella delle offerte all'ultimo passo del check-in e la pagina
+     di disiscrizione (il database locale sta in `.wrangler/`).
 
    Nei file `.eml` salvati in `.smtp-sink/` devono esserci i tre allegati
    del check-in, e il corpo **non** deve contenere i dati del documento.
@@ -227,14 +241,18 @@ Ogni punto che esce dalla cartella va fatto solo dopo un sì.
 5. **Variabili di runtime**: Settings → Variables and Secrets. Prepara
    una tabella con i valori non segreti già compilati:
    - come *Secret*: `SMTP_USER`, `SMTP_PASSWORD`, `AIRBNB_ICAL_URL`,
-     `BOOKING_ICAL_URL`, `CHECKIN_ZIP_PASSWORD`;
+     `BOOKING_ICAL_URL`, `CHECKIN_ZIP_PASSWORD` e, solo se l'host vuole i
+     pagamenti, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+     `BOOKING_TOKEN_SECRET` (`TEMPLATE-SETUP.md` §6b);
    - come *Text*: `SMTP_HOST`, `SMTP_PORT`, `MAIL_FROM`, `HOST_EMAIL`,
      `ROSS1000_*`.
 
    Non usare `npm run deploy` dal PC: OpenNext metterebbe nel Worker i
    valori dei file `.env` locali, ed è per questo che
    `scripts/cf-deploy-guard.mjs` lo blocca.
-6. **Primo deploy**: parte al primo push dopo il collegamento. Leggi
+6. **Primo deploy**: parte al primo push dopo il collegamento. Crea
+   anche il database D1 delle offerte (binding `DB` senza ID in
+   `wrangler.jsonc`): se l'host non le vuole, togli quel blocco prima. Leggi
    l'indirizzo `https://<slug>.<sottodominio>.workers.dev` e controlla le
    pagine. Se il connettore Cloudflare è disponibile, verifica che il
    Worker esista nell'account giusto.

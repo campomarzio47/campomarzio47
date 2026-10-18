@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { sendMail } from "@/lib/mailer";
 import { buildRoss1000File } from "@/lib/ross1000";
@@ -7,6 +8,10 @@ import { buildCheckInPdf } from "@/lib/checkin-pdf";
 import { buildCheckInAttachments } from "@/lib/checkin-attachments";
 import { documentTypeCodes, tipoTurismoCodes, mezzoTrasportoCodes } from "@/lib/checkin-types";
 import { ITALIA_CODE } from "@/lib/reference-data";
+import { subscribe } from "@/lib/newsletter";
+import { dictionaries, fill } from "@/content/dictionaries";
+import { property } from "@/content/property";
+import { defaultLocale, isLocale, LOCALE_COOKIE } from "@/lib/locale";
 
 const FISCAL_CODE_PATTERN = /^[A-Z]{6}\d{2}[A-EHLMPR-T]\d{2}[A-Z]\d{3}[A-Z]$/;
 
@@ -50,6 +55,7 @@ const primarySchema = z
   .object({
     email: z.string().email(),
     indirizzoResidenza: z.string().min(1).max(120),
+    cap: z.string().max(12).optional().default(""),
     codiceFiscale: z.string().max(16).optional().default(""),
     tipoDocumento: z.enum(documentTypeCodes),
     numeroDocumento: z.string().min(1).max(20),
@@ -72,7 +78,14 @@ const checkInSchema = z
     // obbligo di legge (art. 6.1.c GDPR), non qualcosa che l'ospite possa
     // autorizzare o negare. Vedi /privacy.
     privacyAck: z.literal(true),
+    // Offerte via email: facoltative e separate dalla presa visione. Il
+    // check-in procede identico con o senza.
+    newsletter: z.boolean().optional().default(false),
   })
+  .refine(
+    (d) => d.guests[0]?.statoResidenza?.code !== ITALIA_CODE || /^\d{5}$/.test(d.primary.cap),
+    { message: "CAP obbligatorio (5 cifre) se l'ospite principale risiede in Italia." },
+  )
   .refine(
     (d) => d.guests[0]?.cittadinanza?.code !== ITALIA_CODE || FISCAL_CODE_PATTERN.test(d.primary.codiceFiscale),
     { message: "Codice fiscale obbligatorio e valido per l'ospite principale se cittadino italiano." },
@@ -142,6 +155,20 @@ export async function POST(request: Request) {
       ].join("\n"),
       attachments,
     });
+
+    if (data.newsletter) {
+      const rawLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
+      const locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
+      // Il testo del consenso si salva com'era sullo schermo, preso dal
+      // dizionario e non dal browser: è la prova di cosa è stato accettato.
+      await subscribe({
+        email: data.primary.email,
+        name: data.guests[0].nome,
+        locale,
+        stay: data.dataArrivo,
+        consentText: fill(dictionaries[locale].checkin.newsletterLabel, { name: property.name }),
+      }).catch((error) => console.error("Iscrizione alle offerte non riuscita", error));
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

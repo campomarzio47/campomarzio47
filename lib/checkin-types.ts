@@ -76,6 +76,9 @@ export type Guest = {
 export type PrimaryGuestExtra = {
   email: string;
   indirizzoResidenza: string;
+  // CAP (o codice postale estero): con via, comune e stato forma
+  // l'indirizzo da riportare in fattura. Obbligatorio solo in Italia.
+  cap: string;
   codiceFiscale: string; // solo se il primo ospite ha cittadinanza italiana
   tipoDocumento: DocumentTypeCode;
   numeroDocumento: string;

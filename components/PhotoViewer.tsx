@@ -13,6 +13,7 @@ export type ViewerPhoto = {
   src: string;
   width: number;
   height: number;
+  focus?: string;
   alt: string;
   caption: string;
 };

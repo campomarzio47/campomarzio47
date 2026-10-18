@@ -32,6 +32,9 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
+/** Funzioni attive sul sito, decise lato server (vedi lib/features.ts). */
+export type SiteFeatures = { payments: boolean; newsletter: boolean };
+
 export type LegalDocuments = {
   privacy: LegalDocument;
   cookies: LegalDocument;
@@ -44,6 +47,7 @@ function compact(items: (string | null | false | undefined)[]): string[] {
 }
 
 const hours = legal.stay.paymentDueHoursBeforeArrival;
+const days = legal.stay.freeCancellationDays;
 const maxGuests = property.facts.maxGuests;
 
 // I valori possibili del cookie della lingua, scritti nella policy ("it, en
@@ -54,7 +58,7 @@ function cookieValues(or: string): string {
 
 // ─────────────────────────────── ITALIANO ───────────────────────────────
 
-function privacyIt(): LegalDocument {
+function privacyIt(f: SiteFeatures): LegalDocument {
   const { business, providers, privacy } = legal;
 
   return {
@@ -81,7 +85,7 @@ function privacyIt(): LegalDocument {
         paragraphs: [
           "Il sito raccoglie dati solo quando sei tu a compilare uno dei tre moduli. Non c'è profilazione, non c'è pubblicità, non ci sono decisioni automatizzate.",
           "1. Modulo contatti — nome, email, date indicative del soggiorno e il testo del messaggio. Servono a risponderti. La base giuridica è l'esecuzione di misure precontrattuali su tua richiesta e il nostro legittimo interesse a dare seguito a chi ci scrive (art. 6.1.b e 6.1.f GDPR).",
-          "2. Richiesta di prenotazione — nome, email, telefono, date, numero di ospiti ed eventuale messaggio. Servono a valutare la disponibilità e risponderti, e, se la richiesta viene confermata, a gestire il soggiorno. La base giuridica è l'esecuzione di misure precontrattuali e poi del contratto (art. 6.1.b GDPR).",
+          `2. Richiesta di prenotazione — nome, email, telefono, date, numero di ospiti ed eventuale messaggio. Servono a valutare la disponibilità e risponderti, e, se la richiesta viene confermata, a gestire il soggiorno. La base giuridica è l'esecuzione di misure precontrattuali e poi del contratto (art. 6.1.b GDPR).${f.payments ? " Se paghi con carta, i dati della carta li inserisci sulla pagina di Stripe e li tratta solo Stripe: a noi arrivano soltanto l'esito e l'importo del pagamento." : ""}`,
           "3. Check-in online — dati anagrafici di ogni ospite (nome, cognome, sesso, data e luogo di nascita, cittadinanza, residenza) e, per l'ospite che presenta il gruppo, gli estremi del documento di identità, il codice fiscale e l'indirizzo. Questi dati non ce li chiediamo noi: ce li impone la legge. La base giuridica è quindi l'adempimento di un obbligo legale (art. 6.1.c GDPR), e precisamente:",
         ],
         items: [
@@ -96,6 +100,17 @@ function privacyIt(): LegalDocument {
           "Per il check-in no. Comunicare i dati di ogni persona alloggiata è un obbligo di legge a carico di chi ospita, e senza quei dati non è possibile consentire il soggiorno. Per la stessa ragione non si tratta di un consenso che puoi revocare: quando accetti il modulo di check-in stai dichiarando di aver letto questa informativa, non stai autorizzando un trattamento facoltativo.",
         ],
       },
+      ...(f.newsletter
+        ? [
+          {
+            heading: "Le offerte via email, solo se le scegli",
+            paragraphs: [
+              "Alla fine del check-in puoi scegliere, con una casella che parte non spuntata, di ricevere da noi al massimo tre email l'anno con offerte per tornare. Il check-in funziona esattamente allo stesso modo anche se non la spunti.",
+              `In quel caso conserviamo il tuo indirizzo email, il nome, la lingua e la data del soggiorno, in un database di ${providers.hosting.name}. La base giuridica è il tuo consenso (art. 6.1.a GDPR): puoi revocarlo quando vuoi con il link in fondo a ogni email, o scrivendoci, e la revoca cancella il tuo indirizzo dall'elenco. Non usiamo questi dati per altro, né per profilarti.`,
+            ],
+          },
+          ]
+        : []),
       {
         heading: "A chi comunichiamo i dati",
         paragraphs: ["I dati raccolti sono comunicati soltanto a:"],
@@ -110,13 +125,16 @@ function privacyIt(): LegalDocument {
             `${providers.mailbox.name} — ${providers.mailbox.purpose}${
               providers.mailbox.country ? ` (${providers.mailbox.country})` : ""
             };`,
+          f.payments && `${providers.payments.name} — ${providers.payments.purpose} (${providers.payments.country});`,
           "eventuali professionisti (commercialista, consulenti) e autorità, quando la legge lo richiede.",
         ]),
       },
       {
         heading: "Non vendiamo i tuoi dati",
         paragraphs: [
-          "I dati non sono ceduti né venduti a terzi per finalità commerciali, non alimentano alcuna attività di marketing e non vengono usati per profilarti.",
+          f.newsletter
+            ? "I dati non sono ceduti né venduti a terzi per finalità commerciali e non vengono usati per profilarti. L'unico uso promozionale sono le email di offerte, e solo per chi le ha scelte."
+            : "I dati non sono ceduti né venduti a terzi per finalità commerciali, non alimentano alcuna attività di marketing e non vengono usati per profilarti.",
         ],
       },
       {
@@ -128,14 +146,15 @@ function privacyIt(): LegalDocument {
       {
         heading: "Come sono conservati, e per quanto",
         paragraphs: [
-          "Questo sito non ha un database e non archivia i dati dei moduli: ciò che invii viene trasmesso via email al titolare e conservato soltanto nella sua casella di posta e negli archivi necessari agli adempimenti di legge.",
+          `${f.newsletter ? "Questo sito non archivia i dati dei moduli: ciò che invii viene trasmesso via email al titolare e conservato soltanto nella sua casella di posta e negli archivi necessari agli adempimenti di legge. L'unica eccezione è l'elenco di chi ha scelto le offerte via email." : "Questo sito non ha un database e non archivia i dati dei moduli: ciò che invii viene trasmesso via email al titolare e conservato soltanto nella sua casella di posta e negli archivi necessari agli adempimenti di legge."}${f.payments ? " Le prenotazioni pagate risultano anche nell'archivio di Stripe, che le conserva per gli obblighi fiscali e antiriciclaggio." : ""}`,
           "I tempi di conservazione sono i seguenti:",
         ],
-        items: [
+        items: compact([
           `Modulo contatti: ${privacy.retentionContact}.`,
           `Richiesta di prenotazione: ${privacy.retentionBooking}.`,
           `Dati del check-in: ${privacy.retentionCheckin}.`,
-        ],
+          f.newsletter && `Offerte via email: ${privacy.retentionNewsletter}.`,
+        ]),
       },
       {
         heading: "I tuoi diritti",
@@ -194,8 +213,8 @@ function cookiesIt(): LegalDocument {
   };
 }
 
-function termsIt(): LegalDocument {
-  const { business, codes, stay } = legal;
+function termsIt(f: SiteFeatures): LegalDocument {
+  const { business, codes, stay, providers } = legal;
 
   const touristTaxLine =
     stay.touristTax.applies === true
@@ -208,7 +227,7 @@ function termsIt(): LegalDocument {
 
   return {
     intro:
-      "Queste condizioni regolano il soggiorno presso l'immobile presentato su questo sito e l'uso del sito stesso. Ti chiediamo di leggerle prima di inviare una richiesta di prenotazione.",
+      `Queste condizioni regolano il soggiorno presso l'immobile presentato su questo sito e l'uso del sito stesso. Ti chiediamo di leggerle ${f.payments ? "prima di prenotare" : "prima di inviare una richiesta di prenotazione"}.`,
     sections: [
       {
         heading: "Chi siamo",
@@ -231,7 +250,16 @@ function termsIt(): LegalDocument {
           `L'immobile può ospitare al massimo ${maxGuests} persone. Il numero di ospiti dichiarato nella richiesta non può essere superato.`,
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Come si prenota",
+            paragraphs: [
+              "Scegli le date e inserisci i dati della carta sulla pagina sicura di Stripe. In quel momento l'importo totale viene autorizzato, cioè riservato sulla carta, ma non addebitato.",
+              "Ti rispondiamo per email, di solito entro un giorno. Il contratto si conclude con la nostra conferma scritta: solo allora l'importo viene addebitato.",
+              "Se non possiamo ospitarti, o se non confermiamo prima che l'autorizzazione scada (pochi giorni, a seconda della banca), l'autorizzazione viene annullata e non paghi nulla. Fino alla conferma le date possono essere prenotate anche da altri.",
+            ],
+          }
+        : {
         heading: "Una richiesta non è ancora una prenotazione",
         paragraphs: [
           "Il modulo presente su questo sito serve a inviarci una richiesta. Non costituisce una prenotazione, non impegna nessuna delle due parti e non comporta alcun pagamento.",
@@ -239,14 +267,30 @@ function termsIt(): LegalDocument {
           "L'importo mostrato sul sito quando scegli le date è un preventivo indicativo, calcolato sulla tariffa corrente. Il prezzo che fa fede è quello scritto nella nostra email di conferma.",
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Prezzo e cosa comprende",
+            paragraphs: [
+              "Il prezzo mostrato prima del pagamento è il totale del soggiorno: comprende le utenze, la biancheria da letto, gli asciugamani e le pulizie finali.",
+              touristTaxLine,
+            ],
+          }
+        : {
         heading: "Prezzo e cosa comprende",
         paragraphs: [
           "Il prezzo è indicato per notte e comprende le utenze, la biancheria da letto e gli asciugamani. Eventuali costi aggiuntivi, come le pulizie finali, sono indicati separatamente prima della conferma.",
           touristTaxLine,
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Pagamento",
+            paragraphs: [
+              `Si paga con carta, o con gli altri metodi proposti dalla pagina di pagamento, attraverso ${providers.payments.name}, con sede in Irlanda. I dati della carta li inserisci sulla pagina di Stripe: non passano da questo sito e noi non li vediamo mai.`,
+              "L'intero importo viene addebitato quando confermiamo la prenotazione. Non sono previsti altri pagamenti, salvo l'eventuale imposta di soggiorno.",
+            ],
+          }
+        : {
         heading: "Pagamento",
         paragraphs: compact([
           "Non è richiesto alcun anticipo al momento della richiesta, e questo sito non raccoglie dati di pagamento: non ti viene chiesto alcun numero di carta, in nessun momento.",
@@ -257,7 +301,16 @@ function termsIt(): LegalDocument {
           "Se il saldo non perviene entro il termine, la prenotazione si intende annullata e l'accesso all'immobile non viene consentito.",
         ]),
       },
-      {
+      f.payments
+        ? {
+            heading: "Cancellazione",
+            paragraphs: [
+              "Prima della nostra conferma puoi ritirare la richiesta in qualsiasi momento scrivendoci: l'autorizzazione viene annullata e non paghi nulla.",
+              `Dopo la conferma puoi cancellare scrivendoci, anche rispondendo all'email di conferma. Se cancelli fino a ${days} giorni prima della data di arrivo ti rimborsiamo l'intero importo, sulla stessa carta, di norma entro 14 giorni. Se cancelli dopo, l'importo non è rimborsabile, salvo diverso accordo scritto.`,
+              "Se fossimo noi a dover annullare la prenotazione, ti rimborseremmo l'intero importo.",
+            ],
+          }
+        : {
         heading: "Cancellazione",
         paragraphs: [
           "Puoi annullare la prenotazione senza alcuna penale, e senza doverci spiegare il motivo, in qualsiasi momento prima del versamento del saldo. Non essendoci anticipi, non c'è nulla da rimborsare e nulla da trattenere.",
@@ -269,7 +322,9 @@ function termsIt(): LegalDocument {
         paragraphs: [
           "Il diritto di recesso di quattordici giorni previsto per gli acquisti a distanza non si applica a questa prenotazione.",
           "Lo stabilisce l'art. 59, comma 1, lettera n) del Codice del consumo, che esclude il recesso per i contratti di fornitura di alloggi per fini non residenziali quando il contratto prevede una data o un periodo di esecuzione specifici. È il caso di un soggiorno prenotato per date determinate: chi ospita, tenendo quelle date bloccate, rinuncia alla possibilità di affittarle ad altri.",
-          "Resta ferma la politica di cancellazione descritta sopra, che nei fatti ti lascia libero di annullare senza costi fino al saldo.",
+          f.payments
+            ? `Resta ferma la cancellazione con rimborso totale fino a ${days} giorni prima dell'arrivo, descritta sopra.`
+            : "Resta ferma la politica di cancellazione descritta sopra, che nei fatti ti lascia libero di annullare senza costi fino al saldo.",
         ],
       },
       {
@@ -311,7 +366,7 @@ function termsIt(): LegalDocument {
 
 // ──────────────────────────────── ENGLISH ────────────────────────────────
 
-function privacyEn(): LegalDocument {
+function privacyEn(f: SiteFeatures): LegalDocument {
   const { business, providers, privacy } = legal;
 
   return {
@@ -338,7 +393,7 @@ function privacyEn(): LegalDocument {
         paragraphs: [
           "The website only collects data when you fill in one of the three forms. There is no profiling, no advertising and no automated decision-making.",
           "1. Contact form — name, email, indicative dates and your message. Used to reply to you. The legal basis is pre-contractual measures taken at your request and our legitimate interest in answering people who write to us (Art. 6.1.b and 6.1.f GDPR).",
-          "2. Booking request — name, email, phone, dates, number of guests and any message. Used to check availability and reply, and, if the request is confirmed, to manage your stay. The legal basis is pre-contractual measures and then performance of the contract (Art. 6.1.b GDPR).",
+          `2. Booking request — name, email, phone, dates, number of guests and any message. Used to check availability and reply, and, if the request is confirmed, to manage your stay. The legal basis is pre-contractual measures and then performance of the contract (Art. 6.1.b GDPR).${f.payments ? " If you pay by card, you enter your card details on Stripe's page and only Stripe handles them: we only receive the outcome and the amount of the payment." : ""}`,
           "3. Online check-in — personal details of every guest (name, surname, sex, date and place of birth, citizenship, residence) and, for the guest registering the group, identity document details, Italian tax code and address. We are not the ones asking for this: the law is. The legal basis is therefore compliance with a legal obligation (Art. 6.1.c GDPR), specifically:",
         ],
         items: [
@@ -353,6 +408,17 @@ function privacyEn(): LegalDocument {
           "For the check-in it is different. Reporting the details of every accommodated person is a legal obligation on the host, and without that data the stay cannot go ahead. For the same reason this is not a consent you can withdraw: when you tick the check-in box you are confirming you have read this notice, not authorising an optional processing.",
         ],
       },
+      ...(f.newsletter
+        ? [
+          {
+            heading: "Offers by email, only if you choose them",
+            paragraphs: [
+              "At the end of the check-in you can choose, with a box that starts unticked, to receive at most three emails a year from us with offers to come back. The check-in works exactly the same if you leave it unticked.",
+              `In that case we keep your email address, name, language and the date of your stay, in a database hosted by ${providers.hosting.name}. The legal basis is your consent (Art. 6.1.a GDPR): you can withdraw it at any time with the link at the bottom of every email, or by writing to us, and withdrawing deletes your address from the list. We do not use this data for anything else, nor to profile you.`,
+            ],
+          },
+          ]
+        : []),
       {
         heading: "Who we share data with",
         paragraphs: ["The data collected is shared only with:"],
@@ -367,13 +433,16 @@ function privacyEn(): LegalDocument {
             `${providers.mailbox.name} — ${providers.mailbox.purposeEn}${
               providers.mailbox.countryEn ? ` (${providers.mailbox.countryEn})` : ""
             };`,
+          f.payments && `${providers.payments.name} — ${providers.payments.purposeEn} (${providers.payments.countryEn});`,
           "professional advisers and authorities, where the law requires it.",
         ]),
       },
       {
         heading: "We do not sell your data",
         paragraphs: [
-          "Your data is never sold or disclosed to third parties for commercial purposes, never feeds any marketing activity and is never used to profile you.",
+          f.newsletter
+            ? "Your data is never sold or disclosed to third parties for commercial purposes and is never used to profile you. The only promotional use is the offers by email, and only for those who chose them."
+            : "Your data is never sold or disclosed to third parties for commercial purposes, never feeds any marketing activity and is never used to profile you.",
         ],
       },
       {
@@ -385,14 +454,15 @@ function privacyEn(): LegalDocument {
       {
         heading: "How it is stored, and for how long",
         paragraphs: [
-          "This website has no database and does not store form submissions: what you send is emailed to the controller and kept only in their mailbox and in the records required by law.",
+          `${f.newsletter ? "This website does not store form submissions: what you send is emailed to the controller and kept only in their mailbox and in the records required by law. The only exception is the list of people who chose to receive offers by email." : "This website has no database and does not store form submissions: what you send is emailed to the controller and kept only in their mailbox and in the records required by law."}${f.payments ? " Paid bookings are also recorded by Stripe, which keeps them for tax and anti-money-laundering obligations." : ""}`,
           "Retention periods are:",
         ],
-        items: [
+        items: compact([
           `Contact form: ${privacy.retentionContactEn}.`,
           `Booking request: ${privacy.retentionBookingEn}.`,
           `Check-in data: ${privacy.retentionCheckinEn}.`,
-        ],
+          f.newsletter && `Offers by email: ${privacy.retentionNewsletterEn}.`,
+        ]),
       },
       {
         heading: "Your rights",
@@ -451,8 +521,8 @@ function cookiesEn(): LegalDocument {
   };
 }
 
-function termsEn(): LegalDocument {
-  const { business, codes, stay } = legal;
+function termsEn(f: SiteFeatures): LegalDocument {
+  const { business, codes, stay, providers } = legal;
 
   const touristTaxLine =
     stay.touristTax.applies === true
@@ -465,7 +535,7 @@ function termsEn(): LegalDocument {
 
   return {
     intro:
-      "These terms govern your stay at the property presented on this website and your use of the website itself. Please read them before sending a booking request.",
+      `These terms govern your stay at the property presented on this website and your use of the website itself. Please read them ${f.payments ? "before booking" : "before sending a booking request"}.`,
     sections: [
       {
         heading: "Who we are",
@@ -488,7 +558,16 @@ function termsEn(): LegalDocument {
           `The property sleeps a maximum of ${maxGuests} people. The number of guests stated in the request may not be exceeded.`,
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "How booking works",
+            paragraphs: [
+              "Choose your dates and enter your card details on Stripe's secure payment page. At that point the total amount is authorised — reserved on your card — but not charged.",
+              "We reply by email, usually within a day. The contract is formed with our written confirmation: only then is the amount charged.",
+              "If we cannot host you, or if we do not confirm before the authorisation expires (a few days, depending on your bank), the authorisation is cancelled and you pay nothing. Until we confirm, the dates may also be booked by others.",
+            ],
+          }
+        : {
         heading: "A request is not yet a booking",
         paragraphs: [
           "The form on this website sends us a request. It is not a booking, it binds neither party and it involves no payment.",
@@ -496,14 +575,30 @@ function termsEn(): LegalDocument {
           "The amount shown on the website when you pick your dates is an indicative quote based on the current rate. The price that counts is the one written in our confirmation email.",
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Price and what it covers",
+            paragraphs: [
+              "The price shown before payment is the total for your stay: it includes utilities, bed linen, towels and the final cleaning.",
+              touristTaxLine,
+            ],
+          }
+        : {
         heading: "Price and what it covers",
         paragraphs: [
           "The price is quoted per night and includes utilities, bed linen and towels. Any additional costs, such as a final cleaning fee, are stated separately before confirmation.",
           touristTaxLine,
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Payment",
+            paragraphs: [
+              `You pay by card, or with the other methods offered on the payment page, through ${providers.payments.name}, based in Ireland. You enter your card details on Stripe's page: they never pass through this website and we never see them.`,
+              "The full amount is charged when we confirm the booking. There are no other payments, except any tourist tax.",
+            ],
+          }
+        : {
         heading: "Payment",
         paragraphs: compact([
           "No deposit is required when you send a request, and this website collects no payment details: you are never asked for a card number, at any point.",
@@ -514,7 +609,16 @@ function termsEn(): LegalDocument {
           "If payment is not received by the deadline, the booking is treated as cancelled and access to the property is not granted.",
         ]),
       },
-      {
+      f.payments
+        ? {
+            heading: "Cancellation",
+            paragraphs: [
+              "Before we confirm, you can withdraw your request at any time by writing to us: the authorisation is cancelled and you pay nothing.",
+              `After confirmation you can cancel by writing to us, including by replying to the confirmation email. If you cancel up to ${days} days before the arrival date, we refund the full amount to the same card, normally within 14 days. If you cancel later, the amount is not refundable unless agreed otherwise in writing.`,
+              "If we ever had to cancel the booking ourselves, we would refund the full amount.",
+            ],
+          }
+        : {
         heading: "Cancellation",
         paragraphs: [
           "You may cancel free of charge, without giving a reason, at any time before paying the balance. Since nothing is paid up front, there is nothing to refund and nothing to withhold.",
@@ -526,7 +630,9 @@ function termsEn(): LegalDocument {
         paragraphs: [
           "The fourteen-day right of withdrawal that applies to distance purchases does not apply to this booking.",
           "This follows from Art. 59(1)(n) of the Italian Consumer Code, which excludes withdrawal for contracts providing accommodation for non-residential purposes where the contract specifies a particular date or period of performance. A stay booked for specific dates is exactly that: by holding those dates for you, the host gives up the chance to let them to anyone else.",
-          "The cancellation policy above still applies, and in practice leaves you free to cancel at no cost right up to payment.",
+          f.payments
+            ? `The cancellation policy above still applies, with a full refund up to ${days} days before arrival.`
+            : "The cancellation policy above still applies, and in practice leaves you free to cancel at no cost right up to payment.",
         ],
       },
       {
@@ -568,7 +674,7 @@ function termsEn(): LegalDocument {
 
 // ──────────────────────────────── DEUTSCH ────────────────────────────────
 
-function privacyDe(): LegalDocument {
+function privacyDe(f: SiteFeatures): LegalDocument {
   const { business, providers, privacy } = legal;
 
   return {
@@ -595,7 +701,7 @@ function privacyDe(): LegalDocument {
         paragraphs: [
           "Die Website erhebt nur dann Daten, wenn Sie eines der drei Formulare ausfüllen. Es gibt kein Profiling, keine Werbung und keine automatisierten Entscheidungen.",
           "1. Kontaktformular — Name, E-Mail, ungefähre Reisedaten und Ihre Nachricht. Sie dienen dazu, Ihnen zu antworten. Rechtsgrundlage sind vorvertragliche Maßnahmen auf Ihre Anfrage und unser berechtigtes Interesse, auf Nachrichten zu antworten (Art. 6 Abs. 1 lit. b und f DSGVO).",
-          "2. Buchungsanfrage — Name, E-Mail, Telefon, Reisedaten, Anzahl der Gäste und eine eventuelle Nachricht. Sie dienen dazu, die Verfügbarkeit zu prüfen und Ihnen zu antworten und, wenn die Anfrage bestätigt wird, den Aufenthalt abzuwickeln. Rechtsgrundlage sind vorvertragliche Maßnahmen und anschließend die Erfüllung des Vertrags (Art. 6 Abs. 1 lit. b DSGVO).",
+          `2. Buchungsanfrage — Name, E-Mail, Telefon, Reisedaten, Anzahl der Gäste und eine eventuelle Nachricht. Sie dienen dazu, die Verfügbarkeit zu prüfen und Ihnen zu antworten und, wenn die Anfrage bestätigt wird, den Aufenthalt abzuwickeln. Rechtsgrundlage sind vorvertragliche Maßnahmen und anschließend die Erfüllung des Vertrags (Art. 6 Abs. 1 lit. b DSGVO).${f.payments ? " Wenn Sie mit Karte bezahlen, geben Sie die Kartendaten auf der Seite von Stripe ein, und nur Stripe verarbeitet sie: Wir erhalten lediglich das Ergebnis und den Betrag der Zahlung." : ""}`,
           "3. Online-Check-in — Personalien jedes Gastes (Vor- und Nachname, Geschlecht, Geburtsdatum und -ort, Staatsangehörigkeit, Wohnsitz) und, für die Person, die die Gruppe anmeldet, die Angaben zum Ausweisdokument, die italienische Steuernummer und die Adresse. Diese Daten verlangen nicht wir, sondern das Gesetz. Rechtsgrundlage ist daher die Erfüllung einer rechtlichen Verpflichtung (Art. 6 Abs. 1 lit. c DSGVO), und zwar:",
         ],
         items: [
@@ -610,6 +716,17 @@ function privacyDe(): LegalDocument {
           "Beim Check-in nicht. Die Meldung jeder beherbergten Person ist eine gesetzliche Pflicht des Gastgebers, und ohne diese Daten kann der Aufenthalt nicht stattfinden. Aus demselben Grund handelt es sich nicht um eine Einwilligung, die Sie widerrufen könnten: Mit dem Häkchen im Check-in bestätigen Sie, diese Information gelesen zu haben, Sie erlauben keine freiwillige Verarbeitung.",
         ],
       },
+      ...(f.newsletter
+        ? [
+          {
+            heading: "Angebote per E-Mail, nur wenn Sie es wünschen",
+            paragraphs: [
+              "Am Ende des Check-ins können Sie mit einem Kästchen, das anfangs nicht angekreuzt ist, wählen, höchstens drei E-Mails im Jahr mit Angeboten für einen erneuten Aufenthalt zu erhalten. Der Check-in funktioniert genauso, wenn Sie es nicht ankreuzen.",
+              `In diesem Fall speichern wir Ihre E-Mail-Adresse, Ihren Namen, Ihre Sprache und das Datum Ihres Aufenthalts in einer Datenbank bei ${providers.hosting.name}. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO): Sie können sie jederzeit über den Link am Ende jeder E-Mail oder mit einer Nachricht an uns widerrufen, und der Widerruf löscht Ihre Adresse aus der Liste. Wir verwenden diese Daten für nichts anderes und auch nicht für Profiling.`,
+            ],
+          },
+          ]
+        : []),
       {
         heading: "An wen wir Daten weitergeben",
         paragraphs: ["Die erhobenen Daten werden nur weitergegeben an:"],
@@ -624,13 +741,16 @@ function privacyDe(): LegalDocument {
             `${providers.mailbox.name} — ${providers.mailbox.purposeDe}${
               providers.mailbox.countryDe ? ` (${providers.mailbox.countryDe})` : ""
             };`,
+          f.payments && `${providers.payments.name} — ${providers.payments.purposeDe} (${providers.payments.countryDe});`,
           "Berater (etwa Steuerberater) und Behörden, wenn das Gesetz es verlangt.",
         ]),
       },
       {
         heading: "Wir verkaufen Ihre Daten nicht",
         paragraphs: [
-          "Ihre Daten werden weder verkauft noch zu kommerziellen Zwecken an Dritte weitergegeben, sie fließen in keinerlei Marketing ein und werden nicht für Profiling verwendet.",
+          f.newsletter
+            ? "Ihre Daten werden weder verkauft noch zu kommerziellen Zwecken an Dritte weitergegeben und nicht für Profiling verwendet. Die einzige werbliche Nutzung sind die Angebote per E-Mail, und nur für diejenigen, die sie gewählt haben."
+            : "Ihre Daten werden weder verkauft noch zu kommerziellen Zwecken an Dritte weitergegeben, sie fließen in keinerlei Marketing ein und werden nicht für Profiling verwendet.",
         ],
       },
       {
@@ -642,14 +762,15 @@ function privacyDe(): LegalDocument {
       {
         heading: "Wie und wie lange die Daten gespeichert werden",
         paragraphs: [
-          "Diese Website hat keine Datenbank und speichert die Formulardaten nicht: Was Sie senden, wird per E-Mail an den Verantwortlichen übermittelt und nur in dessen Postfach und in den gesetzlich vorgeschriebenen Unterlagen aufbewahrt.",
+          `${f.newsletter ? "Diese Website speichert die Formulardaten nicht: Was Sie senden, wird per E-Mail an den Verantwortlichen übermittelt und nur in dessen Postfach und in den gesetzlich vorgeschriebenen Unterlagen aufbewahrt. Die einzige Ausnahme ist die Liste derjenigen, die Angebote per E-Mail gewählt haben." : "Diese Website hat keine Datenbank und speichert die Formulardaten nicht: Was Sie senden, wird per E-Mail an den Verantwortlichen übermittelt und nur in dessen Postfach und in den gesetzlich vorgeschriebenen Unterlagen aufbewahrt."}${f.payments ? " Bezahlte Buchungen werden außerdem von Stripe erfasst, das sie für steuerliche Pflichten und zur Geldwäscheprävention aufbewahrt." : ""}`,
           "Die Speicherdauer beträgt:",
         ],
-        items: [
+        items: compact([
           `Kontaktformular: ${privacy.retentionContactDe}.`,
           `Buchungsanfrage: ${privacy.retentionBookingDe}.`,
           `Check-in-Daten: ${privacy.retentionCheckinDe}.`,
-        ],
+          f.newsletter && `Angebote per E-Mail: ${privacy.retentionNewsletterDe}.`,
+        ]),
       },
       {
         heading: "Ihre Rechte",
@@ -709,8 +830,8 @@ function cookiesDe(): LegalDocument {
   };
 }
 
-function termsDe(): LegalDocument {
-  const { business, codes, stay } = legal;
+function termsDe(f: SiteFeatures): LegalDocument {
+  const { business, codes, stay, providers } = legal;
 
   const touristTaxLine =
     stay.touristTax.applies === true
@@ -723,7 +844,7 @@ function termsDe(): LegalDocument {
 
   return {
     intro:
-      "Diese Bedingungen regeln Ihren Aufenthalt in der auf dieser Website vorgestellten Unterkunft und die Nutzung der Website selbst. Bitte lesen Sie sie, bevor Sie eine Buchungsanfrage senden. Dies ist eine Übersetzung aus dem Italienischen; im Zweifel gilt die italienische Fassung.",
+      `Diese Bedingungen regeln Ihren Aufenthalt in der auf dieser Website vorgestellten Unterkunft und die Nutzung der Website selbst. Bitte lesen Sie sie, ${f.payments ? "bevor Sie buchen" : "bevor Sie eine Buchungsanfrage senden"}. Dies ist eine Übersetzung aus dem Italienischen; im Zweifel gilt die italienische Fassung.`,
     sections: [
       {
         heading: "Wer wir sind",
@@ -746,7 +867,16 @@ function termsDe(): LegalDocument {
           `Die Unterkunft bietet Platz für höchstens ${maxGuests} Personen. Die in der Anfrage angegebene Zahl der Gäste darf nicht überschritten werden.`,
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "So wird gebucht",
+            paragraphs: [
+              "Sie wählen die Termine und geben Ihre Kartendaten auf der sicheren Zahlungsseite von Stripe ein. Dabei wird der Gesamtbetrag autorisiert, also auf Ihrer Karte reserviert, aber nicht abgebucht.",
+              "Wir antworten per E-Mail, meist innerhalb eines Tages. Der Vertrag kommt mit unserer schriftlichen Bestätigung zustande: Erst dann wird der Betrag abgebucht.",
+              "Können wir Sie nicht beherbergen oder bestätigen wir nicht, bevor die Autorisierung abläuft (je nach Bank wenige Tage), wird sie aufgehoben und Sie zahlen nichts. Bis zur Bestätigung können die Termine auch von anderen gebucht werden.",
+            ],
+          }
+        : {
         heading: "Eine Anfrage ist noch keine Buchung",
         paragraphs: [
           "Mit dem Formular auf dieser Website senden Sie uns eine Anfrage. Sie ist keine Buchung, verpflichtet keine der beiden Seiten und ist mit keiner Zahlung verbunden.",
@@ -754,14 +884,30 @@ function termsDe(): LegalDocument {
           "Der Betrag, den die Website bei der Wahl der Termine anzeigt, ist ein unverbindlicher Kostenvoranschlag auf Grundlage des aktuellen Preises. Maßgeblich ist der Preis in unserer Bestätigungs-E-Mail.",
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Preis und Leistungen",
+            paragraphs: [
+              "Der vor der Zahlung angezeigte Preis ist der Gesamtpreis Ihres Aufenthalts: Er umfasst Nebenkosten, Bettwäsche, Handtücher und die Endreinigung.",
+              touristTaxLine,
+            ],
+          }
+        : {
         heading: "Preis und Leistungen",
         paragraphs: [
           "Der Preis gilt pro Nacht und umfasst Nebenkosten, Bettwäsche und Handtücher. Eventuelle Zusatzkosten, etwa eine Endreinigung, werden vor der Bestätigung gesondert angegeben.",
           touristTaxLine,
         ],
       },
-      {
+      f.payments
+        ? {
+            heading: "Zahlung",
+            paragraphs: [
+              `Sie bezahlen mit Karte oder mit den anderen auf der Zahlungsseite angebotenen Methoden über ${providers.payments.name} mit Sitz in Irland. Ihre Kartendaten geben Sie auf der Seite von Stripe ein: Sie laufen nicht über diese Website, und wir sehen sie nie.`,
+              "Der gesamte Betrag wird abgebucht, wenn wir die Buchung bestätigen. Weitere Zahlungen fallen nicht an, abgesehen von einer eventuellen Kurtaxe.",
+            ],
+          }
+        : {
         heading: "Zahlung",
         paragraphs: compact([
           "Bei der Anfrage ist keine Anzahlung zu leisten, und diese Website erhebt keine Zahlungsdaten: Sie werden zu keinem Zeitpunkt nach einer Kartennummer gefragt.",
@@ -772,7 +918,16 @@ function termsDe(): LegalDocument {
           "Geht die Zahlung nicht fristgerecht ein, gilt die Buchung als storniert und der Zugang zur Unterkunft wird nicht gewährt.",
         ]),
       },
-      {
+      f.payments
+        ? {
+            heading: "Stornierung",
+            paragraphs: [
+              "Vor unserer Bestätigung können Sie die Anfrage jederzeit mit einer Nachricht an uns zurückziehen: Die Autorisierung wird aufgehoben und Sie zahlen nichts.",
+              `Nach der Bestätigung können Sie mit einer Nachricht an uns stornieren, auch als Antwort auf die Bestätigungs-E-Mail. Stornieren Sie bis ${days} Tage vor dem Anreisetag, erstatten wir den gesamten Betrag auf dieselbe Karte, in der Regel innerhalb von 14 Tagen. Bei späterer Stornierung ist der Betrag nicht erstattungsfähig, sofern nichts anderes schriftlich vereinbart wird.`,
+              "Müssten wir die Buchung selbst stornieren, erstatten wir Ihnen den gesamten Betrag.",
+            ],
+          }
+        : {
         heading: "Stornierung",
         paragraphs: [
           "Sie können jederzeit vor der Zahlung des Betrags kostenlos und ohne Angabe von Gründen stornieren. Da nichts im Voraus bezahlt wird, gibt es nichts zu erstatten und nichts einzubehalten.",
@@ -784,7 +939,9 @@ function termsDe(): LegalDocument {
         paragraphs: [
           "Das vierzehntägige Widerrufsrecht für Fernabsatzverträge gilt für diese Buchung nicht.",
           "Das ergibt sich aus Art. 59 Abs. 1 Buchst. n des italienischen Verbrauchergesetzbuchs, der den Widerruf bei Verträgen über die Bereitstellung von Unterkünften zu anderen als Wohnzwecken ausschließt, wenn der Vertrag einen bestimmten Zeitpunkt oder Zeitraum vorsieht. Genau das ist ein für feste Termine gebuchter Aufenthalt: Wer die Termine für Sie freihält, verzichtet darauf, sie anderen zu vermieten.",
-          "Die oben beschriebenen Stornierungsbedingungen gelten weiterhin und lassen Ihnen in der Praxis bis zur Zahlung die Freiheit, kostenlos zu stornieren.",
+          f.payments
+            ? `Die oben beschriebenen Stornierungsbedingungen mit voller Erstattung bis ${days} Tage vor der Anreise gelten weiterhin.`
+            : "Die oben beschriebenen Stornierungsbedingungen gelten weiterhin und lassen Ihnen in der Praxis bis zur Zahlung die Freiheit, kostenlos zu stornieren.",
         ],
       },
       {
@@ -824,8 +981,14 @@ function termsDe(): LegalDocument {
   };
 }
 
-export const legalTexts: Record<Locale, LegalDocuments> = {
-  it: { privacy: privacyIt(), cookies: cookiesIt(), terms: termsIt() },
-  en: { privacy: privacyEn(), cookies: cookiesEn(), terms: termsEn() },
-  de: { privacy: privacyDe(), cookies: cookiesDe(), terms: termsDe() },
-};
+/**
+ * I testi dipendono da cosa è attivo sul sito: i Termini descrivono il
+ * pagamento con Stripe solo se le chiavi ci sono, l'informativa parla
+ * delle offerte via email solo se il database c'è. Promettere o descrivere
+ * qualcosa che il sito non fa sarebbe un'informazione falsa.
+ */
+export function legalTexts(locale: Locale, f: SiteFeatures): LegalDocuments {
+  if (locale === "en") return { privacy: privacyEn(f), cookies: cookiesEn(), terms: termsEn(f) };
+  if (locale === "de") return { privacy: privacyDe(f), cookies: cookiesDe(), terms: termsDe(f) };
+  return { privacy: privacyIt(f), cookies: cookiesIt(), terms: termsIt(f) };
+}

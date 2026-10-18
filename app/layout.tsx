@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Bodoni_Moda, Instrument_Sans } from "next/font/google";
+import { Libre_Bodoni, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -13,14 +13,15 @@ import { legal } from "@/content/legal";
 import { siteUrl, ogImage } from "@/lib/seo";
 
 // Bodoni per i titoli: è un carattere italiano (Giambattista Bodoni,
-// Parma), e con l'asse ottico "opsz" resta elegante sia nei titoli enormi
-// sia nelle cifre piccole. Instrument Sans per tutto il resto: leggibile
-// a 16 px sui telefoni, che sono la maggior parte delle visite.
-const bodoni = Bodoni_Moda({
+// Parma). Libre Bodoni e non Bodoni Moda: è disegnato con filetti più
+// robusti, e con Bodoni Moda la gamba sinistra della M, la diagonale del 4
+// e i tratti sottili del testo grande sparivano, sopra la foto ma anche
+// sul chiaro. Instrument Sans per tutto il resto: leggibile a 16 px sui
+// telefoni, che sono la maggior parte delle visite.
+const bodoni = Libre_Bodoni({
   variable: "--font-bodoni",
   subsets: ["latin", "latin-ext"],
   style: ["normal", "italic"],
-  axes: ["opsz"],
 });
 
 const instrument = Instrument_Sans({

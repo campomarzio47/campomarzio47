@@ -81,7 +81,7 @@ export default function Hero() {
           <span aria-hidden="true" className="h-px w-8 bg-current" />
           {address.city} · {address.provinceName}
         </p>
-        <h1 className="font-display text-[clamp(2.9rem,12.6vw,10rem)] font-normal leading-[0.9] tracking-[-0.02em]">
+        <h1 className="font-display text-[clamp(2.9rem,12.6vw,9rem)] font-medium leading-[0.92] tracking-[-0.015em]">
           <span className="line-mask">
             <span style={{ "--line-delay": "150ms" } as CSSProperties}>{base}</span>
           </span>

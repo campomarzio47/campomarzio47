@@ -51,6 +51,9 @@ export type Dictionary = {
     reviews: string;
     showReview: string;
     progress: string;
+    calendarNav: string;
+    today: string;
+    selected: string;
   };
   footer: {
     legalHeading: string;
@@ -72,11 +75,24 @@ export type Dictionary = {
   privacyAck: {
     label: string;
     linkText: string;
+    /** Con i pagamenti: si accettano anche i Termini (è un contratto). */
+    withTerms: string;
+    termsLinkText: string;
   };
   privacy: { eyebrow: string; title: string; subtitle: string };
   cookies: { eyebrow: string; title: string; subtitle: string };
   terms: { eyebrow: string; title: string; subtitle: string };
   legalPage: { lastUpdated: string };
+  // Pagina di disiscrizione dalle offerte via email (link in ogni email).
+  offers: {
+    eyebrow: string;
+    title: string;
+    question: string;
+    confirm: string;
+    done: string;
+    notFound: string;
+    back: string;
+  };
   nav: {
     home: string;
     contact: string;
@@ -197,6 +213,20 @@ export type Dictionary = {
     optionalLabel: string;
     submitButton: string;
     sendingLabel: string;
+    /** Imposta di soggiorno, quando non è certo che sia zero (vedi legal.ts). */
+    touristTaxNote: string;
+    // Testi della prenotazione con pagamento (chiavi Stripe impostate): la
+    // carta viene autorizzata, l'addebito parte con la conferma dell'host.
+    pay: {
+      subtitle: string;
+      /** {days}: giorni di cancellazione gratuita. */
+      promises: string[];
+      totalLabel: string;
+      note: string;
+      submit: string;
+      redirecting: string;
+      canceled: string;
+    };
     errors: {
       validation_error: string;
       invalid_dates: string;
@@ -209,6 +239,8 @@ export type Dictionary = {
   bookingConfirmation: {
     title: string;
     subtitle: string;
+    payTitle: string;
+    paySubtitle: string;
     back: string;
   };
   contact: {
@@ -271,6 +303,11 @@ export type Dictionary = {
     male: string;
     female: string;
     birthDate: string;
+    day: string;
+    month: string;
+    year: string;
+    birthDateInvalid: string;
+    ageYears: Plural;
     email: string;
     emailPlaceholder: string;
     emailHint: string;
@@ -284,6 +321,11 @@ export type Dictionary = {
     residenceAbroadPlacePlaceholder: string;
     residenceAddress: string;
     residenceAddressPlaceholder: string;
+    postalCode: string;
+    postalCodeHint: string;
+    /** {name}: nome della casa. Il testo esatto viene salvato come prova del consenso. */
+    newsletterLabel: string;
+    newsletterHint: string;
     birthState: string;
     birthStatePlaceholder: string;
     birthPlace: string;
@@ -374,6 +416,9 @@ export const it: Dictionary = {
     reviews: "Recensioni degli ospiti",
     showReview: "Mostra la recensione {n}",
     progress: "Avanzamento del check-in",
+    calendarNav: "Navigazione del calendario",
+    today: "Oggi",
+    selected: "selezionato",
   },
   footer: {
     legalHeading: "Dati dell'attività",
@@ -391,6 +436,8 @@ export const it: Dictionary = {
   privacyAck: {
     label: "Ho letto l'{link} e so come vengono trattati i miei dati.",
     linkText: "informativa privacy",
+    withTerms: "Accetto le {terms} e ho letto l'{link}.",
+    termsLinkText: "condizioni di prenotazione",
   },
   privacy: {
     eyebrow: "Note legali",
@@ -408,6 +455,15 @@ export const it: Dictionary = {
     subtitle: "Le regole del soggiorno, in chiaro.",
   },
   legalPage: { lastUpdated: "Ultimo aggiornamento: {date}" },
+  offers: {
+    eyebrow: "Offerte via email",
+    title: "Basta *offerte*?",
+    question: "Vuoi smettere di ricevere le nostre offerte all'indirizzo {email}?",
+    confirm: "Sì, toglimi dall'elenco",
+    done: "Fatto: il tuo indirizzo è stato cancellato dall'elenco e non riceverai altre offerte.",
+    notFound: "Questo indirizzo non è nell'elenco delle offerte: forse ti sei già disiscritto.",
+    back: "Torna alla casa",
+  },
   nav: {
     home: "La Casa",
     contact: "Contatti",
@@ -460,48 +516,44 @@ export const it: Dictionary = {
     viewAll: "Sfoglia tutte le {n} foto",
     items: [
       {
-        alt: "Soggiorno con tavolo in vetro, sedie bordeaux, scala in acciaio e porta-finestra sul giardino",
-        caption: "Il soggiorno, aperto sul giardino",
+        alt: "Zona pranzo con tavolo in vetro, quattro sedie bordeaux, una scacchiera sul tavolo e un grande quadro di street art sotto le travi chiare",
+        caption: "La zona pranzo, con la scacchiera sul tavolo",
       },
       {
         alt: "Camera matrimoniale con travi bianche, letto con cuscini rossi e poltroncina",
         caption: "La camera matrimoniale, sotto le travi",
       },
       {
-        alt: "Zona pranzo con tavolo in vetro, sedie bordeaux, libreria in legno e porta-finestra",
-        caption: "La zona pranzo",
+        alt: "Angolo colazione con macchina per caffè in capsule, bollitore, microonde, tostapane e tazze colorate sulle mensole in legno",
+        caption: "L'angolo del caffè",
       },
       {
-        alt: "Cucina bianca con forno, lavello, mensole in legno e porta-finestra sul balcone",
+        alt: "Cucina bianca con piano a induzione, forno e lavello, accanto alla porta-finestra aperta sul balcone e sugli alberi",
         caption: "La cucina, con il balcone sul verde",
+      },
+      {
+        alt: "Soggiorno con tavolo in vetro, sedie bordeaux, scala in acciaio e porta-finestra sul giardino",
+        caption: "Il soggiorno, aperto sul giardino",
       },
       {
         alt: "Soggiorno con divano grigio, tappeto colorato, smart TV e scala",
         caption: "Il divano e la smart TV",
       },
       {
+        alt: "Cucina bianca lungo la parete, libreria in legno e nero e porta-finestra in fondo",
+        caption: "La cucina in tutta la sua lunghezza",
+      },
+      {
         alt: "Seconda camera con letto a castello rosso, armadio e finestra",
         caption: "La seconda camera, con il letto a castello",
       },
       {
-        alt: "Bagno con doccia in cristallo, lavabo e pavimento in legno",
-        caption: "Il bagno con doccia",
+        alt: "Bagno con rivestimento grigio, sanitari sospesi, finestra luminosa e asciugamani piegati su uno scaffale",
+        caption: "Il bagno",
       },
       {
-        alt: "Secondo bagno con lavabo e porta-finestra sul balcone",
-        caption: "Il secondo bagno",
-      },
-      {
-        alt: "Giardino privato con prato, camminamento in pietra e terrazza in legno con una sdraio",
-        caption: "Il giardino e la terrazza in legno",
-      },
-      {
-        alt: "Il parco alberato di fronte alla casa e, sulla collina, il Castello Superiore di Marostica",
-        caption: "Il verde di fronte e, in alto, il Castello Superiore",
-      },
-      {
-        alt: "L'ingresso indipendente con la porta verde e la targa Campo Marzio 47",
-        caption: "L'ingresso indipendente",
+        alt: "La facciata bianca della casa, con portone e garage verdi, tra le case colorate di via Campo Marzio",
+        caption: "La casa, tra le facciate colorate della via",
       },
     ],
   },
@@ -544,8 +596,8 @@ export const it: Dictionary = {
       "Campo Marzio 47 è a pochi minuti dal centro. Davanti c'è un'area verde attrezzata e, in alto, oltre gli alberi, il Castello Superiore.",
     ],
     imageAlt:
-      "Il parco alberato di fronte alla casa e, sulla collina, il Castello Superiore di Marostica",
-    caption: "Il Castello Superiore, visto da casa",
+      "Piazza degli Scacchi a Marostica vista dall'alto durante la Partita a Scacchi, con il pubblico sulle tribune e il Castello Inferiore",
+    caption: "La Partita a Scacchi in piazza, davanti al Castello Inferiore",
     points: [
       { label: "Centro storico", detail: "Pochi minuti" },
       { label: "Area verde attrezzata", detail: "Di fronte a casa" },
@@ -608,6 +660,17 @@ export const it: Dictionary = {
     optionalLabel: "facoltativo",
     submitButton: "Invia richiesta",
     sendingLabel: "Invio…",
+    touristTaxNote: "Eventuale imposta di soggiorno esclusa: si paga sul posto.",
+    pay: {
+      subtitle:
+        "Scegli le date e prenota con la carta: viene solo autorizzata, e l'addebito parte quando confermiamo, di solito entro un giorno.",
+      promises: ["Pagamento sicuro con Stripe", "Addebito solo alla conferma", "Cancellazione gratuita fino a {days} giorni prima"],
+      totalLabel: "Totale",
+      note: "Ora la carta viene solo autorizzata. L'addebito avviene quando confermiamo; se non possiamo ospitarti, l'autorizzazione si annulla e non paghi nulla.",
+      submit: "Vai al pagamento",
+      redirecting: "Ti portiamo su Stripe…",
+      canceled: "Pagamento annullato: non ti è stato addebitato nulla. Le date sono ancora qui, se vuoi riprovare.",
+    },
     errors: {
       validation_error: "Dati non validi. Controlla i campi e riprova.",
       invalid_dates: "Le date inserite non sono valide.",
@@ -621,6 +684,9 @@ export const it: Dictionary = {
     title: "Richiesta ricevuta",
     subtitle:
       "Grazie! Ti abbiamo mandato una email di riepilogo. Ti rispondiamo di solito entro un paio di giorni: finché non ricevi la nostra conferma scritta, le date non sono ancora riservate.",
+    payTitle: "Richiesta inviata",
+    paySubtitle:
+      "La carta è autorizzata, non addebitata. Ti confermiamo la prenotazione per email, di solito entro un giorno: solo allora parte l'addebito. Intanto ti abbiamo mandato un riepilogo.",
     back: "Torna alla casa",
   },
   contact: {
@@ -684,6 +750,11 @@ export const it: Dictionary = {
     male: "Maschio",
     female: "Femmina",
     birthDate: "Data di nascita",
+    day: "Giorno",
+    month: "Mese",
+    year: "Anno",
+    birthDateInvalid: "Questa data non esiste: controlla giorno, mese e anno.",
+    ageYears: { one: "{n} anno", other: "{n} anni" },
     email: "Email",
     emailPlaceholder: "nome@esempio.it",
     emailHint: "Solo per contattarti in caso di problemi con l'arrivo.",
@@ -697,6 +768,10 @@ export const it: Dictionary = {
     residenceAbroadPlacePlaceholder: "es. Monaco di Baviera",
     residenceAddress: "Indirizzo di residenza",
     residenceAddressPlaceholder: "Via e numero civico",
+    postalCode: "CAP",
+    postalCodeHint: "Il CAP italiano ha 5 cifre",
+    newsletterLabel: "Sì, scrivetemi al massimo tre volte l'anno con le offerte per tornare a {name}.",
+    newsletterHint: "Facoltativo: il check-in funziona uguale anche senza. In ogni email c'è il link per smettere con un clic.",
     birthState: "Stato di nascita",
     birthStatePlaceholder: "Cerca uno stato…",
     birthPlace: "Comune di nascita",
@@ -823,6 +898,9 @@ export const en: Dictionary = {
     reviews: "Guest reviews",
     showReview: "Show review {n}",
     progress: "Check-in progress",
+    calendarNav: "Calendar navigation",
+    today: "Today",
+    selected: "selected",
   },
   footer: {
     legalHeading: "Business details",
@@ -840,6 +918,8 @@ export const en: Dictionary = {
   privacyAck: {
     label: "I have read the {link} and understand how my data is handled.",
     linkText: "privacy notice",
+    withTerms: "I accept the {terms} and have read the {link}.",
+    termsLinkText: "booking terms",
   },
   privacy: {
     eyebrow: "Legal",
@@ -857,6 +937,15 @@ export const en: Dictionary = {
     subtitle: "The rules of your stay, in plain words.",
   },
   legalPage: { lastUpdated: "Last updated: {date}" },
+  offers: {
+    eyebrow: "Offers by email",
+    title: "No more *offers*?",
+    question: "Do you want to stop receiving our offers at {email}?",
+    confirm: "Yes, remove me from the list",
+    done: "Done: your address has been deleted from the list and you will not receive any more offers.",
+    notFound: "This address is not on the offers list: perhaps you have already unsubscribed.",
+    back: "Back to the house",
+  },
   nav: {
     home: "The House",
     contact: "Contact",
@@ -909,48 +998,44 @@ export const en: Dictionary = {
     viewAll: "Browse all {n} photos",
     items: [
       {
-        alt: "Living room with glass table, burgundy chairs, steel staircase and a French window onto the garden",
-        caption: "The living room, opening onto the garden",
+        alt: "Dining area with a glass table, four burgundy chairs, a chessboard on the table and a large street-art painting under the pale beams",
+        caption: "The dining area, with the chessboard on the table",
       },
       {
         alt: "Double bedroom with white beams, a bed with red cushions and an armchair",
         caption: "The double bedroom, under the beams",
       },
       {
-        alt: "Dining area with glass table, burgundy chairs, wooden bookcase and a French window",
-        caption: "The dining area",
+        alt: "Breakfast corner with a capsule coffee machine, kettle, microwave, toaster and colourful cups on wooden shelves",
+        caption: "The coffee corner",
       },
       {
-        alt: "White kitchen with oven, sink, wooden shelves and a French window onto the balcony",
+        alt: "White kitchen with induction hob, oven and sink, next to the French window open onto the balcony and the trees",
         caption: "The kitchen, with its balcony over the green",
+      },
+      {
+        alt: "Living room with glass table, burgundy chairs, steel staircase and a French window onto the garden",
+        caption: "The living room, opening onto the garden",
       },
       {
         alt: "Living room with grey sofa, colourful rug, smart TV and staircase",
         caption: "The sofa and the smart TV",
       },
       {
+        alt: "White kitchen along the wall, a wood-and-black bookcase and a French window at the end",
+        caption: "The kitchen, end to end",
+      },
+      {
         alt: "Second bedroom with a red bunk bed, wardrobe and window",
         caption: "The second bedroom, with the bunk bed",
       },
       {
-        alt: "Bathroom with glass shower, washbasin and wooden floor",
-        caption: "The bathroom with shower",
+        alt: "Bathroom with grey tiles, wall-hung fixtures, a bright window and folded towels on a shelf",
+        caption: "The bathroom",
       },
       {
-        alt: "Second bathroom with washbasin and a French window onto the balcony",
-        caption: "The second bathroom",
-      },
-      {
-        alt: "Private garden with lawn, stone path and a wooden deck with a sun lounger",
-        caption: "The garden and the wooden deck",
-      },
-      {
-        alt: "The tree-lined park in front of the house and, on the hill, Marostica's Upper Castle",
-        caption: "The green in front and, up above, the Upper Castle",
-      },
-      {
-        alt: "The private entrance with its green door and the Campo Marzio 47 sign",
-        caption: "The private entrance",
+        alt: "The white façade of the house, with its green door and garage, among the colourful houses of Via Campo Marzio",
+        caption: "The house, among the colourful façades of the street",
       },
     ],
   },
@@ -993,8 +1078,8 @@ export const en: Dictionary = {
       "Campo Marzio 47 is a few minutes from the centre. In front of the house there is a green area with a playground and, up above the trees, the Upper Castle.",
     ],
     imageAlt:
-      "The tree-lined park in front of the house and, on the hill, Marostica's Upper Castle",
-    caption: "The Upper Castle, seen from the house",
+      "Aerial view of Marostica's chess square during the living Chess Game, with spectators in the stands and the Lower Castle",
+    caption: "The living Chess Game in the square, in front of the Lower Castle",
     points: [
       { label: "Historic centre", detail: "A few minutes" },
       { label: "Green area with playground", detail: "Right in front" },
@@ -1057,6 +1142,17 @@ export const en: Dictionary = {
     optionalLabel: "optional",
     submitButton: "Send request",
     sendingLabel: "Sending…",
+    touristTaxNote: "Any tourist tax is not included and is paid on site.",
+    pay: {
+      subtitle:
+        "Pick your dates and book by card: it is only authorised, and the charge goes through when we confirm, usually within a day.",
+      promises: ["Secure payment with Stripe", "Charged only on confirmation", "Free cancellation up to {days} days before"],
+      totalLabel: "Total",
+      note: "For now your card is only authorised. The charge happens when we confirm; if we cannot host you, the authorisation is cancelled and you pay nothing.",
+      submit: "Go to payment",
+      redirecting: "Taking you to Stripe…",
+      canceled: "Payment cancelled: you have not been charged. Your dates are still here if you want to try again.",
+    },
     errors: {
       validation_error: "Invalid data. Please check the fields and try again.",
       invalid_dates: "The selected dates aren't valid.",
@@ -1070,6 +1166,9 @@ export const en: Dictionary = {
     title: "Request received",
     subtitle:
       "Thank you! We've sent you a summary by email. We usually reply within a couple of days: until you get our written confirmation, the dates are not reserved yet.",
+    payTitle: "Request sent",
+    paySubtitle:
+      "Your card is authorised, not charged. We will confirm your booking by email, usually within a day: only then is the amount charged. We have sent you a summary in the meantime.",
     back: "Back to the house",
   },
   contact: {
@@ -1133,6 +1232,11 @@ export const en: Dictionary = {
     male: "Male",
     female: "Female",
     birthDate: "Date of birth",
+    day: "Day",
+    month: "Month",
+    year: "Year",
+    birthDateInvalid: "This date doesn't exist: please check day, month and year.",
+    ageYears: { one: "{n} year old", other: "{n} years old" },
     email: "Email",
     emailPlaceholder: "name@example.com",
     emailHint: "Only used to reach you if there is an issue with your arrival.",
@@ -1146,6 +1250,10 @@ export const en: Dictionary = {
     residenceAbroadPlacePlaceholder: "e.g. Munich",
     residenceAddress: "Home address",
     residenceAddressPlaceholder: "Street and house number",
+    postalCode: "Postcode",
+    postalCodeHint: "Italian postcodes have 5 digits",
+    newsletterLabel: "Yes, email me at most three times a year with offers to come back to {name}.",
+    newsletterHint: "Optional: the check-in works the same without it. Every email has a one-click link to stop.",
     birthState: "Country of birth",
     birthStatePlaceholder: "Search a country…",
     birthPlace: "Town of birth (Italy)",
@@ -1272,6 +1380,9 @@ export const de: Dictionary = {
     reviews: "Gästebewertungen",
     showReview: "Bewertung {n} anzeigen",
     progress: "Fortschritt des Check-ins",
+    calendarNav: "Kalendernavigation",
+    today: "Heute",
+    selected: "ausgewählt",
   },
   footer: {
     legalHeading: "Angaben zum Betrieb",
@@ -1289,6 +1400,8 @@ export const de: Dictionary = {
   privacyAck: {
     label: "Ich habe die {link} gelesen und weiß, wie meine Daten verarbeitet werden.",
     linkText: "Datenschutzerklärung",
+    withTerms: "Ich akzeptiere die {terms} und habe die {link} gelesen.",
+    termsLinkText: "Buchungsbedingungen",
   },
   privacy: {
     eyebrow: "Rechtliches",
@@ -1306,6 +1419,15 @@ export const de: Dictionary = {
     subtitle: "Die Regeln Ihres Aufenthalts, klar formuliert.",
   },
   legalPage: { lastUpdated: "Zuletzt aktualisiert: {date}" },
+  offers: {
+    eyebrow: "Angebote per E-Mail",
+    title: "Keine *Angebote* mehr?",
+    question: "Möchten Sie unter {email} keine Angebote mehr von uns erhalten?",
+    confirm: "Ja, von der Liste entfernen",
+    done: "Erledigt: Ihre Adresse wurde aus der Liste gelöscht, und Sie erhalten keine Angebote mehr.",
+    notFound: "Diese Adresse steht nicht auf der Angebotsliste: Vielleicht haben Sie sich bereits abgemeldet.",
+    back: "Zurück zum Haus",
+  },
   nav: {
     home: "Das Haus",
     contact: "Kontakt",
@@ -1358,48 +1480,44 @@ export const de: Dictionary = {
     viewAll: "Alle {n} Fotos ansehen",
     items: [
       {
-        alt: "Wohnraum mit Glastisch, bordeauxroten Stühlen, Stahltreppe und Fenstertür zum Garten",
-        caption: "Der Wohnraum, zum Garten hin offen",
+        alt: "Essbereich mit Glastisch, vier bordeauxroten Stühlen, einem Schachbrett auf dem Tisch und einem großen Street-Art-Bild unter den hellen Holzbalken",
+        caption: "Der Essbereich mit dem Schachbrett auf dem Tisch",
       },
       {
         alt: "Doppelzimmer mit weißen Holzbalken, Bett mit roten Kissen und Sessel",
         caption: "Das Doppelzimmer unter den Balken",
       },
       {
-        alt: "Essbereich mit Glastisch, bordeauxroten Stühlen, Holzregal und Fenstertür",
-        caption: "Der Essbereich",
+        alt: "Frühstücksecke mit Kapselmaschine, Wasserkocher, Mikrowelle, Toaster und bunten Tassen auf Holzregalen",
+        caption: "Die Kaffee-Ecke",
       },
       {
-        alt: "Weiße Küche mit Backofen, Spüle, Holzregalen und Fenstertür zum Balkon",
+        alt: "Weiße Küche mit Induktionskochfeld, Backofen und Spüle neben der offenen Fenstertür zum Balkon und zu den Bäumen",
         caption: "Die Küche mit Balkon ins Grüne",
+      },
+      {
+        alt: "Wohnraum mit Glastisch, bordeauxroten Stühlen, Stahltreppe und Fenstertür zum Garten",
+        caption: "Der Wohnraum, zum Garten hin offen",
       },
       {
         alt: "Wohnraum mit grauem Sofa, buntem Teppich, Smart-TV und Treppe",
         caption: "Sofa und Smart-TV",
       },
       {
+        alt: "Weiße Küchenzeile an der Wand, Regal in Holz und Schwarz und Fenstertür am Ende",
+        caption: "Die Küche in ganzer Länge",
+      },
+      {
         alt: "Zweites Schlafzimmer mit rotem Etagenbett, Schrank und Fenster",
         caption: "Das zweite Schlafzimmer mit Etagenbett",
       },
       {
-        alt: "Bad mit Glasdusche, Waschbecken und Holzboden",
-        caption: "Das Bad mit Dusche",
+        alt: "Bad mit grauen Fliesen, wandhängender Keramik, hellem Fenster und gefalteten Handtüchern im Regal",
+        caption: "Das Bad",
       },
       {
-        alt: "Zweites Bad mit Waschbecken und Fenstertür zum Balkon",
-        caption: "Das zweite Bad",
-      },
-      {
-        alt: "Privater Garten mit Rasen, Steinweg und Holzterrasse mit Liegestuhl",
-        caption: "Der Garten und die Holzterrasse",
-      },
-      {
-        alt: "Der Park mit Bäumen gegenüber dem Haus und auf dem Hügel die Obere Burg von Marostica",
-        caption: "Das Grün gegenüber und oben die Obere Burg",
-      },
-      {
-        alt: "Der eigene Eingang mit grüner Tür und dem Schild Campo Marzio 47",
-        caption: "Der eigene Eingang",
+        alt: "Die weiße Fassade des Hauses mit grüner Tür und grünem Garagentor zwischen den bunten Häusern der Via Campo Marzio",
+        caption: "Das Haus zwischen den bunten Fassaden der Straße",
       },
     ],
   },
@@ -1442,8 +1560,8 @@ export const de: Dictionary = {
       "Das Campo Marzio 47 liegt wenige Minuten vom Zentrum entfernt. Gegenüber gibt es eine Grünanlage mit Spielplatz und oben, über den Bäumen, die Obere Burg.",
     ],
     imageAlt:
-      "Der Park mit Bäumen gegenüber dem Haus und auf dem Hügel die Obere Burg von Marostica",
-    caption: "Die Obere Burg, vom Haus aus gesehen",
+      "Luftaufnahme des Schachplatzes von Marostica während der lebenden Schachpartie, mit Zuschauern auf den Tribünen und der Unteren Burg",
+    caption: "Die lebende Schachpartie auf dem Platz vor der Unteren Burg",
     points: [
       { label: "Altstadt", detail: "Wenige Minuten" },
       { label: "Grünanlage mit Spielplatz", detail: "Direkt gegenüber" },
@@ -1506,6 +1624,17 @@ export const de: Dictionary = {
     optionalLabel: "optional",
     submitButton: "Anfrage senden",
     sendingLabel: "Wird gesendet…",
+    touristTaxNote: "Eine eventuelle Kurtaxe ist nicht enthalten und wird vor Ort bezahlt.",
+    pay: {
+      subtitle:
+        "Wählen Sie Ihre Termine und buchen Sie mit Karte: Sie wird nur autorisiert, abgebucht wird erst, wenn wir bestätigen, meist innerhalb eines Tages.",
+      promises: ["Sichere Zahlung mit Stripe", "Abbuchung erst bei Bestätigung", "Kostenlose Stornierung bis {days} Tage vorher"],
+      totalLabel: "Gesamtpreis",
+      note: "Ihre Karte wird jetzt nur autorisiert. Abgebucht wird, wenn wir bestätigen; können wir Sie nicht beherbergen, wird die Autorisierung aufgehoben und Sie zahlen nichts.",
+      submit: "Zur Zahlung",
+      redirecting: "Wir leiten Sie zu Stripe weiter…",
+      canceled: "Zahlung abgebrochen: Es wurde nichts abgebucht. Ihre Termine sind noch da, wenn Sie es erneut versuchen möchten.",
+    },
     errors: {
       validation_error: "Ungültige Angaben. Bitte prüfen Sie die Felder und versuchen Sie es erneut.",
       invalid_dates: "Die gewählten Termine sind ungültig.",
@@ -1519,6 +1648,9 @@ export const de: Dictionary = {
     title: "Anfrage erhalten",
     subtitle:
       "Vielen Dank! Wir haben Ihnen eine Zusammenfassung per E-Mail geschickt. Wir antworten meist innerhalb von ein bis zwei Tagen: Bis Sie unsere schriftliche Bestätigung erhalten, sind die Termine noch nicht reserviert.",
+    payTitle: "Anfrage gesendet",
+    paySubtitle:
+      "Ihre Karte ist autorisiert, nicht belastet. Wir bestätigen Ihre Buchung per E-Mail, meist innerhalb eines Tages: Erst dann wird abgebucht. Eine Zusammenfassung haben wir Ihnen bereits geschickt.",
     back: "Zurück zum Haus",
   },
   contact: {
@@ -1582,6 +1714,11 @@ export const de: Dictionary = {
     male: "Männlich",
     female: "Weiblich",
     birthDate: "Geburtsdatum",
+    day: "Tag",
+    month: "Monat",
+    year: "Jahr",
+    birthDateInvalid: "Dieses Datum gibt es nicht: Bitte prüfen Sie Tag, Monat und Jahr.",
+    ageYears: { one: "{n} Jahr alt", other: "{n} Jahre alt" },
     email: "E-Mail",
     emailPlaceholder: "name@beispiel.de",
     emailHint: "Nur um Sie bei Problemen mit der Anreise zu erreichen.",
@@ -1595,6 +1732,10 @@ export const de: Dictionary = {
     residenceAbroadPlacePlaceholder: "z. B. München",
     residenceAddress: "Wohnadresse",
     residenceAddressPlaceholder: "Straße und Hausnummer",
+    postalCode: "PLZ",
+    postalCodeHint: "Italienische Postleitzahlen haben 5 Ziffern",
+    newsletterLabel: "Ja, schreiben Sie mir höchstens dreimal im Jahr mit Angeboten für einen erneuten Aufenthalt in {name}.",
+    newsletterHint: "Freiwillig: Der Check-in funktioniert auch ohne. Jede E-Mail enthält einen Link zum Abmelden mit einem Klick.",
     birthState: "Geburtsland",
     birthStatePlaceholder: "Land suchen…",
     birthPlace: "Geburtsort (Italien)",

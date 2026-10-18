@@ -25,7 +25,8 @@ const SLOTS: { slot: Slot; className: string; aspect: string; delay: number }[] 
  * Sceglie le foto per i quattro posti della composizione rispettandone
  * l'orientamento: una foto verticale tagliata in orizzontale perde metà
  * della stanza. Le prende nell'ordine di property.gallery; se mancano
- * foto del formato giusto, usa le prime rimaste.
+ * foto del formato giusto, usa le prime rimaste, tagliate attorno al loro
+ * `focus`.
  */
 function pickMosaic(photos: ViewerPhoto[]): number[] {
   const used = new Set<number>();
@@ -103,6 +104,7 @@ export default function PhotoMosaic() {
                         ? "(min-width: 768px) 60vw, 100vw"
                         : "(min-width: 768px) 30vw, 50vw"
                     }
+                    style={photo.focus ? { objectPosition: photo.focus } : undefined}
                     className="object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-[1.03]"
                   />
                 </button>

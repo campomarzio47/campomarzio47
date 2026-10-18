@@ -16,11 +16,10 @@ export function nightsBetween(checkinIso: string, checkoutIso: string): number {
 }
 
 /**
- * Totale indicativo del soggiorno, in euro interi.
+ * Totale del soggiorno, in euro interi: notti più pulizie finali.
  *
- * È un preventivo, non un importo dovuto: il sito non incassa nulla e il
- * prezzo che fa fede è quello dell'email di conferma dell'host (vedi
- * /termini). Per questo lavoriamo in euro e non in centesimi.
+ * Con i pagamenti attivi è l'importo che Stripe autorizza (in centesimi,
+ * `* 100`); senza, è il preventivo mostrato con la richiesta via email.
  */
 export function computeStayTotal(nights: number): number {
   const { pricePerNight, cleaningFee } = property.pricing;

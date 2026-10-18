@@ -53,6 +53,7 @@ function emptyPrimary(): PrimaryGuestExtra {
   return {
     email: "",
     indirizzoResidenza: "",
+    cap: "",
     codiceFiscale: "",
     tipoDocumento: "IDENT",
     numeroDocumento: "",
@@ -93,9 +94,12 @@ function primaryHasIncompletePlace(primary: PrimaryGuestExtra): boolean {
  * il gruppo e si applicano a ogni ospite: il tracciato Ross1000 li vuole
  * per ospite, ma il viaggio è lo stesso.
  */
-export default function CheckInForm() {
+export default function CheckInForm({ newsletter = false }: { newsletter?: boolean } = {}) {
   const { dict, locale } = useLocale();
   const t = dict.checkin;
+  // Offerte via email: casella facoltativa, mai spuntata in partenza, e
+  // mostrata solo se il sito ha il database dove salvarle.
+  const [wantsOffers, setWantsOffers] = useState(false);
   const [dataArrivo, setDataArrivo] = useState("");
   const [notti, setNotti] = useState<number>(property.pricing.minNights || 1);
   const [tipoTurismo, setTipoTurismo] = useState<TipoTurismo>("Non specificato");
@@ -192,7 +196,14 @@ export default function CheckInForm() {
       const res = await fetch("/api/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dataArrivo, notti, guests: payloadGuests, primary, privacyAck }),
+        body: JSON.stringify({
+          dataArrivo,
+          notti,
+          guests: payloadGuests,
+          primary,
+          privacyAck,
+          newsletter: newsletter && wantsOffers,
+        }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.ok) {
@@ -362,7 +373,11 @@ export default function CheckInForm() {
             .filter(Boolean)
             .join(", ")}`,
           ...(i === 0
-            ? [primary.indirizzoResidenza, primary.email, primary.codiceFiscale].filter(Boolean)
+            ? [
+                [primary.indirizzoResidenza, primary.cap].filter(Boolean).join(", "),
+                primary.email,
+                primary.codiceFiscale,
+              ].filter(Boolean)
             : []),
         ],
       })),
@@ -411,6 +426,24 @@ export default function CheckInForm() {
           <p className="text-xs leading-relaxed text-mid">{t.privacyNotice}</p>
           <PrivacyAck id="checkin-privacy" checked={privacyAck} onChange={setPrivacyAck} />
         </div>
+        {newsletter && (
+          <label
+            htmlFor="checkin-offers"
+            className="flex cursor-pointer items-start gap-3 rounded-[1.25rem] border border-dashed border-divider p-5 transition-colors hover:border-mid md:p-6"
+          >
+            <input
+              id="checkin-offers"
+              type="checkbox"
+              checked={wantsOffers}
+              onChange={(e) => setWantsOffers(e.target.checked)}
+              className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-bordeaux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bordeaux"
+            />
+            <span className="text-[0.875rem] leading-relaxed">
+              {fill(t.newsletterLabel, { name: property.name })}
+              <span className="mt-1 block text-xs text-mid">{t.newsletterHint}</span>
+            </span>
+          </label>
+        )}
       </div>
     );
   }

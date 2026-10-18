@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { plural, fill } from "@/content/dictionaries";
 import { property } from "@/content/property";
-import { dateFnsLocale } from "@/lib/date-locale";
+import { dateFnsLocale, formatWeekdayDayMonth } from "@/lib/date-locale";
 import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import type { useBusyRanges } from "@/lib/hooks/useBusyRanges";
 
@@ -76,9 +76,22 @@ export default function DateRangeCalendar({
       onSelect={handleSelect}
       animate
       components={{ Chevron }}
+      // Tutte le etichette lette dagli screen reader, non solo le frecce: le
+      // predefinite della libreria sono in inglese ("Today", "selected")
+      // qualunque sia la lingua del calendario.
       labels={{
         labelPrevious: () => dict.a11y.previousMonth,
         labelNext: () => dict.a11y.nextMonth,
+        labelNav: () => dict.a11y.calendarNav,
+        labelDayButton: (date, modifiers) =>
+          [
+            modifiers.today && dict.a11y.today,
+            format(date, "PPPP", { locale: dateFnsLocale[locale] }),
+            modifiers.selected && dict.a11y.selected,
+            modifiers.busy && dict.availability.legendUnavailable,
+          ]
+            .filter(Boolean)
+            .join(", "),
       }}
     />
   );
@@ -93,7 +106,7 @@ export function RangeHint({ value }: { value: DateRange | undefined }) {
   const { dict, locale } = useLocale();
   const minNights = property.pricing.minNights || 1;
   const nights = nightsInRange(value);
-  const fmt = (d: Date) => format(d, "EEE d MMM", { locale: dateFnsLocale[locale] });
+  const fmt = (d: Date) => formatWeekdayDayMonth(d, locale);
 
   let text: string;
   let warn = false;

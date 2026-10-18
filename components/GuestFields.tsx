@@ -5,15 +5,11 @@ import type { Guest, PrimaryGuestExtra } from "@/lib/checkin-types";
 import { useLocale } from "@/components/LocaleProvider";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 import ChoiceGroup from "@/components/ChoiceGroup";
+import BirthDateField from "@/components/BirthDateField";
 import { statiOptions, comuniOptions, ITALIA_CODE } from "@/lib/reference-data";
 
 /** Ospite in compilazione: il sesso parte vuoto e va scelto, mai preimpostato. */
 export type GuestDraft = Omit<Guest, "sesso"> & { sesso: Guest["sesso"] | "" };
-
-function today(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -94,19 +90,12 @@ export default function GuestFields({
             { value: "M", label: t.male },
           ]}
         />
-        <label className="field-label" htmlFor={id("nascita")}>
-          {t.birthDate}
-          <input
-            id={id("nascita")}
-            required
-            type="date"
-            max={today()}
-            autoComplete={primary ? "bday" : "off"}
-            value={guest.dataNascita}
-            onChange={(e) => set("dataNascita", e.target.value)}
-            className="field"
-          />
-        </label>
+        <BirthDateField
+          id={id("nascita")}
+          value={guest.dataNascita}
+          onChange={(iso) => set("dataNascita", iso)}
+          autoComplete={Boolean(primary)}
+        />
         <label className="field-label sm:col-span-2" htmlFor={id("cittadinanza")}>
           {t.citizenship}
           <PlaceAutocomplete
@@ -196,18 +185,38 @@ export default function GuestFields({
 
         {primary && onPrimaryChange && (
           <>
-            <label className="field-label sm:col-span-2" htmlFor={id("indirizzo")}>
-              {t.residenceAddress}
-              <input
-                id={id("indirizzo")}
-                required
-                autoComplete="street-address"
-                placeholder={t.residenceAddressPlaceholder}
-                value={primary.indirizzoResidenza}
-                onChange={(e) => onPrimaryChange({ ...primary, indirizzoResidenza: e.target.value })}
-                className="field"
-              />
-            </label>
+            {/* Via e CAP sulla stessa riga: insieme a comune e stato fanno
+                l'indirizzo che serve in fattura. */}
+            <div className="grid grid-cols-[minmax(0,1fr)_6.5rem] gap-3 sm:col-span-2">
+              <label className="field-label" htmlFor={id("indirizzo")}>
+                {t.residenceAddress}
+                <input
+                  id={id("indirizzo")}
+                  required
+                  autoComplete="address-line1"
+                  placeholder={t.residenceAddressPlaceholder}
+                  value={primary.indirizzoResidenza}
+                  onChange={(e) => onPrimaryChange({ ...primary, indirizzoResidenza: e.target.value })}
+                  className="field"
+                />
+              </label>
+              <label className="field-label" htmlFor={id("cap")}>
+                {t.postalCode}
+                <input
+                  id={id("cap")}
+                  required={residenzaInItalia}
+                  autoComplete="postal-code"
+                  inputMode={residenzaInItalia ? "numeric" : "text"}
+                  pattern={residenzaInItalia ? "[0-9]{5}" : undefined}
+                  maxLength={residenzaInItalia ? 5 : 12}
+                  title={residenzaInItalia ? t.postalCodeHint : undefined}
+                  placeholder={residenzaInItalia ? "36063" : ""}
+                  value={primary.cap}
+                  onChange={(e) => onPrimaryChange({ ...primary, cap: e.target.value.trimStart() })}
+                  className="field tabular"
+                />
+              </label>
+            </div>
             <label className="field-label sm:col-span-2" htmlFor={id("email")}>
               {t.email}
               <input

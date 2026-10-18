@@ -65,6 +65,12 @@ export type LegalConfig = {
     paymentDueHoursBeforeArrival: number;
     /** Es. "bonifico bancario". Vuoto = i Termini rimandano all'accordo via email. */
     paymentMethods: string;
+    /**
+     * Prenotazioni pagate sul sito (Stripe): giorni prima dell'arrivo fino
+     * a cui si cancella con rimborso totale; dopo, nessun rimborso. Finisce
+     * nei Termini e nelle email all'ospite: è una condizione del contratto.
+     */
+    freeCancellationDays: number;
     checkInFrom: string;
     checkOutBy: string;
     touristTax: TouristTax;
@@ -74,6 +80,8 @@ export type LegalConfig = {
     hosting: Provider;
     email: Provider;
     mailbox: Provider;
+    /** Citato solo quando i pagamenti sono attivi (chiavi Stripe impostate). */
+    payments: Provider;
   };
   privacy: {
     /** Data dell'ultima revisione dei testi legali, mostrata in fondo a ogni pagina. */
@@ -88,6 +96,10 @@ export type LegalConfig = {
     retentionCheckin: string;
     retentionCheckinEn: string;
     retentionCheckinDe: string;
+    /** Elenco di chi sceglie di ricevere le offerte (solo se il database c'è). */
+    retentionNewsletter: string;
+    retentionNewsletterEn: string;
+    retentionNewsletterDe: string;
   };
 };
 
@@ -109,6 +121,7 @@ export const legal: LegalConfig = {
   stay: {
     paymentDueHoursBeforeArrival: 24,
     paymentMethods: "",
+    freeCancellationDays: 7,
     checkInFrom: "",
     checkOutBy: "",
     touristTax: {
@@ -118,13 +131,13 @@ export const legal: LegalConfig = {
   },
   providers: {
     hosting: {
-      name: "Vercel Inc.",
+      name: "Cloudflare, Inc.",
       purpose: "hosting del sito e log tecnici",
       purposeEn: "website hosting and technical logs",
       purposeDe: "Hosting der Website und technische Protokolle",
-      country: "Stati Uniti, con server nell'Unione Europea",
-      countryEn: "United States, with servers in the European Union",
-      countryDe: "Vereinigte Staaten, mit Servern in der Europäischen Union",
+      country: "Stati Uniti, con server anche nell'Unione Europea",
+      countryEn: "United States, with servers also in the European Union",
+      countryDe: "Vereinigte Staaten, mit Servern auch in der Europäischen Union",
     },
     email: {
       name: "",
@@ -144,9 +157,18 @@ export const legal: LegalConfig = {
       countryEn: "",
       countryDe: "",
     },
+    payments: {
+      name: "Stripe Payments Europe, Ltd.",
+      purpose: "pagamento con carta delle prenotazioni: i dati della carta li tratta solo Stripe",
+      purposeEn: "card payment of bookings: card details are handled only by Stripe",
+      purposeDe: "Kartenzahlung der Buchungen: Die Kartendaten verarbeitet nur Stripe",
+      country: "Irlanda (Unione Europea)",
+      countryEn: "Ireland (European Union)",
+      countryDe: "Irland (Europäische Union)",
+    },
   },
   privacy: {
-    lastUpdated: "2026-09-20",
+    lastUpdated: "2026-10-18",
     retentionContact: "24 mesi dall'ultimo contatto",
     retentionContactEn: "24 months from the last contact",
     retentionContactDe: "24 Monate ab dem letzten Kontakt",
@@ -162,6 +184,11 @@ export const legal: LegalConfig = {
       "as long as needed for the public-security and statistical obligations, and in any case no longer than the applicable law requires",
     retentionCheckinDe:
       "so lange, wie es die Meldepflichten gegenüber Polizei und Statistik erfordern, und keinesfalls länger, als das geltende Recht vorschreibt",
+    retentionNewsletter:
+      "finché non ti disiscrivi, e comunque non oltre 24 mesi dal tuo ultimo soggiorno",
+    retentionNewsletterEn: "until you unsubscribe, and in any case no longer than 24 months after your last stay",
+    retentionNewsletterDe:
+      "bis Sie sich abmelden, und keinesfalls länger als 24 Monate nach Ihrem letzten Aufenthalt",
   },
 };
 

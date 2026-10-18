@@ -80,10 +80,7 @@ select {
    utility sullo stesso elemento (hidden, px-7, w-full...) vince sempre.
    Fuori da un layer vincerebbero loro, a prescindere dalla specificità. */
 @layer components {
-  /* Bodoni a grandi dimensioni: l'asse ottico "opsz" lo rende più
-     contrastato e sottile nei titoli, più robusto nelle didascalie. */
   .font-display {
-    font-optical-sizing: auto;
     letter-spacing: -0.01em;
   }
 

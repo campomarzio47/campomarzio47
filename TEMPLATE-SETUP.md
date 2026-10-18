@@ -47,8 +47,11 @@ aggiornato per primo.
   `new-site.mjs init`). Servono a mostrarla nel suo formato e a non
   ingrandirla oltre la sua risoluzione.
 - `surroundings`: la foto della sezione "Dove siamo" (vista, paese) e
-  l'indirizzo per il link "Apri in Mappe". Con `photo.src` vuoto la
-  sezione mostra solo il testo.
+  l'indirizzo per il link "Apri in Mappe". Orizzontale va a tutta
+  larghezza sopra il testo, verticale gli sta accanto. Con `photo.src`
+  vuoto la sezione mostra solo il testo. Se la foto non è dell'host
+  (un evento del paese, una veduta aerea) serve il permesso di chi l'ha
+  scattata.
 - `reviews`: `group` è una chiave (`family`, `couple`, `group`, `solo`,
   `friends`, `business`) e `date` è `"AAAA-MM"`: etichetta e mese vengono
   scritti nella lingua di chi legge. `lang` solo se la recensione non è
@@ -118,9 +121,16 @@ palette e motivo, non copiati. Punti da toccare:
   `divider`). Sono l'unico posto da cambiare: nessun colore è scritto nei
   componenti. Verificare il contrasto (≥ 4,5:1) di `--color-mid` sullo
   sfondo.
-- **Font**: `app/layout.tsx` — Bodoni Moda (titoli, con asse ottico) e
-  Instrument Sans (testo), esposti come `--font-bodoni`/`--font-instrument`
-  e mappati su `font-display`/`font-sans` in `globals.css`.
+- **Font**: `app/layout.tsx` — Libre Bodoni (titoli) e Instrument Sans
+  (testo), esposti come `--font-bodoni`/`--font-instrument` e mappati su
+  `font-display`/`font-sans` in `globals.css`. Prima c'era Bodoni Moda:
+  bello, ma con filetti così sottili che nei titoli grandi la gamba della
+  M e la diagonale del 4 sparivano. Qualunque carattere si scelga, va
+  provato a 375 px sopra la foto di copertina.
+- **Intestazione del PDF di check-in**: `content/checkin-pdf-header.ts`
+  (nome, motivo e colori della casa sul riepilogo che riceve l'host).
+  **Va ridisegnata per ogni casa**, non riusata: `new-site.mjs check` la
+  segnala come residuo finché il suo commento nomina il modello.
 - **Motivo della scacchiera**: classe `.checker` e il segno davanti alle
   etichette (`.eyebrow::before`). Per un altro immobile si sostituisce
   con un segno che abbia un senso per quel luogo, o si toglie.
@@ -163,7 +173,14 @@ Gli originali restano fuori dal repo (`materiale/`, gitignorata).
 L'ordine conta anche per la home: `PhotoMosaic` prende le prime foto
 orizzontali e verticali che trova per riempire i quattro posti della
 composizione. Mettere in testa le più belle, e almeno due verticali se
-ci sono.
+ci sono. Se ne manca una, il posto verticale prende la foto orizzontale
+successiva tagliata attorno al suo `focus` (es. `focus: "78% 50%"` in
+`gallery`): funziona con un dettaglio (l'angolo del caffè), non con una
+stanza intera.
+
+Nelle foto di esterni controllare targhe e volti di passanti: vanno
+sfocati prima di pubblicare (con `sharp`: `extract` della zona, `blur`,
+`composite` sull'originale).
 
 Lo stesso script, con `check`, cerca nel progetto i residui
 dell'immobile del modello (nome, indirizzo, telefono, email, URL,
@@ -190,7 +207,8 @@ diversi:
   alla build e scritte nel codice;
 - **Variables and Secrets** (Worker → Settings): tutte le altre, lette a
   runtime. Come *Secret* le credenziali (`SMTP_USER`, `SMTP_PASSWORD`,
-  `CHECKIN_ZIP_PASSWORD`) e gli URL iCal, che contengono un token; come
+  `CHECKIN_ZIP_PASSWORD`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+  `BOOKING_TOKEN_SECRET`) e gli URL iCal, che contengono un token; come
   *Text* le altre. `keep_vars` in `wrangler.jsonc` evita che un deploy
   cancelli quelle impostate a mano.
 
@@ -218,6 +236,12 @@ assumendo che sia lo stesso formato ovunque. Il resto del flusso di
 check-in (form, validazione, PDF di riepilogo, invio email) è generico e
 riusabile senza modifiche indipendentemente dalla regione.
 
+Il riepilogo PDF (`lib/checkin-pdf.ts`) è ordinato per l'uso: soggiorno,
+intestatario della ricevuta con l'indirizzo completo (via, CAP, comune,
+stato, uno sotto l'altro come in fattura), documento, ospiti. Il CAP è
+chiesto all'ospite principale apposta: in fattura serve, ed è
+obbligatorio se risiede in Italia. L'intestazione è per casa (§3ter).
+
 Il check-in genera anche `lib/alloggiati.ts` — il file `.txt` per
 **Alloggiati Web** (Questura, pubblica sicurezza): adempimento nazionale,
 distinto da quello statistico regionale e valido per qualunque regione,
@@ -237,23 +261,72 @@ ma non lo sono:
   soggiorno verrebbe registrato dal portale come ospiti nuovi, gonfiando
   le presenze.
 
-## 6b. Richiesta di prenotazione diretta
+## 6b. Prenotazione diretta: richiesta via email o pagamento con Stripe
 
 `content/property.ts` ha un blocco `pricing` (`pricePerNight`,
 `cleaningFee`, `minNights`, `minAdvanceDays`, `currency`) da compilare
 con i valori del brief prima di attivare `/prenota` — di default
 `pricePerNight` è `0`, che mostrerebbe un totale a zero se lasciato così.
 
-Non serve altro codice né alcuna variabile d'ambiente oltre all'SMTP:
-`/prenota` invia la richiesta via email all'host (con `replyTo`
-dell'ospite) e una presa in carico all'ospite. Nessun pagamento, nessun
-database.
+`/prenota` funziona in due modi, scelti **da soli** in base alle
+variabili d'ambiente (`paymentsEnabled()` in `lib/stripe.ts`):
 
-**Stripe è stato rimosso dal modello** e non va reintrodotto per inerzia:
-portava obblighi (PSD2, rimborsi, contestazioni) sproporzionati al volume
-tipico di questi siti, e i Termini oggi dichiarano espressamente che il
-sito non raccoglie dati di pagamento. Se un nuovo cliente li vuole
-davvero, vanno riscritti anche `/termini` e l'informativa privacy.
+- **senza Stripe** (default): la richiesta parte via email all'host (con
+  `replyTo` dell'ospite) e una presa in carico all'ospite. Nessun
+  pagamento. È la scelta giusta per chi riceve poche prenotazioni dirette.
+- **con Stripe**, se ci sono `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+  e `BOOKING_TOKEN_SECRET`: l'ospite autorizza la carta su Stripe
+  Checkout (addebito **non** immediato), l'host riceve un'email con il
+  link Conferma/Rifiuta e solo la conferma incassa. Se non decide entro
+  la scadenza dell'autorizzazione (pochi giorni, la data è nell'email),
+  l'ospite viene avvisato e non paga nulla.
+
+Termini, informativa, bottoni e testi del riepilogo cambiano con la
+modalità (`lib/features.ts`): il sito non descrive mai un pagamento che
+non fa. Per attivare Stripe:
+
+1. Account Stripe intestato all'host (sono suoi i soldi e i rimborsi),
+   con l'attività verificata.
+2. Sviluppatori → Webhook → endpoint `https://<dominio>/api/stripe/webhook`
+   con gli eventi `checkout.session.completed` e `payment_intent.canceled`;
+   il "signing secret" va in `STRIPE_WEBHOOK_SECRET`.
+3. `BOOKING_TOKEN_SECRET`: 64 caratteri casuali
+   (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`).
+4. `legal.stay.freeCancellationDays` in `content/legal.ts`: fino a quanti
+   giorni prima dell'arrivo si cancella con rimborso totale. È nei Termini
+   e nelle email, quindi va deciso con l'host, non lasciato al default.
+5. Provare tutto con le chiavi **di test** (`sk_test_`) e la carta
+   4242 4242 4242 4242 prima di mettere quelle live. In locale: mai le
+   chiavi live in `.env.local`, o una prova crea pagamenti veri.
+
+Dopo una conferma l'host deve bloccare le date su Airbnb e Booking a mano
+(l'email glielo ricorda): il sito non scrive nei loro calendari. I
+rimborsi si fanno dalla dashboard di Stripe.
+
+## 6d. Offerte via email (facoltative, database D1)
+
+Alla fine del check-in l'ospite può scegliere, con una casella non
+spuntata e separata dalla presa visione della privacy, di ricevere al
+massimo tre email l'anno con offerte. L'iscrizione finisce nel database
+D1 del Worker (`lib/newsletter.ts`): email, nome, lingua, data del
+soggiorno, testo esatto del consenso con la data, token per
+disiscriversi. La tabella si crea da sola.
+
+- **Attivazione**: basta il blocco `d1_databases` in `wrangler.jsonc`
+  (binding `DB`, senza ID: Cloudflare crea il database al primo deploy).
+  Toglierlo spegne tutto — casella, sezione dell'informativa — senza
+  altre modifiche. In locale `next dev` usa una copia del database in
+  `.wrangler/` (`initOpenNextCloudflareForDev` in `next.config.ts`).
+- **Invio**: `node scripts/offerte.mjs <file>` dal PC (istruzioni in testa
+  allo script): anteprima, `--prova tua@email`, poi `--invia`. Serve
+  `npx wrangler login` con l'account Cloudflare del sito e l'SMTP in
+  `.env.local`. Lo script cancella prima gli iscritti con l'ultimo
+  soggiorno più vecchio di 24 mesi e rifiuta un quarto invio in dodici
+  mesi: sono le due promesse dell'informativa.
+- **Disiscrizione**: link in ogni email verso `/offerte/disiscrizione`
+  (serve un clic sul bottone, perché gli antispam aprono i link) più
+  l'intestazione `List-Unsubscribe` per il clic unico di Gmail e Yahoo.
+  Disiscriversi cancella la riga.
 
 ## 6c. Dati legali (obbligatorio, vedi `LEGALE.md`)
 
@@ -268,7 +341,8 @@ mostrati**, quindi un sito senza CIN sembra a posto. Prima di consegnare,
 verificare a video che il footer mostri davvero il codice.
 
 Da compilare anche: `business` (ragione sociale, P.IVA, REA, sede, PEC),
-`stay` (ore per il saldo, mezzi di pagamento, imposta di soggiorno) e
+`stay` (ore per il saldo, mezzi di pagamento, giorni di cancellazione
+gratuita se si usa Stripe, imposta di soggiorno) e
 `providers.email`/`providers.mailbox` con il nome del fornitore SMTP e
 della casella scelti al §5 — finiscono nell'elenco dei responsabili del
 trattamento dell'informativa privacy.
@@ -281,7 +355,8 @@ accetta), e se non corrispondono il problema non è il testo.
 
 I nuovi siti si pubblicano su **Cloudflare Workers**, tramite l'adapter
 OpenNext (`@opennextjs/cloudflare`): esegue la build vera di Next, quindi
-il codice è lo stesso che gira su Vercel, dove resta Campo Marzio 47.
+il codice è lo stesso che girava su Vercel. Anche Campo Marzio 47 si
+sposta qui (ottobre 2026), per poter rimettere i pagamenti.
 Il piano gratuito di Cloudflare ammette l'uso commerciale (quello di
 Vercel no, vedi `LEGALE.md` §6) e il contratto self-serve incorpora il
 DPA art. 28 GDPR.
@@ -289,7 +364,8 @@ DPA art. 28 GDPR.
 Cosa è già predisposto nel modello: `wrangler.jsonc` (nome del Worker,
 `nodejs_compat` per nodemailer e archiver, binding `IMAGES` per
 `next/image`, `keep_vars`), `open-next.config.ts` (cache di sola lettura
-sugli asset statici: niente R2/KV/D1 da creare), `public/_headers`, e gli
+sugli asset statici: niente R2/KV da creare), il database D1 per le
+offerte (creato da solo al primo deploy, §6d), `public/_headers`, e gli
 script `npm run preview` (anteprima in locale sul runtime Workers) e
 `npm run deploy` (protetto, vedi §5).
 

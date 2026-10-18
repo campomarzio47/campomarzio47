@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import type { DateRange } from "react-day-picker";
-import { format } from "date-fns";
 import { ArrowRight, X } from "lucide-react";
 import DateRangeCalendar, {
   CalendarLegend,
@@ -15,7 +14,7 @@ import DateRangeCalendar, {
 import { useLocale } from "@/components/LocaleProvider";
 import { fill, plural } from "@/content/dictionaries";
 import { property } from "@/content/property";
-import { dateFnsLocale } from "@/lib/date-locale";
+import { formatDayMonth } from "@/lib/date-locale";
 import { intlLocale } from "@/lib/locale";
 import { useBusyRanges } from "@/lib/hooks/useBusyRanges";
 import { useDialog } from "@/lib/hooks/useDialog";
@@ -89,8 +88,7 @@ export default function AvailabilityBar() {
     router.push(qs ? `/prenota?${qs}` : "/prenota");
   }
 
-  const dateLocale = dateFnsLocale[locale];
-  const short = (d?: Date) => (d ? format(d, "d MMM", { locale: dateLocale }) : undefined);
+  const short = (d?: Date) => (d ? formatDayMonth(d, locale) : undefined);
   const nights = nightsInRange(range);
   const price = new Intl.NumberFormat(intlLocale[locale], {
     style: "currency",

@@ -43,6 +43,14 @@ function formatDate(iso: string, locale: Locale): string {
   });
 }
 
+// Per l'host, in italiano: in che lingua ha scritto l'ospite e ha ricevuto
+// la presa in carico, così la risposta arriva in una lingua che capisce.
+const languageName: Record<Locale, string> = {
+  it: "italiano",
+  en: "inglese",
+  de: "tedesco",
+};
+
 function hostText(request: BookingRequest, nights: number): string {
   return [
     `Nuova richiesta di prenotazione diretta per ${property.name}.`,
@@ -54,6 +62,9 @@ function hostText(request: BookingRequest, nights: number): string {
     `Check-out: ${formatDate(request.checkout, "it")}    Notti: ${nights}`,
     `Ospiti: ${request.guests}`,
     `Totale indicativo mostrato sul sito: ${formatAmount(request.total, "it")}`,
+    request.locale === "it"
+      ? ""
+      : `Lingua dell'ospite: ${languageName[request.locale]}. Ha ricevuto la presa in carico in ${languageName[request.locale]}: rispondigli nella stessa lingua${request.locale === "en" ? "" : " o in inglese"}.`,
     request.messaggio ? "" : "",
     request.messaggio ? "Messaggio dell'ospite:" : "",
     request.messaggio || "",
