@@ -62,11 +62,14 @@ export default function Hero() {
           fill
           priority
           quality={85}
-          sizes="100vw"
-          // Su telefono la foto orizzontale si vede per un terzo: centrata
-          // mostrava sedie e condizionatore. Spostata a sinistra, al centro
-          // c'è la scacchiera sul tavolo, che è la firma della casa.
-          className="hero-settle object-cover object-[20%_60%] md:object-[50%_60%]"
+          // Su telefono la foto riempie l'altezza e ne resta visibile un
+          // terzo: è larga circa tre schermi. Con "100vw" il browser
+          // scaricava una versione troppo stretta e la ingrandiva.
+          sizes="(max-width: 767px) 300vw, 100vw"
+          // Su telefono la foto orizzontale si vede per un terzo: al 57% la
+          // scacchiera sta a sinistra, sopra il nome, con le sedie bordeaux e
+          // il quadro. Se cambia la foto di copertina, va rifatta.
+          className="hero-settle object-cover object-[57%_60%] md:object-[50%_60%]"
         />
       </div>
       {/* Due sfumature: in alto per leggere l'intestazione, in basso per il

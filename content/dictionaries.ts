@@ -435,7 +435,7 @@ export const it: Dictionary = {
     description:
       "Ristrutturata nel 2023, la casa è pensata per famiglie, coppie e piccoli gruppi di amici che cercano un soggiorno tranquillo vicino al centro di Marostica: luminosa, arredata con cura, con un giardino privato e un'area verde attrezzata proprio di fronte.",
     imageAlt:
-      "La zona pranzo di Campo Marzio 47: tavolo in vetro con una scacchiera, sedie bordeaux, scala in acciaio e porta-finestra sul giardino",
+      "La zona pranzo di Campo Marzio 47: tavolo in vetro con una scacchiera, sedie bordeaux e un grande quadro di street art sotto le travi chiare",
     scroll: "Scorri",
   },
   facts: {
@@ -890,7 +890,7 @@ export const en: Dictionary = {
     description:
       "Renovated in 2023, the house is made for families, couples and small groups of friends looking for a quiet stay close to the centre of Marostica: bright, thoughtfully furnished, with a private garden and a green area with a playground right in front.",
     imageAlt:
-      "The dining area of Campo Marzio 47: glass table with a chessboard, burgundy chairs, steel staircase and a French window onto the garden",
+      "The dining area of Campo Marzio 47: glass table with a chessboard, burgundy chairs and a large street-art painting under the pale beams",
     scroll: "Scroll",
   },
   facts: {
@@ -1345,7 +1345,7 @@ export const de: Dictionary = {
     description:
       "Das 2023 renovierte Haus ist für Familien, Paare und kleine Freundesgruppen gedacht, die einen ruhigen Aufenthalt nahe dem Zentrum von Marostica suchen: hell, mit Sorgfalt eingerichtet, mit privatem Garten und einer Grünanlage mit Spielplatz direkt gegenüber.",
     imageAlt:
-      "Der Essbereich des Campo Marzio 47: Glastisch mit Schachbrett, bordeauxrote Stühle, Stahltreppe und Fenstertür zum Garten",
+      "Der Essbereich des Campo Marzio 47: Glastisch mit Schachbrett, bordeauxrote Stühle und ein großes Street-Art-Bild unter den hellen Holzbalken",
     scroll: "Scrollen",
   },
   facts: {

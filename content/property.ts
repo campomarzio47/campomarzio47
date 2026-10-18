@@ -109,8 +109,11 @@ export const property = {
     // `reviews: []` sotto `as const` diventerebbe di tipo `never` e la
     // build si fermerebbe. Con l'elenco vuoto la sezione non compare.
   ] as readonly Review[],
-  // Foto grande in cima alla home page.
-  heroImage: "/photos/copertina.jpg",
+  // Foto grande in cima alla home page. Da ottobre 2026 è la zona pranzo
+  // nuova (2000 px): scacchiera sul tavolo, sedie bordeaux, quadro. La
+  // vecchia copertina resta in public/photos/copertina.jpg. Cambiando
+  // foto va rifatta l'inquadratura su telefono in components/Hero.tsx.
+  heroImage: "/photos/zona-pranzo.jpg",
   // Tutte le foto della galleria, nell'ordine in cui si sfogliano.
   // Larghezza e altezza sono quelle reali del file: servono a mostrare
   // ogni foto nel suo formato (verticale o orizzontale) e a non ingrandirla
